@@ -1,0 +1,18 @@
+seed: 0
+output_root: results/runs
+dataset:
+  type: synthetic
+  n_steps: 20000
+  dim: 10
+  noise: student_t
+  df: 2.5
+  noise_scale: 1.0
+  contamination: 0.0
+  contamination_scale: 50.0
+  seed: 0
+algorithm:
+  name: robust_omd
+  learning_rate: 0.1
+  estimator: catoni
+  window: 256
+  clip_multiplier: 3.0

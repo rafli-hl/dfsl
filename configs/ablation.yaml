@@ -1,0 +1,19 @@
+seed: 0
+output_root: results/ablation
+dataset:
+  type: synthetic
+  n_steps: 20000
+  dim: 10
+  noise: student_t
+  df: 2.5
+  noise_scale: 1.0
+  contamination: 0.1
+  contamination_scale: 50.0
+  seed: 0
+base_algorithm:
+  name: robust_omd
+  learning_rate: 0.1
+sweep:
+  estimator: [catoni, median_of_means, trimmed_mean]
+  window: [64, 256, 1024]
+  clip_multiplier: [1.0, 3.0, 5.0]

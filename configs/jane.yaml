@@ -1,0 +1,17 @@
+seed: 0
+output_root: results/runs
+dataset:
+  type: jane
+  data_dir: data/raw/jane
+  responder: responder_6
+  date_range: [0, 30]
+  max_rows: 200000
+  fill_null: 0.0
+  standardize: true
+algorithm:
+  name: robust_omd
+  # stability for standardized 79-dim features needs roughly lr * 2 * dim < 1
+  learning_rate: 0.005
+  estimator: catoni
+  window: 512
+  clip_multiplier: 3.0

@@ -1,0 +1,6 @@
+resource,exists,path
+train.parquet,true,D:\distribution-free-sequential-learning\data\raw\jane\train.parquet
+test.parquet,true,D:\distribution-free-sequential-learning\data\raw\jane\test.parquet
+lags.parquet,true,D:\distribution-free-sequential-learning\data\raw\jane\lags.parquet
+features.csv,true,D:\distribution-free-sequential-learning\data\raw\jane\features.csv
+responders.csv,true,D:\distribution-free-sequential-learning\data\raw\jane\responders.csv

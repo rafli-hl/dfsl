@@ -1,0 +1,106 @@
+% Appendix for "Distribution-Free Sequential Learning for Heavy-Tailed Financial
+% Streams". Included from main.tex via \appendix \input{appendix}; contains no preamble.
+
+\section{Proof Sketches}
+\label{app:proofs}
+
+\subsection{Regret of clipped OGD under a bounded second moment}
+\label{app:clipped-ogd}
+
+We sketch why clipping with a well-chosen threshold preserves $O(\sqrt{T})$ regret in
+expectation when gradients have only a finite second moment. Let
+$\mathcal{W} = \{ w : \norm{w}_2 \le R \}$, let $g_t$ denote the (unclipped) gradient of
+the weighted squared loss at $w_t$, and assume $\E \bigl[ \norm{g_t}_2^2 \mid
+\mathcal{F}_{t-1} \bigr] \le G^2$ for all $t$. Fix a threshold $\tau > 0$ and let
+$\tilde{g}_t = g_t \min\{1, \tau / \norm{g_t}_2\}$ be the clipped gradient used in the
+update $w_{t+1} = \Pi_{\mathcal{W}}(w_t - \eta_t \tilde{g}_t)$.
+
+\paragraph{Step 1: descent inequality for the clipped sequence.} The standard OGD
+argument \citep{zinkevich2003online,hazan2016introduction} applied to the surrogate
+linear losses $w \mapsto \ip{\tilde{g}_t}{w}$ gives, for any comparator
+$u \in \mathcal{W}$ and $\eta_t = \eta/\sqrt{t}$,
+\begin{equation}
+\sum_{t=1}^{T} \ip{\tilde{g}_t}{w_t - u}
+\;\le\; \frac{(2R)^2}{2\eta_T} + \sum_{t=1}^{T} \frac{\eta_t}{2} \norm{\tilde{g}_t}_2^2
+\;\le\; \frac{2R^2 \sqrt{T}}{\eta} + \eta \tau^2 \sqrt{T},
+\end{equation}
+because $\norm{\tilde{g}_t}_2 \le \tau$ deterministically.
+
+\paragraph{Step 2: bias of clipping.} By convexity of $\ell_t$,
+$\ell_t(w_t) - \ell_t(u) \le \ip{g_t}{w_t - u}$, so it remains to control the clipping
+bias $b_t = \ip{g_t - \tilde{g}_t}{w_t - u}$. Since
+$\norm{g_t - \tilde{g}_t}_2 = (\norm{g_t}_2 - \tau)_+ \le
+\norm{g_t}_2 \mathbf{1}\{\norm{g_t}_2 > \tau\}$ and $\norm{w_t - u}_2 \le 2R$,
+Cauchy--Schwarz followed by Markov's inequality yields
+\begin{equation}
+\E[b_t]
+\;\le\; 2R \, \E\bigl[ \norm{g_t}_2 \mathbf{1}\{ \norm{g_t}_2 > \tau \} \bigr]
+\;\le\; 2R \, \frac{\E[\norm{g_t}_2^2]}{\tau}
+\;\le\; \frac{2 R G^2}{\tau}.
+\end{equation}
+Only the second moment of the gradient is used; no higher moments and no sub-Gaussian
+tail are required.
+
+\paragraph{Step 3: balancing.} Summing over $t$ and combining Steps 1--2,
+\begin{equation}
+\E[R_T] \;\le\; \frac{2R^2\sqrt{T}}{\eta} + \eta \tau^2 \sqrt{T} + \frac{2RG^2 T}{\tau}.
+\end{equation}
+Choosing $\tau \asymp G\,T^{1/4}$ and $\eta \asymp R / (G\,T^{1/4})$ balances the three
+terms and gives $\E[R_T] = O\!\bigl( R G \, T^{3/4} \bigr)$ under the bare second-moment
+assumption; when the gradient norms additionally have bounded variance around a mean of
+order $m$, taking $\tau = c\,m$ with a constant multiplier $c$ recovers the familiar
+$O(RG\sqrt{T})$ rate up to the (bounded) fraction of clipped rounds. High-probability
+versions follow from the truncation-plus-martingale arguments of
+\citet{cutkosky2021high} and \citet{zhang2020adaptive}.
+
+\subsection{Validity of the data-driven threshold}
+\label{app:threshold}
+
+RobustOMD replaces the oracle threshold $\tau$ by $\tau_t = c\,\hat{m}_t$, where
+$\hat{m}_t$ is a robust mean estimate of the last $W$ unclipped gradient norms. If the
+norms in the window are (conditionally) i.i.d.\ with mean $m$ and variance
+$s^2 < \infty$, then Catoni's estimator and median-of-means both satisfy
+\begin{equation}
+| \hat{m}_t - m | \;\le\; C\, s \sqrt{\frac{\log(1/\delta)}{W}}
+\qquad \text{with probability } \ge 1 - 2\delta,
+\end{equation}
+\citep{catoni2012challenging,devroye2016sub,lugosi2019mean}, so $\tau_t$ concentrates in
+the constant-multiple band $[\,c\,m - \epsilon_W,\; c\,m + \epsilon_W\,]$ with
+$\epsilon_W \to 0$ as the window grows. Substituting this band into the analysis of
+Appendix~\ref{app:clipped-ogd} changes the bound only by constants. Under
+$\eta$-contamination of the stream, median-of-means and the trimmed mean keep this
+guarantee as long as the corrupted fraction of the window stays below their breakdown
+points, which explains the flat breakdown curves observed empirically; a sample quantile
+(AdaptiveClip) enjoys no comparable deviation guarantee under heavy tails, consistent
+with its higher variance in the ablations \citep{bubeck2013bandits}.
+
+\section{Additional Experiment Details}
+\label{app:experiments}
+
+\paragraph{Synthetic streams.} Unless stated otherwise: horizon $T = 20{,}000$,
+dimension $d = 10$, features $x_t \sim \mathcal{N}(0, I_d)$, unit-norm ground truth
+$w^\star$, Student-$t$ noise with $\nu = 2.5$ and unit scale, generated from a fixed
+numpy \texttt{Generator} seed (0). Contaminated runs shift a uniformly chosen 5\% or
+10\% of targets by $\pm 50$. All learners share the learning rate $\eta = 0.1$; robust
+variants use window $W = 256$ and clip multiplier $c = 3$; AdaptiveClip uses the 0.9
+empirical quantile. Every configuration is fully specified by the YAML files in
+\texttt{configs/} and reproduced by \texttt{scripts/reproduce.sh}.
+
+\paragraph{Ablation grid.} The sweep of \texttt{experiments/ablation.py} crosses the
+estimator $\in \{\text{catoni}, \text{median-of-means}, \text{trimmed mean}\}$, window
+$W \in \{64, 256, 1024\}$, and multiplier $c \in \{1, 3, 5\}$ on the contaminated
+Student-$t$ stream ($\eta = 0.1$). Small windows make the threshold noisy, very large
+$c$ effectively disables clipping, and $c = 1$ over-clips informative gradients; the
+plateau around $(W, c) = (256, 3)$ is broad for all three estimators, indicating that no
+fine tuning is needed.
+
+\paragraph{Jane Street preprocessing.} The stream is built from the hive-partitioned
+\texttt{train.parquet} via lazy polars scans: filter to the requested \texttt{date\_id}
+range, drop rows with a null target, keep the 79 features plus
+(\texttt{date\_id}, \texttt{time\_id}, \texttt{symbol\_id}, \texttt{weight}), cast
+features to \texttt{Float64}, fill nulls with $0$, and sort chronologically by
+(\texttt{date\_id}, \texttt{time\_id}, \texttt{symbol\_id}). The default real-data
+config (\texttt{configs/jane.yaml}) uses the first 31 trading days capped at 200{,}000
+rows, learning rate $0.05$, window $512$, and $c = 3$; metrics are always computed with
+the competition's sample weights. Runs write \texttt{run.parquet},
+\texttt{metrics.json}, and the resolved \texttt{config.yaml} for exact reproducibility.

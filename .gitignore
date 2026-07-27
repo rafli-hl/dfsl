@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+.idea/
+.ipynb_checkpoints/
+
+# Data (ignored, but keep .gitkeep placeholders)
+data/raw/**
+!data/raw/**/
+!data/raw/**/.gitkeep
+data/processed/**
+!data/processed/**/
+!data/processed/**/.gitkeep
+data/cache/**
+!data/cache/**/
+!data/cache/**/.gitkeep
+
+# Experiment outputs
+results/runs/
+results/benchmark/
+results/ablation/
