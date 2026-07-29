@@ -8,7 +8,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .algorithms import AdaptiveClip, OnlineGradientDescent, OnlineLearner, RobustOMD
+from .algorithms import (
+    AdaptiveClip,
+    OnlineGradientDescent,
+    OnlineLearner,
+    RobustOMD,
+    ScaleNormalizedOGD,
+)
 from .datasets import JaneStreetDataset, SequentialDataset, SyntheticHeavyTailed
 from .utils.io import find_project_root, load_yaml
 
@@ -16,6 +22,8 @@ ALGORITHMS: dict[str, type[OnlineLearner]] = {
     "ogd": OnlineGradientDescent,
     "adaptive_clip": AdaptiveClip,
     "robust_omd": RobustOMD,
+    "scale_normalized_ogd": ScaleNormalizedOGD,
+    "sn_ogd": ScaleNormalizedOGD,
 }
 
 DATASETS: dict[str, type[SequentialDataset]] = {

@@ -1,0 +1,20 @@
+seed: 0
+output_root: results/runs
+dataset:
+  type: synthetic
+  n_steps: 20000
+  dim: 10
+  noise: student_t
+  df: 2.5
+  noise_scale: 1.0
+  contamination: 0.05
+  contamination_scale: 50.0
+  seed: 0
+algorithm:
+  # Scale-normalized OGD: the step is scale-invariant, so learning_rate is in
+  # scale-normalized units (order 1), not comparable to plain-OGD rates.
+  name: scale_normalized_ogd
+  learning_rate: 1.0
+  cap: 10.0
+  scale_decay: 0.99
+  scale_winsor: 8.0

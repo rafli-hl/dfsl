@@ -13,8 +13,12 @@ Forecasting dataset from Kaggle, using only a finite-variance assumption on the 
 - **Robust mean estimators** — `catoni_mean`, `median_of_means`, `trimmed_mean` with a
   uniform "array in, float out" contract and a `get_estimator` registry.
 - **Online learners** — `OnlineGradientDescent`, `AdaptiveClip` (quantile-based gradient
-  clipping), and `RobustOMD` (online mirror descent with a robust-statistics clipping
-  threshold), all sharing the `OnlineLearner` prequential `run` protocol.
+  clipping), `RobustOMD` (online mirror descent with a robust-statistics clipping
+  threshold), and `ScaleNormalizedOGD` (SN-OGD: a *scale-invariant* step that divides the
+  gradient by a tracked robust scale and caps it at a constant, so the update never
+  inherits the drifting scale and provably cannot diverge — see
+  `results/research/THEORY_SNOGD.md`), all sharing the `OnlineLearner` prequential `run`
+  protocol.
 - **Sequential datasets** — `SyntheticHeavyTailed` streams with configurable noise and
   contamination, and `JaneStreetDataset` backed by lazy polars scans of the competition
   parquet files.
