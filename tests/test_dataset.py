@@ -73,6 +73,33 @@ class TestSyntheticHeavyTailed:
             SyntheticHeavyTailed(n_steps=10, dim=2, noise="uniform", seed=0)
 
 
+class TestCausalStandardize:
+    """The causal standardizer must not leak future information (no data needed)."""
+
+    def test_shape_and_finiteness(self) -> None:
+        rng = np.random.default_rng(0)
+        X = rng.standard_normal((500, 6)) * np.array([1.0, 1e3, 1e-2, 5.0, 1.0, 2.0])
+        Z = JaneStreetDataset._causal_standardize(X)
+        assert Z.shape == X.shape
+        assert np.all(np.isfinite(Z))
+
+    def test_strictly_causal(self) -> None:
+        # Changing rows from index k onward must NOT change standardized rows < k.
+        rng = np.random.default_rng(1)
+        X = rng.standard_normal((400, 4)) * 10.0
+        k = 150
+        Z1 = JaneStreetDataset._causal_standardize(X)
+        X2 = X.copy()
+        X2[k:] += rng.standard_normal((400 - k, 4)) * 1e3  # perturb the future
+        Z2 = JaneStreetDataset._causal_standardize(X2)
+        assert np.allclose(Z1[:k], Z2[:k]), "past rows depend on future -> look-ahead leak"
+
+    def test_row_zero_uncentered(self) -> None:
+        X = np.array([[3.0, -7.0], [1.0, 2.0], [0.0, 5.0]])
+        Z = JaneStreetDataset._causal_standardize(X)
+        assert np.allclose(Z[0], X[0]), "row 0 has no history and should be left as-is"
+
+
 @requires_jane_data
 class TestJaneStreetDataset:
     @pytest.fixture(scope="class")
@@ -105,8 +132,8 @@ class TestJaneStreetDataset:
         key = date_id * 1_000_000 + time_id
         assert np.all(np.diff(key) >= 0)
 
-    def test_standardize_zscores_features(self) -> None:
-        dataset = JaneStreetDataset(date_range=(0, 1), max_rows=1500, standardize=True)
+    def test_standardize_full_zscores_features(self) -> None:
+        dataset = JaneStreetDataset(date_range=(0, 1), max_rows=1500, standardize="full")
         means = dataset.X.mean(axis=0)
         stds = dataset.X.std(axis=0)
         assert np.allclose(means, 0.0, atol=1e-8)
@@ -117,6 +144,14 @@ class TestJaneStreetDataset:
         raw = JaneStreetDataset(date_range=(0, 1), max_rows=1500)
         assert raw.feature_means is None
         assert not np.allclose(raw.X.std(axis=0), stds)
+
+    def test_standardize_causal_default(self) -> None:
+        # standardize=True is now strictly causal: no full-sample artifacts,
+        # finite and clipped values, and NOT globally zero-mean/unit-std.
+        ds = JaneStreetDataset(date_range=(0, 1), max_rows=1500, standardize=True)
+        assert ds.feature_means is None and ds.feature_stds is None
+        assert np.all(np.isfinite(ds.X))
+        assert np.all(np.abs(ds.X) <= 8.0 + 1e-9)
 
 
 if __name__ == "__main__":

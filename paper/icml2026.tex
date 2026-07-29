@@ -57,12 +57,12 @@
 \newcommand{\clip}{\operatorname{clip}}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\icmltitlerunning{Distribution-Free Sequential Learning under Heavy-Tailed Uncertainty}
+\icmltitlerunning{Nonstationarity Manufactures Heavy Tails}
 
 \begin{document}
 
 \twocolumn[
-  \icmltitle{Distribution-Free Sequential Learning under\\ Heavy-Tailed Uncertainty}
+  \icmltitle{Nonstationarity Manufactures Heavy Tails:\\ Scale-Normalized Sequential Learning}
 
   \icmlsetsymbol{equal}{*}
   \begin{icmlauthorlist}
@@ -70,31 +70,35 @@
   \end{icmlauthorlist}
   \icmlaffiliation{yyy}{Anonymous Institution}
   \icmlcorrespondingauthor{Anonymous}{anon@example.com}
-  \icmlkeywords{online learning, heavy tails, distribution-free, nonstationary}
+  \icmlkeywords{online learning, nonstationarity, scale normalization, heavy tails, dynamic regret}
   \vskip 0.3in
 ]
 
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-We study online prediction on streams whose loss gradients are heavy-tailed and,
-crucially, \emph{nonstationary}: on a large financial dataset we document that the
-gradient tail scale drifts several-fold and that the tail index itself
-intermittently drops below two, into the infinite-variance regime. In this setting
-plain online gradient descent (OGD) has no usable learning rate---small rates
-underfit while any rate large enough to learn diverges when the scale spikes---and we
-show that the standard remedy, clipping to a \emph{scale-dependent} threshold, is
-fragile because the resulting step still inherits the scale drift. We propose
-\emph{Scale-Normalized OMD} (SN-OMD), which divides the gradient by a tracked robust
-scale and caps it at a \emph{scale-free} constant, making the step scale-invariant;
-its iterates provably remain bounded for any learning rate or realization---a
-stability guarantee distinct from convergence. We prove a
-high-probability dynamic-regret bound of order $T^{1/p}$ under only a finite $p$-th
-moment ($p\in(1,2]$), and show a matching lower bound implying that near-$\sqrt{T}$
-\emph{dynamic} regret is information-theoretically unreachable once the tail is heavy
-and nonstationary---a wall we measure directly on data. Empirically, SN-OMD never
-diverges across a $1000\times$ learning-rate range and is the most accurate method,
-where OGD and clipping both fail.
+We study online prediction on streams whose loss-gradient \emph{scale} is strongly
+nonstationary, using a large financial dataset as a testbed. The gradient-norm scale
+drifts several-fold across the record with overnight jumps, and this drift alone makes
+the \emph{pooled} gradient look heavy-tailed (tail index $\hat\alpha\approx2.4$); the
+\emph{causally scale-normalized} gradient---the quantity a learner should actually act
+on---is markedly lighter ($\hat\alpha\approx3.7$), so the difficulty is dominated by
+nonstationarity rather than by an intrinsically heavy tail. In this regime plain online
+gradient descent (OGD) has no usable learning rate---small rates underfit while any rate
+large enough to learn diverges when the scale spikes---and clipping to a
+\emph{scale-dependent} threshold is fragile because the clipped step still inherits the
+drift. We propose \emph{Scale-Normalized OMD} (SN-OMD), which divides the gradient by a
+tracked robust scale and caps it at a \emph{scale-free} constant $M$; the per-step move
+is then bounded by $M$ rather than by a regime-dependent quantity, so the iterates
+provably remain bounded for any learning rate or realization (a stability, not
+convergence, guarantee). We prove a high-probability dynamic-regret bound of order
+$T^{1/p}$ under a finite, possibly time-varying $p$-th moment ($p\in(1,2]$), and give a
+budget calculation---corroborated by a direct measurement---indicating that the
+interaction of tail drift with a moving comparator pushes \emph{dynamic} regret well
+above $\sqrt T$. Empirically, on a continuous multi-regime stream SN-OMD stays bounded
+across the entire tested learning-rate range and is the most accurate of the methods
+compared, whereas OGD and scale-dependent clipping both diverge above
+$\mathrm{lr}=10^{-2}$.
 \end{abstract}
 
 \section{Introduction}
@@ -113,16 +117,20 @@ clipping is the corresponding algorithmic primitive for heavy-tailed gradient no
 \citep{zhang2020clip,gorbunov2020,nguyen2023}.
 
 This paper concerns a facet these lines mostly abstract away: on real streams the
-heavy tail is \emph{nonstationary}. Measuring the gradient of an online linear
-predictor on the Jane Street market dataset, we find (i) the intrinsic gradient tail
-index is $\hat\alpha\approx 2.4$---finite variance but infinite fourth moment---and is
-an \emph{interaction} effect, heavier than either the features or the residuals alone;
-(ii) the gradient \emph{scale} drifts roughly $6\times$ across two months with
-overnight jumps; and (iii) the tail \emph{index} itself drifts, dipping below two
-(infinite variance) on a nontrivial fraction of days. This combination---heavy tails
-that are also nonstationary---is exactly where existing distribution-free online
-learning results, which are either in expectation, on bounded domains, or against a
-static comparator \citep{zhang2026oco,zhangcutkosky2022}, do not reach.
+gradient \emph{scale} is strongly nonstationary, and this---more than an intrinsically
+heavy tail---is what breaks existing methods. Measuring the gradient of an online linear
+predictor on the Jane Street market dataset, we find (i) the gradient \emph{scale}
+drifts roughly $6\times$ across two months with overnight jumps; (ii) this drift alone
+inflates the \emph{pooled} gradient-norm tail index to $\hat\alpha\approx2.4$---a scale
+mixture of lighter-tailed increments looks heavy-tailed---whereas the \emph{causally
+scale-normalized} gradient $\norm{\gt}/s_t$, which is what a learner actually acts on,
+is much lighter, $\hat\alpha\approx3.7$; and (iii) the residual tail is nonetheless
+heavier than either its feature or residual factor alone, an \emph{interaction} effect
+from their co-movement. The operative difficulty is thus nonstationarity of scale, with
+only a mild residual heavy tail. This regime---a drifting scale against a moving
+comparator---is exactly where existing distribution-free online learning results, which
+are either in expectation, on bounded domains, or against a static comparator
+\citep{zhang2026oco,zhangcutkosky2022}, do not reach.
 
 The consequences are sharp. Plain OGD has \emph{no} usable learning rate on such a
 stream: a small rate underfits, while any rate large enough to learn diverges the
@@ -148,22 +156,25 @@ convergence) that needs no moment assumption.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item \textbf{Problem and lower bound (\cref{sec:problem}).} We formalize
-  distribution-free online learning under a \emph{drifting} $p$-th moment and show
-  that the achievable rate is $T^{1/p}$; on real data we measure that near-$\sqrt{T}$
-  \emph{dynamic} regret is out of reach (the heavy-tail ``budget'' exceeds $\sqrt{T}$),
-  while static regret is not---so the wall sits exactly at heavy-tails
-  $\times$ nonstationarity.
+  \item \textbf{Problem and a budget heuristic (\cref{sec:problem}).} We formalize
+  distribution-free online learning under a \emph{drifting} $p$-th moment, for which the
+  per-regime achievable rate is $T^{1/p}$, and give a heuristic budget calculation
+  ---corroborated by a direct measurement---suggesting that the interaction of tail
+  drift with a moving comparator pushes \emph{dynamic} regret well above $\sqrt T$ while
+  static regret stays near $\sqrt T$. This is a motivating observation, not a matching
+  lower bound: a proper path-length-constrained $\Omega$ is left open.
   \item \textbf{Algorithm and theory (\cref{sec:method}).} We propose SN-OMD and prove
   (Thm.~\ref{thm:stability}) unconditional boundedness of the iterates and
   (Thm.~\ref{thm:regret}) a
   high-probability dynamic-regret bound $\tilde O((\sup_t\sigma_t)(D+\sqrt{DP_T})\,
   T^{1/p})$, separating the tail (rate exponent) from the scale drift (a constant).
-  \item \textbf{Experiments (\cref{sec:experiments}).} On Jane Street, SN-OMD never
-  diverges across a $1000\times$ learning-rate range and attains the highest weighted
-  $R^2$, whereas OGD and scale-dependent clipping both diverge. We also empirically
-  discharge the scale-tracking assumption---a two-timescale tracker holds the
-  stability-critical bracket at every round---and release a tested implementation.
+  \item \textbf{Experiments (\cref{sec:experiments}).} On Jane Street, SN-OMD stays
+  bounded across the whole tested learning-rate range and attains the highest weighted
+  $R^2$, whereas OGD \emph{and} scale-dependent clipping both diverge above
+  $\mathrm{lr}=10^{-2}$. A cap-sweep shows the finite cap is a sweet spot between
+  normalized-GD and uncapped scale-adaptive OGD, and we empirically (and, under a mild
+  drift model, provably) discharge the scale-tracking assumption; a tested implementation
+  is released.
 \end{itemize}
 
 \section{Problem Setup}
@@ -186,7 +197,10 @@ for some $p_t\in(1,2]$, where both the scale $\sigma_t$ and the tail index $p_t$
 drift with $t$, and $p_t<2$ (infinite variance) is permitted. Write $p:=\inf_t p_t$.
 \end{assumption}
 No sub-Gaussianity, boundedness, or stationarity is assumed. \emph{Distribution-free}
-means the learner knows none of $\sigma_t$, $p_t$, $D$, or the comparator norm.
+means the learner knows none of $\sigma_t$, $p_t$, $D$, or the comparator norm. The
+regret analysis does additionally require a \emph{predictable} scale tracker
+(\cref{ass:track}); we do not treat this as free, and discharge it under a mild drift
+model (\cref{prop:tracker}).
 
 \paragraph{Dynamic regret.} Performance is measured against a moving comparator
 $u_{1:T}$ with path length $P_T=\sum_{t}\norm{u_t-u_{t-1}}$,
@@ -199,7 +213,7 @@ the notion appropriate for regime-switching streams; static regret is the specia
 case $u_t\equiv u$. We report the sample-weighted zero-mean $R^2=
 1-\sum_i\omega_i(y_i-\hat y_i)^2/\sum_i\omega_i y_i^2$ on data.
 
-\subsection{The fundamental limit}
+\subsection{A budget heuristic for the dynamic wall}
 \label{sec:lower}
 
 The achievable rate degrades smoothly with the tail. The core primitive is robust mean
@@ -224,26 +238,25 @@ R_T^{\mathrm{stat}}\gtrsim\max_r \sigma_r L_r^{1/p_r},
 R_T^{\mathrm{dyn}}\gtrsim\sum_r \sigma_r L_r^{1/p_r}.
 \end{equation}
 Because $L^{1/p}$ is convex, heavy-tail cost cannot be averaged across regimes: a few
-short but heavy regimes ($p_r<2$) dominate the sum. This additivity is what
-distinguishes our limit from existing heavy-tailed lower bounds. Prior results fix a
-\emph{single} tail index $p$, a stationary scale, and a \emph{static} comparator, and
-recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{zhang2026oco,zhangcutkosky2022,bubeck2013};
-the obstruction we identify is not that per-regime rate but its \emph{additivity} under
-drift. With a per-regime index $p_r$ and scale $\sigma_r$, dynamic regret \emph{sums}
-the per-regime costs \eqref{eq:budgets}, and---since $L\mapsto L^{1/p}$ is convex and
-$p_r$ may dip below $2$---a few short infinite-variance regimes push that sum
-super-$\sqrt T$ even when every regime's own cost is benign. It is the interaction of a
-\emph{drifting} exponent with a \emph{moving} comparator, absent from the static
-single-$p$ analyses, that raises the wall; the static budget (a $\max$, not a sum) does
-not see it. As \eqref{eq:budgets} is a
-\emph{lower} bound, whenever its right-hand ``dynamic budget'' exceeds $\sqrt T$, no
-algorithm can achieve near-$\sqrt T$ dynamic regret. We measure exactly this on Jane
-Street (\cref{sec:experiments}): the dynamic budget is $\approx6.8\sqrt T$ at both a
-$60$-day and the full $1{,}699$-day scale, whereas the static budget is only
-$\approx0.16\sqrt T$. \textbf{Near-$\sqrt T$ \emph{dynamic} regret is thus
-information-theoretically out of reach on this data}: the wall sits precisely at the
-intersection of heavy tails and nonstationarity, and the best any method can do is
-attain the worst-tail rate $T^{1/p}$ rather than diverge---which is what SN-OMD does.
+short heavy regimes ($p_r<2$) dominate the sum. Two caveats keep \eqref{eq:budgets}
+honest. First, it is a per-regime \emph{budget}, not a proved regret lower bound at a
+fixed path length: it charges each regime its worst-case cost against a \emph{fresh}
+comparator, so it lower-bounds dynamic regret only against an \emph{unconstrained}
+comparator sequence---which is trivially $\Omega(T)$ in any case. The interesting object
+is regret at a given path length $P_T$, which \eqref{eq:budgets} does not constrain.
+Second, it separates drift from the static case only qualitatively: prior heavy-tailed
+results fix a \emph{single} $p$, a stationary scale, and a \emph{static} comparator, and
+recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{zhang2026oco,zhangcutkosky2022,bubeck2013},
+whereas here the per-regime costs \emph{add} across a drifting exponent, and the static
+budget (a $\max$, not a sum) does not see this. Empirically the dynamic budget does grow
+super-$\sqrt T$: measured on Jane Street (\cref{sec:experiments}), its ratio to
+$\sqrt T$ \emph{increases} with horizon (from $\approx1.3$ to $\approx5.9$; fitted
+exponent $\approx0.9$), while the static budget stays $\approx0.16\sqrt T$. We therefore
+read \eqref{eq:budgets} as a \emph{motivating heuristic}---the combination of tail drift
+and a moving comparator makes near-$\sqrt T$ \emph{dynamic} regret implausible on this
+data---rather than as a matching lower bound; a proper $P_T$-constrained $\Omega$ is left
+open. What SN-OMD does deliver is to attain the per-regime worst-tail rate $T^{1/p}$
+rather than diverge.
 
 \section{Scale-Normalized Online Mirror Descent}
 \label{sec:method}
@@ -319,11 +332,13 @@ $\ge1-\delta$, simultaneously for all comparators $u_{1:T}$,
 \begin{align}
 \label{eq:mainbound}
 R_T(u_{1:T})
-&= O\!\Bigl(D\,S_1^{1/p}W_s^{1-1/p}+\sqrt{D\,P_T^s}\,S_1^{1/p}W_s^{-1/p}\Bigr)\\
+&= O\!\Bigl(\bigl(D\sqrt{W_s}+\sqrt{D\,P_T^s}\,\bigr)\sqrt{S_1}\;T^{(2-p)/(2p)}\Bigr)\\
 &= \tilde O\!\Bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D P_T})\,T^{1/p}
    \log(1/\delta)\Bigr),\nonumber
 \end{align}
-where $S_1=\sum_t\sigma_t$. Together with \cref{thm:stability}, the iterate is bounded
+where $S_1=\sum_t\sigma_t$; the second line uses $S_1\le T\sup_t\sigma_t$ and
+$W_s,P_T^s\lesssim\sup_t\sigma_t\,(1,P_T)$ (so it is tight up to the scale normalization
+$\sup_t\sigma_t\gtrsim1$). Together with \cref{thm:stability}, the iterates are bounded
 for every learning rate and realization.
 \end{theorem}
 
@@ -341,10 +356,12 @@ per-round $p_t$ and the unknown-$p$/unknown-$\norm u$ reductions, are in the app
 \end{proof}
 
 \begin{remark}[Tail vs.\ scale drift]
-The bound $D\,S_1^{1/p}W_s^{1-1/p}$ \emph{separates} the two effects: the tail index
-$p$ sets the \emph{rate} exponent $T^{1/p}$, while the scale drift enters only as the
-\emph{constant} $(W_s/\sup_t\sigma_t)^{1-1/p}$ (measured $\approx1.5\times$ on data).
-Crucially, dividing by $s_t$ does not smuggle a $\sup_t\sigma_t$ \emph{rate} penalty.
+The bound \emph{separates} the two effects: the tail index $p$ sets the \emph{rate}
+exponent (through $M^{2-p}=T^{(2-p)/p}$, giving the overall $T^{1/p}$), while the scale
+drift enters only through the factor $\sqrt{W_s}$---a multiplicative \emph{constant} on
+that rate, not a change to the exponent. Crucially, dividing by $s_t$ does not smuggle a
+$\sup_t\sigma_t$ \emph{rate} penalty; the drift is a bounded constant whenever $W_s$ is
+(\cref{rmk:tracker,prop:tracker}).
 \end{remark}
 
 \begin{remark}[Tracker design]
@@ -364,34 +381,48 @@ interval-regret property (\cref{thm:stability} gives the required bounded feedba
 \paragraph{Setup.} We use the Jane Street Real-Time Market Data Forecasting dataset
 \citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
 features, $39$ symbols; target \texttt{responder\_6}; metric the sample-weighted
-zero-mean $R^2$. We stream chronologically, standardize features online, and compare
-plain OGD, quantile-based AdaptiveClip, RobustOMD (a scale-dependent robust-mean clip),
-and SN-OMD. All measurements are learner-independent where possible (gradients at the
-fixed best linear predictor $w^\star$), and every number is reproducible from the
-released code.
+zero-mean $R^2$. We stream chronologically and compare plain OGD, quantile-based
+AdaptiveClip, RobustOMD (a scale-dependent robust-mean clip), and SN-OMD.
+\textbf{Protocol caveat.} Features here are standardized using full-sample per-feature
+statistics over each evaluated slice; because this peeks at the whole slice it is a
+look-ahead confound that \emph{inflates} absolute $R^2$. The values below are therefore
+\emph{not} comparable to the competition's (much smaller) held-out leaderboard score,
+and are reported only for \emph{cross-method} comparison---every method shares the
+identical preprocessing---and for the stability contrast, which is unaffected. We
+additionally report a \emph{causal} (running-statistics) re-run that removes this
+look-ahead. All tail measurements are learner-independent (gradients at the fixed best
+linear predictor $w^\star$).
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig1_problem.png}
-\caption{\textbf{The problem is real and nonstationary.} (a) The gradient tail
-(Hill index $\hat\alpha\approx2.43$) is heavier than either its residual or feature
-factors ($\hat\alpha\approx4$): an interaction effect. (b) The daily gradient tail
-index across the full $1{,}699$-day record drifts and dips below $2$ (infinite
-variance) on $\approx6\%$ of days.}
+\caption{\textbf{The scale drifts; the pooled tail is largely a scale mixture.} (a) The
+\emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than either
+its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
+co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record
+drifts; per-day estimates occasionally fall below $2$ but single-day Hill estimates are
+noisy. Causally normalizing by the scale lightens the tail to $\hat\alpha\approx3.7$,
+so the pooled heaviness is largely nonstationarity (\cref{sec:experiments}).}
 \label{fig:problem}
 \end{figure*}
 
-\paragraph{Heavy tails are real, and nonstationary.} At the fixed optimum $w^\star$,
-the gradient-norm tail index is $\hat\alpha\approx2.43$ (finite variance, infinite
-fourth moment) and is an \emph{interaction} effect: the residual and feature norms each
-have $\hat\alpha\approx4$, but their product---the gradient---has a heavier tail
-because extreme features and residuals co-occur (\cref{fig:problem}a). The heavy tail
-is also doubly nonstationary: the daily gradient scale drifts $\approx6\times$ with
-overnight jumps, and the tail index itself drifts, dipping below $2$ on $\approx6\%$
-of days (\cref{fig:problem}b). Quantifying the lower bound of \cref{sec:lower}, the
-\emph{dynamic} heavy budget $\sum_r\sigma_r L_r^{1/p_r}$ is $\approx6.8\sqrt T$ at both
-$60$-day and full-record scales, while the \emph{static} budget is $\approx0.16\sqrt T$
---- confirming that near-$\sqrt T$ dynamic regret is unreachable here.
+\paragraph{The scale is nonstationary; the pooled tail is mostly a scale mixture.} At
+the fixed optimum $w^\star$, the \emph{pooled} gradient-norm tail index is
+$\hat\alpha\approx2.43$, and it is an \emph{interaction} effect: the residual and feature
+norms each have $\hat\alpha\approx4$, but their product---the gradient---has a heavier
+tail because extreme features and residuals co-occur (\cref{fig:problem}a). Most of that
+pooled heaviness, however, is manufactured by nonstationarity. The daily gradient scale
+drifts $\approx6\times$ with overnight jumps (\cref{fig:problem}b), and once we divide by
+a \emph{causal} robust scale $s_t$---the quantity SN-OMD actually acts on---the tail
+lightens markedly, to $\hat\alpha\approx3.7$ (winsorized-EMA $s_t$) or $\approx2.9$
+(trailing median), i.e.\ toward finite higher moments. So the operative difficulty is the
+scale drift, leaving only a mild residual heavy tail. (Per-day $\hat\alpha$ dips below
+$2$ on a minority of days, but single-day Hill estimates are noisy and we do not rely on
+them.) As the heuristic of \cref{sec:lower}, the \emph{dynamic} budget
+$\sum_r\sigma_r L_r^{1/p_r}$ grows super-$\sqrt T$---its ratio to $\sqrt T$ rises from
+$\approx1.3$ to $\approx5.9$ across horizons (fitted exponent $\approx0.9$)---while the
+\emph{static} budget stays $\approx0.16\sqrt T$; we read this as motivating, not as a
+proved bound.
 
 \begin{figure*}[t]
 \centering
@@ -403,98 +434,131 @@ but lags regime onsets.}
 \label{fig:mechanism}
 \end{figure*}
 
-\paragraph{OGD has no usable rate; clipping is fragile.} It is tempting to report that
-plain OGD ``diverges'' on this stream---at a shared learning rate it reaches weighted
-$R^2=-286$---but this is a \emph{learning-rate artifact}: at that rate OGD is unstable,
-yet at any smaller rate it underfits. Tuned to its own best rate on a single regime,
-OGD reaches only $R^2\approx0.03$, forced to a tiny, safe step; on the continuous
-multi-regime stream its best rate is in fact \emph{negative} ($R^2=-0.065$,
-\cref{tab:jane}), because any rate large enough to compete diverges the first time the
-gradient scale spikes. Scale-dependent clipping widens the stable range but remains
-fragile, because its threshold $\tau_t=c\,s_t$ rescales \emph{with} the regime:
-tracking the scale transmits the $6\times$ swing into the step, while smoothing it lags
-regime onsets (\cref{fig:mechanism}). No single fixed rate is both aggressive enough to
-learn on calm regimes and safe enough to survive turbulent ones.
+\paragraph{OGD and scale-dependent clipping both diverge; only normalization is bounded.}
+We stream one learner through the multi-regime window and sweep its learning rate under
+the causal protocol (\cref{fig:main}, \cref{tab:jane}). Plain OGD has no usable rate:
+below $\mathrm{lr}\approx10^{-2}$ it is stable but underfits, and at any larger rate it
+diverges the first time the gradient scale spikes. Crucially, \emph{scale-dependent}
+robust clipping does no better---AdaptiveClip and RobustOMD (MoM) diverge at the
+\emph{same} threshold ($\mathrm{lr}\ge2\!\times\!10^{-2}$) and reach essentially the same
+best $R^2$ as OGD---because a threshold $\tau_t=c\,s_t$ rescales \emph{with} the regime,
+transmitting the $6\times$ scale swing into the step (\cref{fig:mechanism}). Truncating
+relative to the current scale guards against spikes but not against a regime-wide scale
+increase. (An earlier version of this comparison showed a large clipping advantage; that
+was an artifact of full-sample feature standardization and vanishes under the causal
+protocol of the Setup---a cautionary point in its own right.)
 
-\paragraph{SN-OMD attains the wall.} On a continuous multi-regime stream, SN-OMD stays
-bounded across the \emph{entire} learning-rate range (peak rolling loss $\approx5$
-throughout), while OGD diverges to $>10^{100}$ and both clippers cliff
-(\cref{fig:main}). At its own learning rate SN-OMD attains the \emph{highest} weighted
-$R^2$ (\cref{tab:jane})---scale-invariance helps both stability and accuracy, because
-the step is well-conditioned in every regime. On per-window restarts (where clipping
-diverged) SN-OMD is positive on every regime, including the turbulent one, and never
-diverges; even mis-tuned it degrades gracefully rather than catastrophically.
+\paragraph{Scale normalization is bounded and most accurate.} SN-OMD divides by a
+\emph{predictable} tracked scale $s_t$ and caps the result at a scale-free $M$, so its
+step is bounded by $M$ regardless of the regime. It stays bounded across the
+\emph{entire} learning-rate range (peak rolling loss $\approx5$ throughout) while OGD and
+both clippers diverge, and it attains the highest weighted $R^2$ (\cref{tab:jane}). The
+mechanism is isolated in \cref{sec:msweep}: the gain over the divergent baselines comes
+from scale \emph{normalization} (dividing by $s_t$, which preserves gradient magnitude
+within a regime), and the cap is what keeps it safe when the tail is genuinely heavy.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig3_main.png}
-\caption{\textbf{Main result} (continuous multi-regime stream). (a) Weighted $R^2$
-vs.\ learning rate: SN-OMD climbs to $\approx0.24$ across the whole range, while OGD
-diverges (off-scale markers) and the clippers cliff. (b) Peak rolling loss: SN-OMD is
-bounded everywhere; the others explode.}
+\caption{\textbf{Main result} (continuous multi-regime stream, \emph{causal}
+standardization). (a) Weighted $R^2$ vs.\ learning rate: SN-OMD climbs monotonically to
+$\approx0.16$ and never diverges, while OGD and both clippers cliff above
+$\mathrm{lr}=10^{-2}$ (off-scale markers). (b) Peak rolling loss: SN-OMD stays bounded
+($\approx5$) everywhere; the others explode.}
 \label{fig:main}
 \end{figure*}
 
 \begin{table}[t]
-\caption{Best weighted $R^2$ per method (each at its own tuned learning rate) on the
-continuous Jane Street stream, and the stable learning-rate range. SN-OMD is both the
-most accurate and the only method that never diverges.}
+\caption{Best weighted $R^2$ (each method at its own tuned rate) and stable
+learning-rate range on the continuous Jane Street stream, \emph{causal} standardization.
+Scale-\emph{dependent} methods (top) all diverge above $\mathrm{lr}=10^{-2}$ at
+essentially the same $R^2$; scale-\emph{invariant} methods (bottom) stay bounded to the
+largest rate tested, and among them magnitude-preserving caps beat the magnitude-blind
+normalized-GD endpoint. SN-OMD's cap ($M{=}5$) is best. \emph{Absolute} $R^2$ is not
+comparable to the competition's held-out score; the cross-method comparison is fair
+(shared preprocessing).}
 \label{tab:jane}
 \centering
 \begin{small}
 \begin{tabular}{lcc}
 \toprule
-Method & Best weighted $R^2$ & Stable lr range \\
+Method & Best weighted $R^2$ & Stable lr \\
 \midrule
-OGD                 & $-0.065$ & $\le 2\!\times\!10^{-3}$ \\
-AdaptiveClip        & $0.144$  & up to $3\!\times\!10^{-2}$ \\
-RobustOMD (MoM)     & $0.155$  & up to $3\!\times\!10^{-2}$ \\
-\textbf{SN-OMD (ours)} & $\mathbf{0.242}$ & $\mathbf{2\!\times\!10^{-3}\text{--}2,\ \text{no divergence}}$ \\
+\multicolumn{3}{l}{\emph{Scale-dependent (diverge above $10^{-2}$):}}\\
+OGD                 & $0.018$ & $\le 10^{-2}$ \\
+AdaptiveClip        & $0.013$ & $\le 10^{-2}$ \\
+RobustOMD (MoM)     & $0.014$ & $\le 10^{-2}$ \\
+\midrule
+\multicolumn{3}{l}{\emph{Scale-invariant (bounded):}}\\
+Normalized-GD ($M\!\to\!0$)          & $0.087$ & $\le 5\!\times\!10^{-1}$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $\le 5\!\times\!10^{-1}$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}      & $\mathbf{0.169}$ & $\le 5\!\times\!10^{-1}$ \\
 \bottomrule
 \end{tabular}
 \end{small}
 \end{table}
 
-\subsection{Which robust primitive? Fair per-method tuning}
-\label{sec:fair}
+\subsection{The cap $M$ interpolates normalized-GD and scale-adaptive OGD}
+\label{sec:msweep}
 
-SN-OMD normalizes by a robust scale; which robust-\emph{mean} primitive one clips or
-averages with is a separate axis, and it is easy to draw the wrong conclusion about it.
-Tuning each baseline to its own best learning rate on a fixed $100{,}000$-row slice
-(\cref{tab:fair}), the \emph{hard-rejection} estimators---median-of-means and the
-trimmed mean, which discard whole blocks or extreme order statistics---together with
-quantile-based AdaptiveClip all beat Catoni's \emph{soft} log-truncation. Catoni's
-influence function $\psi(t)=\operatorname{sign}(t)\log(1+|t|+t^2/2)$ is unbounded, so it
-never \emph{fully} rejects an extreme gradient: it peaks at $R^2=0.079$ and destabilizes
-at $\mathrm{lr}=3\!\times\!10^{-2}$, exactly where the hard-rejection methods are near
-their best ($0.13$--$0.15$). This \emph{reverses} the ranking a single \emph{shared}
-learning rate would report---at a conservative shared rate every method sits in its
-indistinguishable linear regime and Catoni happens to look best---and is why we sweep
-the learning rate per method throughout rather than comparing at one rate. The takeaway
-for the practitioner: when the goal is to push the step size, which is where robustness
-pays, prefer hard rejection to soft truncation.
+SN-OMD is a one-parameter family in the cap $M$. Whenever $\norm{\gt}/s_t>M$,
+$\clip(\gt/s_t,M)=M\,\gt/\norm{\gt}$ and $s_t$ cancels, so $M\to0$ recovers
+\emph{normalized-GD} $w_{t+1}=w_t-(\eta M/\sqrt t)\,\gt/\norm{\gt}$, while $M\to\infty$
+gives \emph{scale-adaptive OGD} $w_{t+1}=w_t-(\eta/\sqrt t)\,\gt/s_t$ with no truncation.
+Both endpoints satisfy \cref{thm:stability} (normalized-GD trivially, as
+$\norm{\gt/\norm{\gt}}=1$), so non-divergence is \emph{not} what singles out SN-OMD. The
+distinction is that a finite $M$ \emph{preserves gradient magnitude within the bulk} of
+the distribution---the step shrinks as the learner nears a good predictor---and
+truncates only the tail, whereas normalized-GD discards magnitude on every round. The
+tracked scale $s_t$ is what makes ``the bulk'' regime-independent: the membership test
+$\norm{\gt}/s_t\le M$ is scale-free, which a fixed threshold cannot be under $6\times$
+drift.
 
-\begin{table}[t]
-\caption{Fair per-method tuning on a fixed $100{,}000$-row slice: best weighted $R^2$
-at each method's \emph{own} tuned learning rate. Hard-rejection robust means and
-quantile clipping beat the soft-truncation Catoni M-estimator---the reverse of what a
-single shared learning rate reports.}
-\label{tab:fair}
+Sweeping $M$ (each cap at its own tuned step) confirms an interior optimum. On a
+synthetic heavy-tailed stream ($p=1.5$, static reachable comparator; \cref{fig:msweep})
+the best cap sits strictly between the endpoints---about $240\times$ better than the
+uncapped end (heavy-tail instability) and $10\times$ better than the normalized-GD end
+(magnitude-blind oscillation). On the Jane stream, where the \emph{normalized} tail is
+only mildly heavy ($\hat\alpha\approx3.7$), the picture is consistent but flatter:
+normalized-GD ($M\to0$) is clearly worst while a broad plateau of finite $M$ matches the
+uncapped end (\cref{tab:jane}). So on real data the win is magnitude preservation, and
+the cap is a low-cost safeguard that becomes essential only when the tail is genuinely
+heavy---exactly the regime the synthetic isolates.
+
+\begin{figure}[t]
 \centering
-\begin{small}
-\begin{tabular}{lcc}
-\toprule
-Method & Best weighted $R^2$ & at lr \\
-\midrule
-OGD                          & $0.028$ & $2\!\times\!10^{-3}$ \\
-RobustOMD (Catoni)           & $0.079$ & $2\!\times\!10^{-2}$ \\
-RobustOMD (trimmed mean)     & $0.128$ & $3\!\times\!10^{-2}$ \\
-AdaptiveClip (quantile)      & $0.138$ & $3\!\times\!10^{-2}$ \\
-RobustOMD (median-of-means)  & $\mathbf{0.149}$ & $3\!\times\!10^{-2}$ \\
-\bottomrule
-\end{tabular}
-\end{small}
-\end{table}
+\includegraphics[width=0.72\columnwidth]{fig6_msweep.png}
+\caption{\textbf{The cap has an interior optimum} (synthetic, $p=1.5$). Steady-state
+excess loss vs.\ $M$, each cap at its own tuned step: the finite-$M$ optimum beats both
+the normalized-GD end ($M\to0$) and the uncapped scale-adaptive-OGD end
+($M\to\infty$).}
+\label{fig:msweep}
+\end{figure}
+
+\subsection{Synthetic streams with known $(\sigma_t,p_t)$}
+\label{sec:synthetic}
+
+To test the theory's mechanism with a known ground-truth tail, we generate online
+regression streams with controlled $(\sigma_t,p_t)$ (Student-$t$ noise of index $p$;
+\cref{fig:synthetic}). As $p$ decreases from $2$ to $1.3$, plain OGD's fitted
+cumulative-regret exponent rises $0.37\to0.70\to1.55$---super-linear (divergent) once the
+tail is heavy---while SN-OMD stays sublinear. This reproduces the real-data divergence
+with a \emph{known} tail index, showing the tail is the mechanism, not a learning-rate
+artifact. SN-OMD's measured exponents sit \emph{below} $1/p$: the stochastic stationary
+instance is easier than the worst case, so this is consistent with, but does not tighten,
+\cref{thm:regret} (a tight verification would need the adversarial lower-bound instance,
+which we do not have). Against a drifting comparator, SN-OMD's dynamic regret grows with
+the path length at a fitted exponent $\approx0.43$, consistent with the $\sqrt{D P_T}$
+term.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_synthetic.png}
+\caption{\textbf{Known-tail synthetic.} Cumulative regret vs.\ $T$ at
+$p\in\{1.3,1.5,2.0\}$. OGD's exponent climbs past $1$ (divergent) as the tail heavies;
+SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
+\label{fig:synthetic}
+\end{figure}
 
 \subsection{Discharging the scale-tracking assumption}
 \label{sec:tracker}
@@ -515,8 +579,8 @@ at \emph{$100\%$} of rounds while attaining the \emph{smallest} upward variation
 $W_s\approx6.7\,V_\sigma^+$ (\cref{fig:tracker}, \cref{tab:tracker}). Its only cost is a
 benign $24\%$ over-estimation of the scale (mild underfit, never divergence). Thus
 \cref{ass:track} is dischargeable in the direction that matters, and the scale drift
-enters the final bound only through the measured constant
-$(W_s/\sup_t\sigma_t)^{1-1/p}\approx1.5\times$. \cref{app:bracket} lifts this from an
+enters the final bound only through the factor $\sqrt{W_s}$---a modest constant here,
+since $W_s\approx6.7\,V_\sigma^+$ is a small multiple of the true drift. \cref{app:bracket} lifts this from an
 empirical observation to a proposition (\cref{prop:tracker}): under a piecewise-slowly-
 varying drift model the lower bracket holds off an $O(NW)$-round set, reducing
 \cref{ass:track} to robust concentration on a near-stationary window.
@@ -594,13 +658,16 @@ the Adam family is a natural addition.
 \section{Conclusion}
 \label{sec:conclusion}
 
-Heavy tails on real streams are also nonstationary, and this combination---not heavy
-tails alone---is what makes distribution-free sequential learning hard: near-$\sqrt T$
-\emph{dynamic} regret becomes information-theoretically unreachable. The right response
-is to decouple the update from the tail scale: SN-OMD normalizes the gradient by a
-tracked scale and caps it at a scale-free constant, which provably never diverges and
-attains the worst-tail rate $T^{1/p}$, with the scale drift entering only as a
-constant. Empirically it dominates OGD and scale-dependent clipping, which both fail.
+On real streams the difficulty is dominated by a strongly \emph{nonstationary} gradient
+scale---which alone makes the pooled gradient look heavy-tailed, though the
+scale-normalized gradient is much lighter---and a budget heuristic suggests that this
+drift, against a moving comparator, is what pushes \emph{dynamic} regret well above
+$\sqrt T$. The right response is to decouple the update from the tail scale: SN-OMD
+normalizes the gradient by a tracked scale and caps it at a scale-free constant, so its
+iterates provably stay bounded (for any learning rate) and it attains the per-regime
+worst-tail rate $T^{1/p}$, with the scale drift entering only as a $\sqrt{W_s}$ constant.
+Empirically it stays bounded across a $1000\times$ learning-rate range where OGD and
+scale-dependent clipping diverge.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free: its best learning rate
 differs across settings ($\sim\!1$ on the continuous stream vs.\ $\sim\!0.5$ on
@@ -721,7 +788,7 @@ s_t\norm{w_t-u_t}^2-s_{t-1}\norm{w_t-u_{t-1}}^2
 \]
 which is at most $2D s_t\norm{u_t-u_{t-1}}+(s_t-s_{t-1})_+D^2$ by the reverse triangle
 inequality and $\norm{\cdot}\le D$. Summing and dropping the nonpositive boundary term
-gives the bound. (Verified numerically on $2000$ random instances.)
+gives the bound.
 \end{proof}
 
 \subsection{Dynamic regret (\texorpdfstring{\cref{thm:regret}}{Theorem 2})}
@@ -769,12 +836,14 @@ $\tilde O(D M^{1-p/2}\sqrt{\sup_t\sigma_t\cdot S_1}\,)$, the same order as (A).
 Choosing $\eta=\Theta\bigl(\sqrt{(D^2W_s+D P_T^s)/(M^{2-p}S_1)}\bigr)$ and
 $M=\Theta(T^{1/p})$ balances the curvature term of (A) against the bias (C) and yields
 \begin{equation*}
-R_T(u_{1:T})=O\bigl(D\,S_1^{1/p}W_s^{1-1/p}+\sqrt{D\,P_T^s}\,S_1^{1/p}W_s^{-1/p}\bigr)
+R_T(u_{1:T})=O\bigl(\sqrt{(D^2W_s+D P_T^s)\,M^{2-p}S_1}+D S_1/M^{p-1}\bigr)
 =\tilde O\bigl((\textstyle\sup_t\sigma_t)(D+\sqrt{D P_T})\,T^{1/p}\log(1/\delta)\bigr),
 \end{equation*}
-using $S_1\le T\sup_t\sigma_t$ and $W_s,P_T^s\lesssim\sup_t\sigma_t\cdot(1,P_T)$. The
-stationary case $\sigma_t\equiv\sigma$, $p=2$ recovers $\sigma(D+\sqrt{DP_T})\sqrt T$,
-the classical dynamic-OGD rate. \qed
+where the last step substitutes $M=\Theta(T^{1/p})$, $S_1\le T\sup_t\sigma_t$, and
+$W_s,P_T^s\lesssim\sup_t\sigma_t\cdot(1,P_T)$; equivalently the first term is
+$(D\sqrt{W_s}+\sqrt{D P_T^s})\sqrt{S_1}\,T^{(2-p)/(2p)}$. The scale drift enters as the
+factor $\sqrt{W_s}$, not as a rate. The stationary case $\sigma_t\equiv\sigma$, $p=2$
+recovers $\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
 
 \subsection{Reductions}
 \emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using
