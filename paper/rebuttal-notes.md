@@ -65,8 +65,11 @@ finds this below-bar, the paper repositions to an empirical venue or workshop at
 cost — the honesty work is already done.
 
 ## 7. "You changed your own results mid-review — is anything trustworthy?"
-Yes, and it is the reason to trust it. We stress-tested our *favorable* numbers, not just
-suspicious ones: the standardization leakage, the β "rescue," and the MNIST generalization
-were all caught by us re-running the measurement that could contradict us and reporting what
-came back. Every number in the paper is reproducible from the released scripts
-(`scripts/research_*`), and the causal/leak-free protocol is the default in the code.
+**If this comes up, say one sentence and stop:** *we found the leakage ourselves during
+revision, disclosed it in Setup, and re-ran everything downstream.* The one-sentence
+version reads as routine; elaborating reads as defensive — resist it.
+
+(Background, not for the reply: we stress-tested the *favorable* numbers too — the β
+"rescue" and the MNIST generalization were caught the same way — and every number is
+reproducible from `scripts/research_*`, with the causal/leak-free protocol the code
+default.)
