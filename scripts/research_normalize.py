@@ -117,7 +117,7 @@ def make_learner(name, dim, lr):
     if name == "adaptive_clip":
         return AdaptiveClip(dim=dim, learning_rate=lr, window=512)
     if name == "sn_ogd":
-        return ScaleNormalizedOGD(dim=dim, learning_rate=lr)
+        return ScaleNormalizedOGD(dim=dim, learning_rate=lr, cap=5.0)
     est = name.split("[")[1].rstrip("]")
     return RobustOMD(dim=dim, learning_rate=lr, estimator=est, window=512, clip_multiplier=3.0)
 
@@ -145,7 +145,7 @@ def test_continuous():
     dim = X.shape[1]
     comp = linear_losses(X, y, best_fixed_linear(X, y, w), w)
     stream = list(zip(X, y, w))
-    lrs = [2e-3, 5e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1, 2e-1, 3.5e-1, 5e-1]
+    lrs = [2e-3, 5e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0]
     methods = ["ogd", "adaptive_clip", "robust_omd[median_of_means]", "sn_ogd"]
     rows = []
     for name in methods:

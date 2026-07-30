@@ -98,11 +98,13 @@ ETA = {"ogd": 0.02, "normgd": 0.3, "fixedclip": 0.05, "scaleclip": 0.1, "snomd":
 
 
 def _msweep_one(rng, T, d, p, sigma, u, eta, M, const_step):
+    """Return the per-seed steady-state excess loss (array of length S)."""
     S = 250
     decay, winsor = 0.99, 8.0
     W = np.zeros((S, d))
     s = np.ones(S)
-    acc, cnt = 0.0, 0
+    acc = np.zeros(S)
+    cnt = 0
     for t in range(T):
         x = rng.standard_normal((S, d))
         eps = sigma * student_t(rng, p, S)
@@ -118,28 +120,31 @@ def _msweep_one(rng, T, d, p, sigma, u, eta, M, const_step):
         W = W - step_scale * step
         s = decay * s + (1 - decay) * np.minimum(gn, winsor * s)
         if t >= T // 2:
-            acc += float(np.mean(resid * resid - eps * eps))
+            acc += resid * resid - eps * eps
             cnt += 1
-    return acc / cnt
+    return acc / cnt  # (S,) per-seed mean excess loss
 
 
 def run_msweep(rng, T, d, p, sigma, u, M_grid, eta_grid, const_step=True):
-    """SN-OMD steady-state excess loss vs the cap M, each M at its OWN best step.
+    """SN-OMD steady-state excess loss vs cap M, each M at its OWN best step.
 
     M->0 is normalized-GD (s_t cancels, step ~ eta*M*g/||g||); M->inf is
-    scale-adaptive OGD (step ~ eta*g/s_t, no truncation). Crucially we tune eta
-    per M, because M and eta both scale the step: a fixed eta would conflate the
-    cap with the learning rate and trivially favour small M. Reported value is
-    min over eta of the steady-state excess loss (each cap at its best).
+    scale-adaptive OGD (step ~ eta*g/s_t, no truncation). We tune eta per M,
+    because M and eta both scale the step: a fixed eta would conflate the cap
+    with the learning rate and trivially favour small M. Returns, per M, the
+    (mean, sem) steady-state excess loss across seeds at the best eta, so the
+    figure carries a seed-noise band.
     """
     out = {}
     for M in M_grid:
-        best = np.inf
+        best_mean, best_arr = np.inf, None
         for eta in eta_grid:
-            val = _msweep_one(rng, T, d, p, sigma, u, eta, M, const_step)
-            if np.isfinite(val):
-                best = min(best, val)
-        out[M] = best
+            arr = _msweep_one(rng, T, d, p, sigma, u, eta, M, const_step)
+            m = float(np.mean(arr))
+            if np.isfinite(m) and m < best_mean:
+                best_mean, best_arr = m, arr
+        sem = float(np.std(best_arr) / np.sqrt(best_arr.size)) if best_arr is not None else np.nan
+        out[M] = (best_mean, sem)
     return out
 
 
@@ -215,17 +220,21 @@ def main():
     M_grid = np.array([0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 100.0])
     eta_grid = np.array([0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5])
     ms = run_msweep(rng, 12000, d, 1.5, 1.0, u_static, M_grid, eta_grid, const_step=True)
-    best_M = min(ms, key=ms.get)
+    means = {M: ms[M][0] for M in M_grid}
+    sems = {M: ms[M][1] for M in M_grid}
+    best_M = min(means, key=means.get)
     for M in M_grid:
         tag = "  <- normGD end" if M == M_grid[0] else ("  <- OGD end" if M == M_grid[-1] else
               ("  <- best" if M == best_M else ""))
-        print(f"    M={M:6.2f}   mean excess loss = {ms[M]:.4f}{tag}")
-        rows.append({"test": "Msweep", "p": 1.5, "M": float(M), "excess_loss": float(ms[M])})
+        print(f"    M={M:6.2f}   excess loss = {means[M]:.4f} +/- {sems[M]:.4f}{tag}")
+        rows.append({"test": "Msweep", "p": 1.5, "M": float(M),
+                     "excess_loss": float(means[M]), "sem": float(sems[M])})
     interior = best_M not in (M_grid[0], M_grid[-1])
-    print(f"\n  best M = {best_M} -> {'INTERIOR optimum (finite cap wins)' if interior else 'BOUNDARY (no interior optimum)'}")
+    print(f"\n  best M = {best_M} -> {'INTERIOR optimum (finite cap wins)' if interior else 'BOUNDARY'}")
 
     fig, ax = plt.subplots(figsize=(3.3, 2.3))
-    ax.plot(M_grid, [ms[M] for M in M_grid], "o-", color="#1f77b4", lw=1.2, ms=3.5)
+    ax.errorbar(M_grid, [means[M] for M in M_grid], yerr=[sems[M] for M in M_grid],
+                fmt="o-", color="#1f77b4", lw=1.2, ms=3.5, capsize=2, elinewidth=0.7)
     ax.axvline(best_M, color="#d62728", ls="--", lw=0.8)
     ax.set_xscale("log"); ax.set_xlabel("cap $M$"); ax.set_ylabel("steady-state excess loss")
     ax.set_title("normGD ($M{\\to}0$) $-$ SN-OMD $-$ OGD ($M{\\to}\\infty$)", fontsize=7)

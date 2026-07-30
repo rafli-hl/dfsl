@@ -95,10 +95,11 @@ convergence, guarantee). We prove a high-probability dynamic-regret bound of ord
 $T^{1/p}$ under a finite, possibly time-varying $p$-th moment ($p\in(1,2]$), and give a
 budget calculation---corroborated by a direct measurement---indicating that the
 interaction of tail drift with a moving comparator pushes \emph{dynamic} regret well
-above $\sqrt T$. Empirically, on a continuous multi-regime stream SN-OMD stays bounded
-across the entire tested learning-rate range and is the most accurate of the methods
-compared, whereas OGD and scale-dependent clipping both diverge above
-$\mathrm{lr}=10^{-2}$.
+above $\sqrt T$. Empirically, scale-invariant updates (SN-OMD and the classical
+normalized-GD alike) stay bounded and accurate across a wide learning-rate range where
+OGD and scale-dependent clipping diverge; SN-OMD adds, over normalized-GD, a regret
+guarantee via its \emph{predictable} scale and---through the cap---non-divergence at
+large steps and an accuracy edge when the tail survives normalization.
 \end{abstract}
 
 \section{Introduction}
@@ -168,13 +169,13 @@ convergence) that needs no moment assumption.
   (Thm.~\ref{thm:regret}) a
   high-probability dynamic-regret bound $\tilde O((\sup_t\sigma_t)(D+\sqrt{DP_T})\,
   T^{1/p})$, separating the tail (rate exponent) from the scale drift (a constant).
-  \item \textbf{Experiments (\cref{sec:experiments}).} On Jane Street, SN-OMD stays
-  bounded across the whole tested learning-rate range and attains the highest weighted
-  $R^2$, whereas OGD \emph{and} scale-dependent clipping both diverge above
-  $\mathrm{lr}=10^{-2}$. A cap-sweep shows the finite cap is a sweet spot between
-  normalized-GD and uncapped scale-adaptive OGD, and we empirically (and, under a mild
-  drift model, provably) discharge the scale-tracking assumption; a tested implementation
-  is released.
+  \item \textbf{Experiments (\cref{sec:experiments}).} On Jane Street, scale-invariant
+  updates (SN-OMD and normalized-GD) stay bounded and accurate across the whole tested
+  rate range where OGD and scale-dependent clipping diverge; SN-OMD's \emph{predictable}
+  scale is what yields the regret bound, and its cap prevents the divergence that uncapped
+  scale-adaptive OGD suffers at large steps. A synthetic cap-sweep shows the finite cap
+  becomes accuracy-decisive when the normalized tail is genuinely heavy; we also discharge
+  the scale-tracking assumption and release a tested implementation.
 \end{itemize}
 
 \section{Problem Setup}
@@ -378,20 +379,21 @@ interval-regret property (\cref{thm:stability} gives the required bounded feedba
 \section{Experiments}
 \label{sec:experiments}
 
-\paragraph{Setup.} We use the Jane Street Real-Time Market Data Forecasting dataset
-\citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
+\paragraph{Setup and protocol.} We use the Jane Street Real-Time Market Data Forecasting
+dataset \citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
 features, $39$ symbols; target \texttt{responder\_6}; metric the sample-weighted
-zero-mean $R^2$. We stream chronologically and compare plain OGD, quantile-based
-AdaptiveClip, RobustOMD (a scale-dependent robust-mean clip), and SN-OMD.
-\textbf{Protocol caveat.} Features here are standardized using full-sample per-feature
-statistics over each evaluated slice; because this peeks at the whole slice it is a
-look-ahead confound that \emph{inflates} absolute $R^2$. The values below are therefore
-\emph{not} comparable to the competition's (much smaller) held-out leaderboard score,
-and are reported only for \emph{cross-method} comparison---every method shares the
-identical preprocessing---and for the stability contrast, which is unaffected. We
-additionally report a \emph{causal} (running-statistics) re-run that removes this
-look-ahead. All tail measurements are learner-independent (gradients at the fixed best
-linear predictor $w^\star$).
+zero-mean $R^2$. We evaluate \emph{progressive online} prediction on the historical
+record: each round the learner plays $w_t$, then observes $(x_t,y_t)$ and updates---the
+protocol our theory concerns. Features are standardized \emph{causally} (running
+past-only statistics; a full-sample standardizer inflates $R^2$ by look-ahead and is not
+used). We report two round granularities: \emph{per-row} and \emph{per-timestep} (predict
+the whole $(\text{date},\text{time})$ cross-section of $\sim\!9$ symbols, then one
+aggregated update), the latter carrying no contemporaneous cross-sectional information.
+\textbf{This is not the competition's protocol} (batched timesteps served with
+day-lagged responders, scored on a held-out future window), so our $R^2$ is not
+comparable to competition leaderboard scores in either direction; we report it only for
+cross-method comparison and the stability contrast. Tail measurements are
+learner-independent (gradients at the fixed best linear predictor $w^\star$).
 
 \begin{figure*}[t]
 \centering
@@ -434,65 +436,76 @@ but lags regime onsets.}
 \label{fig:mechanism}
 \end{figure*}
 
-\paragraph{OGD and scale-dependent clipping both diverge; only normalization is bounded.}
-We stream one learner through the multi-regime window and sweep its learning rate under
-the causal protocol (\cref{fig:main}, \cref{tab:jane}). Plain OGD has no usable rate:
-below $\mathrm{lr}\approx10^{-2}$ it is stable but underfits, and at any larger rate it
-diverges the first time the gradient scale spikes. Crucially, \emph{scale-dependent}
-robust clipping does no better---AdaptiveClip and RobustOMD (MoM) diverge at the
-\emph{same} threshold ($\mathrm{lr}\ge2\!\times\!10^{-2}$) and reach essentially the same
-best $R^2$ as OGD---because a threshold $\tau_t=c\,s_t$ rescales \emph{with} the regime,
-transmitting the $6\times$ scale swing into the step (\cref{fig:mechanism}). Truncating
-relative to the current scale guards against spikes but not against a regime-wide scale
-increase. (An earlier version of this comparison showed a large clipping advantage; that
-was an artifact of full-sample feature standardization and vanishes under the causal
-protocol of the Setup---a cautionary point in its own right.)
+\paragraph{Scale-invariant updates dominate scale-dependent ones.} Streaming one learner
+through the multi-regime window and sweeping the learning rate (\cref{fig:main},
+\cref{tab:jane}), the methods split cleanly by whether their step responds to the
+gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust clippers
+(AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---are
+fragile: they stay bounded only up to $\mathrm{lr}\approx10^{-2}$ and reach best $R^2$
+$\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
+(\cref{fig:mechanism}). \emph{Scale-invariant} methods---normalized-GD, uncapped
+scale-adaptive OGD, and SN-OMD---stay bounded to $\mathrm{lr}=2$ and reach $R^2\approx
+0.2$--$0.3$. Per-timestep batching lifts OGD from $0.02$ to $0.14$ (averaging the
+$\sim\!9$ correlated symbols per timestep) but leaves it fragile above
+$\mathrm{lr}\approx10^{-2}$; SN-OMD is essentially unchanged ($0.285\to0.309$), so its
+accuracy is not a contemporaneous-information artifact.
 
-\paragraph{Scale normalization is bounded and most accurate.} SN-OMD divides by a
-\emph{predictable} tracked scale $s_t$ and caps the result at a scale-free $M$, so its
-step is bounded by $M$ regardless of the regime. It stays bounded across the
-\emph{entire} learning-rate range (peak rolling loss $\approx5$ throughout) while OGD and
-both clippers diverge, and it attains the highest weighted $R^2$ (\cref{tab:jane}). The
-mechanism is isolated in \cref{sec:msweep}: the gain over the divergent baselines comes
-from scale \emph{normalization} (dividing by $s_t$, which preserves gradient magnitude
-within a regime), and the cap is what keeps it safe when the tail is genuinely heavy.
+\paragraph{What the tracked scale and the cap buy.} Among the scale-invariant methods,
+SN-OMD and normalized-GD are \emph{comparable} on this data ($0.29/0.31$ per-row/
+per-timestep vs.\ $0.20/0.32$): \emph{normalization}---dividing by the scale---is what
+earns the gain over the divergent baselines, and normalized-GD is a valid simple instance
+of it. SN-OMD's specific contributions lie elsewhere. First, its scale is a
+\emph{predictable} tracker, which is what makes the regret bound (\cref{thm:regret}) go
+through; normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and discards
+gradient magnitude every round. Second, the cap buys \emph{non-divergence at large
+steps}: uncapped scale-adaptive OGD diverges at $\mathrm{lr}\ge2$ ($R^2$ collapses to
+$-63$), whereas SN-OMD ($M{=}5$) stays bounded there and in fact peaks at $\mathrm{lr}=2$.
+The two are close on Jane only because the \emph{normalized} tail is mildly heavy
+($\hat\alpha\approx3.7$); \cref{sec:msweep} shows that when it is genuinely heavy the
+cap's accuracy edge becomes decisive.
+
+\paragraph{Negative control.} Robustness should pay only where there is drift to survive.
+On a single quasi-stationary $100\mathrm{k}$-row slice (one short window, little regime
+variation), plain OGD is in fact the \emph{best} method under causal standardization
+($R^2\approx0.02$, vs.\ $0.013$--$0.015$ for the robust clippers); the ordering reverses
+only on the multi-regime stream. This is the control the thesis predicts, and it guards
+against reading our advantage as an artifact of the stream construction.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig3_main.png}
 \caption{\textbf{Main result} (continuous multi-regime stream, \emph{causal}
-standardization). (a) Weighted $R^2$ vs.\ learning rate: SN-OMD climbs monotonically to
-$\approx0.16$ and never diverges, while OGD and both clippers cliff above
-$\mathrm{lr}=10^{-2}$ (off-scale markers). (b) Peak rolling loss: SN-OMD stays bounded
-($\approx5$) everywhere; the others explode.}
+standardization, per-row). (a) Weighted $R^2$ vs.\ learning rate: SN-OMD climbs
+monotonically to $\approx0.28$ and never diverges, while OGD and both clippers cliff
+above $\mathrm{lr}=10^{-2}$ (off-scale markers). (b) Peak rolling loss: SN-OMD stays
+bounded ($\approx5$) everywhere; the others explode.}
 \label{fig:main}
 \end{figure*}
 
 \begin{table}[t]
-\caption{Best weighted $R^2$ (each method at its own tuned rate) and stable
-learning-rate range on the continuous Jane Street stream, \emph{causal} standardization.
-Scale-\emph{dependent} methods (top) all diverge above $\mathrm{lr}=10^{-2}$ at
-essentially the same $R^2$; scale-\emph{invariant} methods (bottom) stay bounded to the
-largest rate tested, and among them magnitude-preserving caps beat the magnitude-blind
-normalized-GD endpoint. SN-OMD's cap ($M{=}5$) is best. \emph{Absolute} $R^2$ is not
-comparable to the competition's held-out score; the cross-method comparison is fair
-(shared preprocessing).}
+\caption{Best weighted $R^2$ (each method at its own tuned rate) on the continuous Jane
+Street stream, \emph{causal} standardization, for both round granularities, with the
+largest stable learning rate. Scale-\emph{dependent} methods (top) are fragile
+(stable only to $\mathrm{lr}\!\approx\!10^{-2}$); scale-\emph{invariant} methods (bottom)
+stay bounded to $\mathrm{lr}=2$ and are far more accurate. SN-OMD and normalized-GD are
+\emph{comparable} here; the cap's role is non-divergence (uncapped diverges at
+$\mathrm{lr}\ge2$). $R^2$ is not comparable to competition scores (different protocol,
+see text).}
 \label{tab:jane}
 \centering
 \begin{small}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Method & Best weighted $R^2$ & Stable lr \\
+Method & $R^2$ per-row & $R^2$ per-step & Stable lr \\
 \midrule
-\multicolumn{3}{l}{\emph{Scale-dependent (diverge above $10^{-2}$):}}\\
-OGD                 & $0.018$ & $\le 10^{-2}$ \\
-AdaptiveClip        & $0.013$ & $\le 10^{-2}$ \\
-RobustOMD (MoM)     & $0.014$ & $\le 10^{-2}$ \\
+\multicolumn{4}{l}{\emph{Scale-dependent (fragile):}}\\
+OGD                                  & $0.018$ & $0.139$ & $\le 10^{-2}$ \\
+AdaptiveClip / RobustOMD             & $\sim0.01$ & --- & $\le 10^{-2}$ \\
 \midrule
-\multicolumn{3}{l}{\emph{Scale-invariant (bounded):}}\\
-Normalized-GD ($M\!\to\!0$)          & $0.087$ & $\le 5\!\times\!10^{-1}$ \\
-Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $\le 5\!\times\!10^{-1}$ \\
-\textbf{SN-OMD ($M{=}5$, ours)}      & $\mathbf{0.169}$ & $\le 5\!\times\!10^{-1}$ \\
+\multicolumn{4}{l}{\emph{Scale-invariant (bounded to $\mathrm{lr}=2$):}}\\
+Normalized-GD ($M\!\to\!0$)          & $0.197$ & $\mathbf{0.316}$ & $\le 2$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $0.080$ & $\le 1$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}      & $\mathbf{0.285}$ & $0.309$ & $\le 2$ \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -514,16 +527,20 @@ tracked scale $s_t$ is what makes ``the bulk'' regime-independent: the membershi
 $\norm{\gt}/s_t\le M$ is scale-free, which a fixed threshold cannot be under $6\times$
 drift.
 
-Sweeping $M$ (each cap at its own tuned step) confirms an interior optimum. On a
-synthetic heavy-tailed stream ($p=1.5$, static reachable comparator; \cref{fig:msweep})
-the best cap sits strictly between the endpoints---about $240\times$ better than the
-uncapped end (heavy-tail instability) and $10\times$ better than the normalized-GD end
-(magnitude-blind oscillation). On the Jane stream, where the \emph{normalized} tail is
-only mildly heavy ($\hat\alpha\approx3.7$), the picture is consistent but flatter:
-normalized-GD ($M\to0$) is clearly worst while a broad plateau of finite $M$ matches the
-uncapped end (\cref{tab:jane}). So on real data the win is magnitude preservation, and
-the cap is a low-cost safeguard that becomes essential only when the tail is genuinely
-heavy---exactly the regime the synthetic isolates.
+Sweeping $M$ (each cap at its own tuned step, error bars over seeds) turns the cap into a
+\emph{mechanism test}. Normalization already removes most of the tail
+($\hat\alpha\!:2.4\to3.7$), so the cap should earn its keep only when the
+\emph{normalized} gradient is still heavy---a prediction with opposite consequences in
+two settings. On a synthetic stream with an \emph{imposed} heavy normalized tail ($p=1.5$,
+static reachable comparator; \cref{fig:msweep}) an interior optimum appears: the best cap
+is $\approx240\times$ better than the uncapped end (heavy-tail instability) and
+$\approx10\times$ better than the normalized-GD end (magnitude-blind oscillation), both
+outside the seed-noise band. On Jane, where the normalized tail is only mildly heavy,
+there is \emph{no} meaningful interior accuracy optimum: normalized-GD, SN-OMD, and
+uncapped scale-adaptive OGD are comparable (\cref{tab:jane}). Same mechanism, both
+predictions borne out. This gives the cap a precise scope: it buys \emph{accuracy} when
+the tail survives normalization, and \emph{stability unconditionally}---uncapped
+scale-adaptive OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not (\cref{tab:jane}).
 
 \begin{figure}[t]
 \centering
