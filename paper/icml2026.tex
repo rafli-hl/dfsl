@@ -91,11 +91,11 @@ drift. We propose \emph{Scale-Normalized OMD} (SN-OMD), which divides the gradie
 tracked robust scale and caps it at a \emph{scale-free} constant $M$; the per-step move
 is then bounded by $M$ rather than by a regime-dependent quantity, so the iterates
 provably remain bounded for any learning rate or realization (a stability, not
-convergence, guarantee). We prove a high-probability dynamic-regret bound of order
-$T^{1/p}$ under a finite, possibly time-varying $p$-th moment ($p\in(1,2]$), and give a
-budget calculation---corroborated by a direct measurement---indicating that the
-interaction of tail drift with a moving comparator pushes \emph{dynamic} regret well
-above $\sqrt T$. Empirically, scale-invariant updates (SN-OMD and the classical
+convergence, guarantee). A dynamic-regret analysis---attaining the per-regime rate
+$T^{1/p}$ under a finite, possibly time-varying $p$-th moment ($p\in(1,2]$)---is deferred
+to the appendix, since on real data the scale drift enters it as a genuine $\sqrt T$
+factor; we lead instead with the empirically-testable mechanism. Empirically,
+scale-invariant updates (SN-OMD and the classical
 normalized-GD alike) stay bounded and accurate across a wide learning-rate range where
 OGD and scale-dependent clipping diverge; SN-OMD adds, over normalized-GD, a regret
 guarantee via its \emph{predictable} scale and---through the cap---non-divergence at
@@ -157,26 +157,24 @@ convergence) that needs no moment assumption.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item \textbf{Problem and a budget heuristic (\cref{sec:problem}).} We formalize
-  distribution-free online learning under a \emph{drifting} $p$-th moment, for which the
-  per-regime achievable rate is $T^{1/p}$, and give a heuristic budget calculation
-  ---corroborated by a direct measurement---suggesting that the interaction of tail
-  drift with a moving comparator pushes \emph{dynamic} regret well above $\sqrt T$ while
-  static regret stays near $\sqrt T$. This is a motivating observation, not a matching
-  lower bound: a proper path-length-constrained $\Omega$ is left open.
-  \item \textbf{Algorithm and theory (\cref{sec:method}).} We propose SN-OMD and prove
-  (Thm.~\ref{thm:stability}) unconditional boundedness of the iterates and
-  (Thm.~\ref{thm:regret}) a
-  high-probability dynamic-regret bound $\tilde O((\sup_t\sigma_t)(D+\sqrt{DP_T})\,
-  T^{1/p})$, with the tail setting the rate exponent and the scale drift entering as
-  $\sqrt{W_s}$ (a genuine cost once the scale variation grows with $T$; \cref{sec:tracker}).
-  \item \textbf{Experiments (\cref{sec:experiments}).} On Jane Street, scale-invariant
-  updates (SN-OMD and normalized-GD) stay bounded and accurate across the whole tested
-  rate range where OGD and scale-dependent clipping diverge; SN-OMD's \emph{predictable}
-  scale is what yields the regret bound, and its cap prevents the divergence that uncapped
-  scale-adaptive OGD suffers at large steps. A synthetic cap-sweep shows the finite cap
-  becomes accuracy-decisive when the normalized tail is genuinely heavy; we also discharge
-  the scale-tracking assumption and release a tested implementation.
+  \item \textbf{Nonstationarity manufactures heavy tails (\cref{sec:experiments}).} On a
+  large market dataset the gradient scale drifts $\sim\!6\times$; this drift alone makes
+  the \emph{pooled} gradient tail heavy ($\hat\alpha\approx2.4$), while the
+  scale-normalized gradient is much lighter ($\hat\alpha\approx2.9$--$3.7$)---an effect we
+  confirm with an \emph{exogenous} scale, and which recurs, in weaker form, on
+  image-model training gradients. This is the paper's central finding.
+  \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
+  We propose SN-OMD, prove its iterates are unconditionally bounded (\cref{thm:stability}),
+  and show it is a one-parameter family in the cap $M$ interpolating normalized-GD
+  ($M\!\to\!0$) and uncapped scale-adaptive OGD ($M\!\to\!\infty$); a two-directional test
+  predicts \emph{when} the finite cap matters---non-divergence at large steps, and an
+  accuracy optimum only when the normalized tail is genuinely heavy.
+  \item \textbf{A protocol-careful study, and deferred theory (\cref{sec:experiments}).}
+  Under causal standardization SN-OMD stays bounded and most accurate where OGD and
+  scale-dependent clipping diverge; it is invariant to per-row vs.\ per-timestep updates
+  (no contemporaneous leakage) and its advantage vanishes on a genuinely stationary
+  control. A per-regime dynamic-regret bound (\cref{thm:regret}) is deferred to the
+  appendix, honest about a $\sqrt T$ drift factor; a tested implementation is released.
 \end{itemize}
 
 \section{Problem Setup}
@@ -311,79 +309,17 @@ that uses no moment assumption.
 This is the crucial contrast with scale-dependent clipping, whose per-step move
 $\propto s_t$ is bounded only by the drifting scale.
 
-\paragraph{Regret.} The scale tracker must track the local scale. We assume:
-\begin{assumption}[Scale tracking]
-\label{ass:track}
-The predictable scale brackets the local noise scale: $c_1\sigma_t\le s_t\le
-c_2\sigma_t$ for constants $0<c_1\le c_2$.
-\end{assumption}
-Only the lower bracket is essential---it bounds $\norm{v_t}$ and hence the rate, and
-under-estimating the scale is the sole divergence risk---while over-estimation merely
-shrinks the step $\eta/s_t$ into mild underfitting, never divergence. \cref{ass:track}
-is thus \emph{one-sided} in the direction that matters, which is what makes it
-dischargeable rather than an oracle: under a mild piecewise-slowly-varying drift model,
-a two-timescale tracker \emph{provably} meets the lower bracket off an $O(NW)$-round
-set (\cref{prop:tracker}), and we verify in \cref{sec:tracker} that it does so at
-\emph{every} round on the real gradient-scale process while keeping its upward variation
-to a small constant multiple of the true scale drift. Define that
-upward variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$ and the scale-weighted path
-$P_T^s=\sum_t s_t\norm{u_t-u_{t-1}}$.
-
-\begin{theorem}[Dynamic regret]
-\label{thm:regret}
-Under \cref{ass:moment,ass:track}, SN-OMD with $M=\Theta(T^{1/p})$ (or a
-doubling schedule, requiring no knowledge of $p$) satisfies, with probability
-$\ge1-\delta$, simultaneously for all comparators $u_{1:T}$,
-\begin{align}
-\label{eq:mainbound}
-R_T(u_{1:T})
-&= O\!\Bigl(\bigl(D\sqrt{W_s}+\sqrt{D\,P_T^s}\,\bigr)\sqrt{S_1}\;T^{(2-p)/(2p)}\Bigr)\\
-&= \tilde O\!\Bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D P_T})\,T^{1/p}
-   \log(1/\delta)\Bigr),\nonumber
-\end{align}
-where $S_1=\sum_t\sigma_t$; the second line uses $S_1\le T\sup_t\sigma_t$ and
-$W_s,P_T^s\lesssim\sup_t\sigma_t\,(1,P_T)$ (so it is tight up to the scale normalization
-$\sup_t\sigma_t\gtrsim1$). Together with \cref{thm:stability}, the iterates are bounded
-for every learning rate and realization.
-\end{theorem}
-
-\begin{proof}[Proof sketch]
-Analyze SN-OMD in its \emph{adaptive-step} form: it is OGD with step
-$\eta_t=\eta/s_t$ on the clipped raw gradient. The one-step mirror-descent inequality,
-summed with a summation-by-parts over the varying step, telescopes to
-$\sum_t s_t(\norm{w_t-u_t}^2-\norm{w_{t+1}-u_t}^2)\le D^2 W_s+2D\,P_T^s$---the only
-place the two nonstationarities enter. The curvature term is controlled by the clipped
-second moment $\norm{\clip(v,M)}^2\le M^{2-p}\norm v^p$; the clipping bias by
-$\norm{v-\clip(v,M)}\le\norm v^p/M^{p-1}$; and the martingale part by Freedman's
-inequality (high probability). Optimizing $\eta$ and $M=\Theta(T^{1/p})$ balances
-curvature against bias and gives \eqref{eq:mainbound}. Full proofs, including
-per-round $p_t$ and the unknown-$p$/unknown-$\norm u$ reductions, are in the appendix.
-\end{proof}
-
-\begin{remark}[Tail vs.\ scale drift; the drift is a genuine rate]
-The tail index $p$ sets the exponent (through $M^{2-p}=T^{(2-p)/p}$, giving $T^{1/p}$),
-while the scale drift enters through the factor $\sqrt{W_s}$, with $W_s$ the tracker's
-upward variation. On a persistently fluctuating scale $W_s$ is a sum of positive
-increments that accumulates \emph{linearly} in $T$ ($W_s\sim T$; we verify this directly
-in \cref{sec:tracker}), so $\sqrt{W_s}\sim\sqrt T$ is a \emph{genuine rate}: the honest
-reading of \eqref{eq:mainbound} is $T^{1/p}$ \emph{per regime}, or $T^{1/p+1/2}$ over a
-horizon with a growing number of regimes. What the tracker controls is the \emph{constant}
-in $W_s$, not its exponent: updating on the regime timescale rather than every round
-(\cref{rmk:tracker}) shrinks $W_s$ by orders of magnitude at a fixed horizon (\cref{sec:tracker}),
-which keeps the bound useful in practice but does not make the drift asymptotically free.
-Dividing by $s_t$ still avoids a $\sup_t\sigma_t$ \emph{multiplier}.
-\end{remark}
-
-\begin{remark}[Tracker design]
-\label{rmk:tracker}
-The bound degrades with the tracker's upward variation $W_s$. A peak-hold envelope
-$s_t=\max\{c\cdot\mathrm{median}(\text{recent }\norm{\gt}),(1-\rho)s_{t-1}\}$ has
-$W_s\approx\sup_t s_t+\rho\sum_t s_t$; choosing $\rho\asymp1/L$ (the regime length)
-gives $W_s=O(V_\sigma^+)$ and the dynamic-optimal rate, whereas too large a $\rho$
-churns and makes $W_s=\Theta(T)$. An unknown regime length is handled by a
-strongly-adaptive wrapper \citep{daniely2015,cutkosky2020} using SN-OMD's
-interval-regret property (\cref{thm:stability} gives the required bounded feedback).
-\end{remark}
+\paragraph{Dynamic regret (deferred to the appendix).} Beyond stability, SN-OMD admits a
+high-probability \emph{dynamic}-regret analysis (\cref{app:regret}): under a scale-tracking
+condition---a predictable $s_t$ bracketing the local scale (\cref{ass:track})---it attains
+the per-regime rate $T^{1/p}$ under only a finite $p$-th moment. We keep it in the appendix,
+not the headline, for two honest reasons. The bound is stated through the tracker's upward
+variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$, which we \emph{measure} to grow linearly with
+$T$ on real data (\cref{sec:tracker}); so the scale drift is a genuine $\sqrt T$ factor and
+the $T^{1/p}$ rate holds per regime, not globally. And the scale-tracking condition, though
+one-sided and empirically dischargeable (\cref{prop:tracker}), remains an assumption. What
+the body develops instead is the empirically-testable content---why normalizing beats
+clipping, and where the cap earns its keep.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -725,6 +661,64 @@ specifically highlighted here.
 \newpage
 \appendix
 \onecolumn
+\section{Dynamic-regret analysis}
+\label{app:regret}
+
+Beyond the unconditional stability of \cref{thm:stability}, SN-OMD admits a dynamic-regret
+bound under a condition on the scale tracker. We state it here (the proof is in
+\cref{app:proofs}) and are explicit about its two soft spots---an assumption on the
+tracker, and a drift factor we measure to be a genuine rate on real data---which is why
+the body leads with the empirical results instead.
+
+\begin{assumption}[Scale tracking]
+\label{ass:track}
+The predictable scale brackets the local noise scale: $c_1\sigma_t\le s_t\le
+c_2\sigma_t$ for constants $0<c_1\le c_2$.
+\end{assumption}
+Only the lower bracket is essential---it bounds $\norm{v_t}$ and hence the rate, and
+under-estimating the scale is the sole divergence risk---while over-estimation merely
+shrinks the step $\eta/s_t$ into mild underfitting, never divergence. \cref{ass:track}
+is thus \emph{one-sided}, which is what makes it dischargeable rather than an oracle
+(\cref{prop:tracker}, and \cref{sec:tracker} empirically). Define the tracker's upward
+variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$ and the scale-weighted path
+$P_T^s=\sum_t s_t\norm{u_t-u_{t-1}}$.
+
+\begin{theorem}[Dynamic regret]
+\label{thm:regret}
+Under \cref{ass:moment,ass:track}, SN-OMD with $M=\Theta(T^{1/p})$ (or a
+doubling schedule, requiring no knowledge of $p$) satisfies, with probability
+$\ge1-\delta$, simultaneously for all comparators $u_{1:T}$,
+\begin{align}
+\label{eq:mainbound}
+R_T(u_{1:T})
+&= O\!\Bigl(\bigl(D\sqrt{W_s}+\sqrt{D\,P_T^s}\,\bigr)\sqrt{S_1}\;T^{(2-p)/(2p)}\Bigr)\\
+&= \tilde O\!\Bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D P_T})\,T^{1/p}
+   \log(1/\delta)\Bigr),\nonumber
+\end{align}
+where $S_1=\sum_t\sigma_t$; the second line uses $S_1\le T\sup_t\sigma_t$ and
+$W_s,P_T^s\lesssim\sup_t\sigma_t\,(1,P_T)$.
+\end{theorem}
+
+\begin{remark}[The drift is a genuine rate]
+The tail index $p$ sets the exponent (through $M^{2-p}=T^{(2-p)/p}$, giving $T^{1/p}$),
+while the scale drift enters through $\sqrt{W_s}$. On a persistently fluctuating scale
+$W_s$ accumulates \emph{linearly} in $T$ ($W_s\sim T$, verified in \cref{sec:tracker}), so
+$\sqrt{W_s}\sim\sqrt T$ is a genuine rate: \eqref{eq:mainbound} is $T^{1/p}$ \emph{per
+regime}, or $T^{1/p+1/2}$ over a horizon with a growing number of regimes. The tracker's
+update timescale controls the \emph{constant} in $W_s$ (\cref{rmk:tracker}), not the
+exponent. Escaping the $\sqrt T$ would need a switching bound in the regime count, left
+open.
+\end{remark}
+
+\begin{remark}[Tracker design]
+\label{rmk:tracker}
+A peak-hold envelope $s_t=\max\{c\cdot\mathrm{median}(\text{recent }\norm{\gt}),(1-\rho)s_{t-1}\}$
+has $W_s\approx\sup_t s_t+\rho\sum_t s_t$; choosing $\rho\asymp1/L$ (the regime length)
+minimizes the $W_s$ constant, whereas too large a $\rho$ churns. An unknown regime length
+is handled by a strongly-adaptive wrapper \citep{daniely2015,cutkosky2020} using SN-OMD's
+interval-regret property (\cref{thm:stability} gives the required bounded feedback).
+\end{remark}
+
 \section{Proofs}
 \label{app:proofs}
 
