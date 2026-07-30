@@ -111,6 +111,22 @@ class ScaleNormalizedOGD:
         )
 
 
+class NormalizedGD(ScaleNormalizedOGD):
+    """M->0 endpoint: w -= (lr/sqrt t) g/||g|| (s_t cancels, magnitude discarded)."""
+
+    def update(self, x, y, weight=1.0):
+        self.t += 1
+        pred = self.predict(x)
+        with np.errstate(over="ignore", invalid="ignore"):
+            err = np.float64(pred) - np.float64(y)
+            loss = float(np.float64(weight) * err * err)
+            g = 2.0 * weight * err * x
+        gn = float(np.linalg.norm(g))
+        if np.isfinite(gn) and gn > 0:
+            self.weights -= (self.lr / np.sqrt(self.t)) * (g / gn)
+        return loss
+
+
 def make_learner(name, dim, lr):
     if name == "ogd":
         return OnlineGradientDescent(dim=dim, learning_rate=lr)
@@ -118,6 +134,10 @@ def make_learner(name, dim, lr):
         return AdaptiveClip(dim=dim, learning_rate=lr, window=512)
     if name == "sn_ogd":
         return ScaleNormalizedOGD(dim=dim, learning_rate=lr, cap=5.0)
+    if name == "normgd":
+        return NormalizedGD(dim=dim, learning_rate=lr, cap=5.0)
+    if name == "scale_adaptive":
+        return ScaleNormalizedOGD(dim=dim, learning_rate=lr, cap=1e9)
     est = name.split("[")[1].rstrip("]")
     return RobustOMD(dim=dim, learning_rate=lr, estimator=est, window=512, clip_multiplier=3.0)
 
@@ -146,7 +166,7 @@ def test_continuous():
     comp = linear_losses(X, y, best_fixed_linear(X, y, w), w)
     stream = list(zip(X, y, w))
     lrs = [2e-3, 5e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0]
-    methods = ["ogd", "adaptive_clip", "robust_omd[median_of_means]", "sn_ogd"]
+    methods = ["ogd", "normgd", "scale_adaptive", "sn_ogd"]
     rows = []
     for name in methods:
         for lr in lrs:
@@ -196,12 +216,12 @@ def test_windows():
 
 def figure(cont):
     fig, axes = plt.subplots(1, 2, figsize=(6.75, 2.6))
-    order = ["ogd", "adaptive_clip", "robust_omd[median_of_means]", "sn_ogd"]
-    colors = {"ogd": "#d62728", "adaptive_clip": "#7f7f7f",
-              "robust_omd[median_of_means]": "#2ca02c", "sn_ogd": "#1f77b4"}
-    labels = {"ogd": "OGD", "adaptive_clip": "AdaptiveClip",
-              "robust_omd[median_of_means]": "RobustOMD (MoM)", "sn_ogd": "SN-OGD (ours)"}
-    markers = {"ogd": "o", "adaptive_clip": "s", "robust_omd[median_of_means]": "D", "sn_ogd": "^"}
+    order = ["ogd", "normgd", "scale_adaptive", "sn_ogd"]
+    colors = {"ogd": "#d62728", "normgd": "#7f7f7f",
+              "scale_adaptive": "#2ca02c", "sn_ogd": "#1f77b4"}
+    labels = {"ogd": "OGD (scale-dep.)", "normgd": "normalized-GD ($M{\\to}0$)",
+              "scale_adaptive": "scale-adaptive OGD ($M{\\to}\\infty$)", "sn_ogd": "SN-OMD ($M{=}5$, ours)"}
+    markers = {"ogd": "o", "normgd": "s", "scale_adaptive": "D", "sn_ogd": "^"}
     ax = axes[0]
     for name in order:
         sub = cont.filter(pl.col("method") == name).sort("learning_rate")

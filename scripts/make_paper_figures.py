@@ -49,12 +49,12 @@ plt.rcParams.update(
 )
 
 # consistent per-method identity for fig3
-ORDER = ["ogd", "adaptive_clip", "robust_omd[median_of_means]", "sn_ogd"]
-COLORS = {"ogd": "#d62728", "adaptive_clip": "#7f7f7f",
-          "robust_omd[median_of_means]": "#2ca02c", "sn_ogd": "#1f77b4"}
-LABELS = {"ogd": "OGD", "adaptive_clip": "AdaptiveClip",
-          "robust_omd[median_of_means]": "RobustOMD (MoM)", "sn_ogd": "SN-OMD (ours)"}
-MARK = {"ogd": "o", "adaptive_clip": "s", "robust_omd[median_of_means]": "D", "sn_ogd": "^"}
+ORDER = ["ogd", "normgd", "scale_adaptive", "sn_ogd"]
+COLORS = {"ogd": "#d62728", "normgd": "#7f7f7f",
+          "scale_adaptive": "#2ca02c", "sn_ogd": "#1f77b4"}
+LABELS = {"ogd": "OGD (scale-dep.)", "normgd": r"normalized-GD ($M\to0$)",
+          "scale_adaptive": r"scale-adaptive OGD ($M\to\infty$)", "sn_ogd": "SN-OMD (ours)"}
+MARK = {"ogd": "o", "normgd": "s", "scale_adaptive": "D", "sn_ogd": "^"}
 
 
 def _save(fig, name):
