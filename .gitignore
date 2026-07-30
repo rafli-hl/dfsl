@@ -35,3 +35,9 @@ paper/*.bbl
 paper/*.synctex.gz
 paper/*.fls
 paper/*.fdb_latexmk
+
+# torchvision MNIST download (second-domain experiment)
+data/mnist/
+
+# stray latex out dir
+out/

@@ -440,6 +440,14 @@ once the gradient is normalized (the tail the learner sees has $p\approx2$)---we
 that budget only as qualitative motivation for why a moving comparator under drift is
 hard, not as a measured quantity.
 
+\paragraph{A second, non-finance domain.} The mechanism is not specific to markets.
+Logging the per-step minibatch gradient norm of a small CNN trained on MNIST
+($2{,}814$ steps; the scale drifts $\approx3\times$ over training and at two
+learning-rate drops), the \emph{pooled} tail is heavy ($\hat\alpha\approx2.2$) while the
+causally scale-normalized gradient is far lighter---$\hat\alpha\approx4$--$5$ by a
+non-causal median, up to $\approx9$ by a winsorized EMA. The same separation as on Jane
+Street, on a canonical gradient-scale process the ML audience knows.
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig2_mechanism.png}
@@ -539,16 +547,13 @@ Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $0.080$ & $\le 1$ \\
 \subsection{The cap $M$ interpolates normalized-GD and scale-adaptive OGD}
 \label{sec:msweep}
 
-SN-OMD is a one-parameter family in the cap $M$. Whenever $\norm{\gt}/s_t>M$,
-$\clip(\gt/s_t,M)=M\,\gt/\norm{\gt}$ and $s_t$ cancels, so $M\to0$ recovers
-\emph{normalized-GD} $w_{t+1}=w_t-(\eta M/\sqrt t)\,\gt/\norm{\gt}$, while $M\to\infty$
-gives \emph{scale-adaptive OGD} $w_{t+1}=w_t-(\eta/\sqrt t)\,\gt/s_t$ with no truncation.
-Both endpoints satisfy \cref{thm:stability} (normalized-GD trivially, as
-$\norm{\gt/\norm{\gt}}=1$), so non-divergence is \emph{not} what singles out SN-OMD. The
-distinction is that a finite $M$ \emph{preserves gradient magnitude within the bulk} of
-the distribution---the step shrinks as the learner nears a good predictor---and
-truncates only the tail, whereas normalized-GD discards magnitude on every round. The
-tracked scale $s_t$ is what makes ``the bulk'' regime-independent: the membership test
+SN-OMD is a one-parameter family in the cap $M$: when $\norm{\gt}/s_t>M$,
+$\clip(\gt/s_t,M)=M\,\gt/\norm{\gt}$ and $s_t$ cancels, so $M\to0$ is \emph{normalized-GD}
+and $M\to\infty$ is uncapped \emph{scale-adaptive OGD}. Both satisfy \cref{thm:stability},
+so non-divergence is not what singles out SN-OMD; the point is that a finite $M$
+\emph{preserves gradient magnitude within the bulk} (the step shrinks near a good
+predictor) and truncates only the tail, whereas normalized-GD discards magnitude every
+round. The tracked $s_t$ makes ``the bulk'' regime-independent: the test
 $\norm{\gt}/s_t\le M$ is scale-free, which a fixed threshold cannot be under $6\times$
 drift.
 
@@ -622,37 +627,6 @@ that approaches $T^{1/p}$ as regimes lengthen, exactly \cref{rmk:tracker}'s $\rh
 principle, measured. The residual $\beta>0$ is an honest, modest cost of a persistently
 fluctuating scale; \cref{app:bracket}'s $N$-regime model is the $\beta{=}0$ idealization.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{fig4_tracker.png}
-\caption{\textbf{Discharging \cref{ass:track}.} A two-timescale ``peak-hold'' scale
-tracker on the real gradient-scale process (a)~holds the stability-critical lower
-bracket $s_t\ge\tfrac12\sigma_t$ at every round, while (b)~attaining the smallest upward
-variation $W_s/V_\sigma^+$. A fast trailing median tracks the scale but churns
-($62\times$); a slow one is smooth but lags regime onsets and violates the lower
-bracket.}
-\label{fig:tracker}
-\end{figure*}
-
-\begin{table}[t]
-\caption{Scale trackers on the real gradient-scale process. The two-timescale envelope
-holds the lower bracket at $100\%$ (stability) with the smallest upward variation
-$W_s$ (regret constant). $V_\sigma^+$ is the true upward scale drift.}
-\label{tab:tracker}
-\centering
-\begin{small}
-\begin{tabular}{lccc}
-\toprule
-Tracker & Lower bracket & $W_s$ & $W_s/V_\sigma^+$ \\
-\midrule
-Trailing median, fast ($W{=}64$)   & $0.93$ & $38.6\mathrm{k}$ & $62\times$ \\
-Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $8.1\times$ \\
-\textbf{Two-timescale envelope (ours)} & $\mathbf{1.00}$ & $\mathbf{4.2\mathrm{k}}$ & $\mathbf{6.7\times}$ \\
-\bottomrule
-\end{tabular}
-\end{small}
-\end{table}
-
 \section{Related Work}
 \label{sec:related}
 
@@ -720,12 +694,11 @@ single tracker that is both provably bounded-variation and empirically best is o
 is making the envelope's release rate $\rho$ adaptive to an unknown regime length.
 Consequently the dynamic-regret bound is fully proven for the envelope variant under
 \cref{ass:moment,ass:track}, while the deployed EMA variant's high-probability dynamic
-regret under drifting $(\sigma_t,p_t)$ is supported empirically. Empirically, three gaps
-remain: our evidence is one (large) market dataset (a second, non-finance domain would
-substantiate the generality claim); our baselines omit the Adam family of coordinate-wise
-adaptive optimizers (\cref{sec:related}); and evaluation centers on accuracy and stability
-rather than mechanism-level diagnostics. Open directions include per-coordinate
-normalization and tighter dynamic constants.
+regret under drifting $(\sigma_t,p_t)$ is supported empirically. Empirically, two gaps
+remain: our baselines omit the Adam family of coordinate-wise adaptive optimizers
+(\cref{sec:related}); and evaluation centers on accuracy and stability rather than
+mechanism-level diagnostics; and validation beyond our two domains is warranted. Open
+directions include per-coordinate normalization and tighter dynamic constants.
 
 \section*{Software and Data}
 An implementation (the \texttt{ScaleNormalizedOGD} learner and scale trackers), configs,
@@ -909,7 +882,37 @@ standard robust concentration.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.9\columnwidth]{fig5_synthetic.png}
+\includegraphics[width=\columnwidth]{fig4_tracker.png}
+\caption{\textbf{Discharging \cref{ass:track}} (\cref{sec:tracker}). A two-timescale
+``peak-hold'' tracker on the real gradient-scale process (a)~holds the lower bracket
+$s_t\ge\tfrac12\sigma_t$ at every round while (b)~attaining the smallest upward variation
+$W_s/V_\sigma^+$; a fast trailing median churns ($62\times$), a slow one lags and
+violates the bracket.}
+\label{fig:tracker}
+\end{figure}
+
+\begin{table}[t]
+\caption{Scale trackers on the real gradient-scale process (\cref{sec:tracker}). The
+two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
+variation $W_s$. $V_\sigma^+$ is the true upward scale drift.}
+\label{tab:tracker}
+\centering
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Tracker & Lower bracket & $W_s$ & $W_s/V_\sigma^+$ \\
+\midrule
+Trailing median, fast ($W{=}64$)   & $0.93$ & $38.6\mathrm{k}$ & $62\times$ \\
+Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $8.1\times$ \\
+\textbf{Two-timescale envelope (ours)} & $\mathbf{1.00}$ & $\mathbf{4.2\mathrm{k}}$ & $\mathbf{6.7\times}$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_synthetic.png}
 \caption{\textbf{Known-tail synthetic} (\cref{sec:synthetic}). Cumulative regret vs.\ $T$
 at $p\in\{1.3,1.5,2.0\}$: OGD's exponent climbs past $1$ (divergent) as the tail heavies,
 while SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
