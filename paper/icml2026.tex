@@ -360,19 +360,18 @@ curvature against bias and gives \eqref{eq:mainbound}. Full proofs, including
 per-round $p_t$ and the unknown-$p$/unknown-$\norm u$ reductions, are in the appendix.
 \end{proof}
 
-\begin{remark}[Tail vs.\ scale drift; how much is the drift a rate?]
+\begin{remark}[Tail vs.\ scale drift; the drift is a genuine rate]
 The tail index $p$ sets the exponent (through $M^{2-p}=T^{(2-p)/p}$, giving $T^{1/p}$),
 while the scale drift enters through the factor $\sqrt{W_s}$, with $W_s$ the tracker's
-upward variation. Whether this is a benign constant or a genuine rate is a property of
-the \emph{tracker}, not just the data: $W_s\sim T^{\beta}$, and $\beta$ is set by the
-tracker's update timescale. A round-level tracker has $\beta\approx1$ (its variation is
-per-round jitter, and the bound would be near-vacuous), but a tracker updated on the
-regime timescale has $\beta\approx0.4$ on our data while keeping the lower bracket, so the
-effective rate $T^{1/p+\beta/2}$ is sub-linear and approaches $T^{1/p}$ as regimes
-lengthen (\cref{sec:tracker,tab:beta})---this is the $\rho\asymp1/L$ principle of
-\cref{rmk:tracker}. The residual $\beta>0$ is an honest, modest cost of a persistently
-fluctuating scale; what dividing by $s_t$ buys is the absence of a $\sup_t\sigma_t$
-\emph{multiplier}.
+upward variation. On a persistently fluctuating scale $W_s$ is a sum of positive
+increments that accumulates \emph{linearly} in $T$ ($W_s\sim T$; we verify this directly
+in \cref{sec:tracker}), so $\sqrt{W_s}\sim\sqrt T$ is a \emph{genuine rate}: the honest
+reading of \eqref{eq:mainbound} is $T^{1/p}$ \emph{per regime}, or $T^{1/p+1/2}$ over a
+horizon with a growing number of regimes. What the tracker controls is the \emph{constant}
+in $W_s$, not its exponent: updating on the regime timescale rather than every round
+(\cref{rmk:tracker}) shrinks $W_s$ by orders of magnitude at a fixed horizon (\cref{sec:tracker}),
+which keeps the bound useful in practice but does not make the drift asymptotically free.
+Dividing by $s_t$ still avoids a $\sup_t\sigma_t$ \emph{multiplier}.
 \end{remark}
 
 \begin{remark}[Tracker design]
@@ -440,13 +439,16 @@ once the gradient is normalized (the tail the learner sees has $p\approx2$)---we
 that budget only as qualitative motivation for why a moving comparator under drift is
 hard, not as a measured quantity.
 
-\paragraph{A second, non-finance domain.} The mechanism is not specific to markets.
-Logging the per-step minibatch gradient norm of a small CNN trained on MNIST
-($2{,}814$ steps; the scale drifts $\approx3\times$ over training and at two
-learning-rate drops), the \emph{pooled} tail is heavy ($\hat\alpha\approx2.2$) while the
-causally scale-normalized gradient is far lighter---$\hat\alpha\approx4$--$5$ by a
-non-causal median, up to $\approx9$ by a winsorized EMA. The same separation as on Jane
-Street, on a canonical gradient-scale process the ML audience knows.
+\paragraph{A second domain, and its limit.} On the per-step gradient norm of a small CNN
+trained on MNIST ($2{,}814$ steps), the pooled tail is heavy ($\hat\alpha\approx2.6$) and
+normalizing lightens it ($\hat\alpha\approx6$; single-window Hill estimates are unstable
+here, $5$--$9$ across thresholds). But this is \emph{schedule-driven}: within a single
+constant-learning-rate window (nearly flat scale) the tail is \emph{already} light
+($\hat\alpha\approx6$--$9$), so the pooled heaviness comes from the scale decay and the
+learning-rate drops, not from within-phase drift. The drift-manufactures-tails effect thus
+recurs on training gradients, but only in this weaker, transient form; the genuine
+within-regime version---confirmed by an \emph{exogenous} scale and a feature--residual
+interaction---we establish only on the market data.
 
 \begin{figure*}[t]
 \centering
@@ -493,8 +495,9 @@ cap's accuracy edge becomes decisive.
 \paragraph{Negative control.} If the advantage is really about scale drift, it should
 vanish when the scale is constant. Imposing genuine stationarity in the synthetic harness
 ($\sigma_t\equiv1$, $p{=}2$, static reachable comparator---the one stream where
-stationarity can be enforced), tuned SN-OMD \emph{matches} tuned OGD (steady excess loss
-$6.6$ vs.\ $5.6\!\times\!10^{-4}$, ratio $1.18$): the advantage disappears as the thesis
+stationarity can be enforced), tuned SN-OMD is if anything \emph{worse} than tuned OGD
+(steady excess loss $6.6$ vs.\ $5.6\!\times\!10^{-4}$ over $400$ seeds, an $18\%$ gap the
+wrong way): the advantage disappears as the thesis
 predicts. (A $100\mathrm{k}$-row Jane slice is \emph{not} a valid stationarity control---it
 still has $\sim30\%$ within-day drift---so SN-OMD's lead there is expected; what it does
 isolate is that the clippers' tail-rejection, unlike scale-invariance, does not even beat
@@ -615,17 +618,22 @@ benign $24\%$ over-estimation of the scale (mild underfit, never divergence). So
 lower-bracket half of \cref{ass:track} is discharged, and the envelope tracks the true
 drift to within a small factor ($W_s\approx6.7\,V_\sigma^+$).
 
-\paragraph{Does the drift enter as a rate?} $W_s$ enters \cref{thm:regret} as
-$\sqrt{W_s}$, so whether the drift is a constant or a rate turns on how $W_s\sim T^\beta$
-grows---and $\beta$ is set by the tracker's \emph{update timescale}, not by the data alone
-(\cref{tab:beta}). A round-level tracker has $\beta\approx1.2$: its variation is per-round
-jitter, not drift, and the bound would be near-vacuous. Updating on the regime timescale
-($B\approx10^4$, $\approx$ one day) averages the jitter out, dropping $\beta$ to
-$\approx0.4$ \emph{with the lower bracket still $>0.9$}. So the drift term
-$\sqrt{W_s}\sim T^{\beta/2}$ is controllable---a sub-linear effective rate $T^{1/p+\beta/2}$
-that approaches $T^{1/p}$ as regimes lengthen, exactly \cref{rmk:tracker}'s $\rho\asymp1/L$
-principle, measured. The residual $\beta>0$ is an honest, modest cost of a persistently
-fluctuating scale; \cref{app:bracket}'s $N$-regime model is the $\beta{=}0$ idealization.
+\paragraph{The drift is a genuine rate; the tracker controls only its constant.} $W_s$
+enters \cref{thm:regret} as $\sqrt{W_s}$, so it matters how $W_s$ grows with $T$. It grows
+\emph{linearly}: $W_s$ sums positive increments over the tracker's update events, and
+plotting it against the update count gives a straight line with a slope independent of the
+block length $B$ ($W_s\approx1.7\,(T/B)$, linear-fit $R^2>0.98$). So $\sqrt{W_s}\sim\sqrt T$
+is a genuine rate, and \cref{thm:regret}'s $T^{1/p}$ is a \emph{per-regime} statement
+(globally the drift adds a $\sqrt T$ factor). (A naive $W_s\sim T^{\beta}$ fit appears to
+give $\beta<1$ at large $B$, but that is a finite-horizon artifact: at $B{=}10^4$ only
+$\sim\!20$ blocks fit in our record; restricting the fit to horizons with $\gtrsim50$
+blocks returns $\beta\approx1$.) What the update timescale \emph{does} control is the
+constant $1/B$: a regime-timescale tracker shrinks $W_s$ from $\sim\!2\!\times\!10^6$
+(round-level) to $\sim\!30$ ($B\approx10^4$, $\approx$ one day; \cref{tab:beta})---a
+$\sim\!250\times$ smaller $\sqrt{W_s}$ at our horizon, keeping the bound useful in practice. This is
+\cref{rmk:tracker}'s $\rho\asymp1/L$ as constant control, not exponent control; escaping
+the $\sqrt T$ would require a switching bound in the regime count $N$ (\cref{app:bracket}),
+which we leave open.
 
 \section{Related Work}
 \label{sec:related}
@@ -677,12 +685,13 @@ drift, against a moving comparator, is what pushes \emph{dynamic} regret well ab
 $\sqrt T$. The right response is to decouple the update from the tail scale: SN-OMD
 normalizes the gradient by a tracked scale and caps it at a scale-free constant, so its
 iterates provably stay bounded (for any learning rate) and it attains the worst-tail
-rate $T^{1/p}$ per regime, with the scale drift entering as $\sqrt{W_s}$---a
-\emph{controllable} cost, since $W_s$'s growth is set by the tracker's update timescale
-(\cref{tab:beta}), approaching a constant as regimes lengthen. Empirically it stays bounded across the whole tested
-learning-rate range where OGD and scale-dependent clipping diverge, and it matches the
-classical normalized-GD in accuracy while adding a regret guarantee and non-divergence
-at large steps.
+rate $T^{1/p}$ \emph{per regime}. The scale drift enters as $\sqrt{W_s}$, and $W_s$ grows
+linearly with $T$ on a persistently fluctuating scale---so the drift is a genuine rate,
+not a free constant, and the regret is $T^{1/p}$ only per regime; a regime-timescale
+tracker shrinks the constant but not the exponent (\cref{sec:tracker}). Empirically SN-OMD
+stays bounded across the whole tested learning-rate range where OGD and scale-dependent
+clipping diverge, and it matches the classical normalized-GD in accuracy while adding a
+regret guarantee and non-divergence at large steps.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free: its best learning rate is
 setting-dependent, and its cap $M$, decay, and winsorization are untuned defaults---though
@@ -920,22 +929,25 @@ while SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
 \end{figure}
 
 \begin{table}[t]
-\caption{Upward-variation growth $W_s\sim T^{\beta}$ vs.\ the tracker's update block
-length $B$ (predictable robust median per block), on the $357\mathrm{k}$-round
-gradient-scale process. The round-level tracker's $\beta\approx1$ is a jitter artifact;
-updating on the regime timescale ($B\approx10^4$, $\approx$ one day) drops $\beta$ to
-$\approx0.4$ with the lower bracket still $>0.9$. This is \cref{rmk:tracker}'s
-$\rho\asymp1/L$ principle, measured; the drift term $\sqrt{W_s}\sim T^{\beta/2}$ is thus
-controllable, and the effective rate $T^{1/p+\beta/2}$ approaches $T^{1/p}$ as $B$ grows.}
+\caption{The scale drift is a genuine rate, but its \emph{constant} is controllable.
+Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
+median per block) on the $357\mathrm{k}$-round gradient-scale process. Restricting the
+$W_s\sim T^{\beta}$ fit to horizons with $\gtrsim\!50$ blocks gives $\beta\approx1$
+throughout (the small-$\beta$ a naive fit reports at large $B$ is a finite-horizon
+artifact---too few blocks in the record); what $B$ controls is the constant, shrinking
+$W_s$ by $\sim\!5$ orders of magnitude while roughly holding the lower bracket. Escaping
+the resulting $\sqrt T$ drift factor needs a switching bound in the regime count, left
+open.}
 \label{tab:beta}
 \centering
 \begin{small}
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccc}
 \toprule
-block $B$        & $1$ & $100$ & $10^3$ & $3{\cdot}10^3$ & $10^4$ & $3{\cdot}10^4$ \\
+block $B$              & $1$ & $100$ & $10^3$ & $3{\cdot}10^3$ & $10^4$ \\
 \midrule
-$\beta$          & $1.22$ & $0.99$ & $0.97$ & $0.80$ & $0.44$ & $0.17$ \\
-lower bracket    & $0.72$ & $0.97$ & $0.97$ & $0.92$ & $0.93$ & $0.92$ \\
+$W_s$ (full record)   & $1.8\mathrm{M}$ & $3216$ & $319$ & $108$ & $29$ \\
+$\beta$ ($\ge\!50$ blk) & --- & $1.03$ & $1.25$ & $0.73$ & n/a \\
+lower bracket         & $0.72$ & $0.97$ & $0.97$ & $0.92$ & $0.93$ \\
 \bottomrule
 \end{tabular}
 \end{small}
