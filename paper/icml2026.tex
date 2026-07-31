@@ -57,12 +57,12 @@
 \newcommand{\clip}{\operatorname{clip}}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\icmltitlerunning{Nonstationarity Manufactures Heavy Tails}
+\icmltitlerunning{Heavy Tails in Loss Gradients}
 
 \begin{document}
 
 \twocolumn[
-  \icmltitle{Nonstationarity Manufactures Heavy Tails:\\ Scale-Normalized Sequential Learning}
+  \icmltitle{Nonstationarity Manufactures Heavy Tails in Loss Gradients:\\ Scale-Normalized Sequential Learning}
 
   \icmlsetsymbol{equal}{*}
   \begin{icmlauthorlist}
@@ -467,7 +467,9 @@ largest stable learning rate. Scale-\emph{dependent} methods (top) are fragile
 stay bounded much higher (SN-OMD and normalized-GD to $\mathrm{lr}=2$, uncapped only to
 $\mathrm{lr}=1$) and are far more accurate. SN-OMD and normalized-GD are \emph{comparable}
 here; the cap's role is non-divergence (uncapped diverges at $\mathrm{lr}\ge2$). $R^2$ is not comparable to competition scores (different protocol,
-see text).}
+see text). The reported SN-OMD row uses the winsorized-EMA tracker; a slow block-median
+tracker reaches $R^2\approx0.38$ at $\mathrm{lr}{=}2$ (\cref{sec:tracker}), so this row is
+\emph{conservative}.}
 \label{tab:jane}
 \centering
 \begin{small}
@@ -579,10 +581,17 @@ $\sim\!250\times$ smaller $\sqrt{W_s}$ at our horizon, keeping the bound useful 
 the $\sqrt T$ would require a switching bound in the regime count $N$ (\cref{app:bracket}),
 which we leave open. The lower bracket dips slightly (to $0.92$--$0.93$, \cref{tab:beta})
 at the block lengths that shrink $W_s$---trading a little of the stability-critical lower
-bracket for the smaller constant---but this is benign: running the $B{=}10^4$ tracker
-through the whole learning-rate sweep, SN-OMD stays bounded (peak rolling loss $\le5.3$
-throughout) and is if anything \emph{more} accurate and more stable than the
-winsorized-EMA default.
+bracket for the smaller constant. This dip is tolerable within the tuned operating range:
+running the $B{=}10^4$ tracker through the learning-rate sweep, SN-OMD stays bounded
+through $\mathrm{lr}\le2$ (peak rolling loss $3.9$ at $\mathrm{lr}{=}2$, versus $8.1$ for
+the winsorized-EMA default at the same rate) and at its tuned rate is \emph{more} accurate
+than the EMA ($R^2\approx0.38$ vs.\ $0.28$). We stress-tested this flattering gap rather
+than banking it: it is not a boundary artifact---block $R^2$ peaks at the interior
+$\mathrm{lr}{=}2$, not at the edge of the extended sweep---but it is high-variance, holding
+in $8$ of $10$ contiguous folds with a per-fold gap of $0.16\pm0.37$. Past the tuned range
+both trackers eventually diverge (at $\mathrm{lr}{=}10$, peak loss $\approx30$ for the block
+tracker vs.\ $\approx230$ for the EMA), so ``does not destabilize'' holds only within
+tuning, not everywhere; within it the block tracker degrades far more gracefully.
 
 \section{Related Work}
 \label{sec:related}
@@ -1055,16 +1064,36 @@ $W_s=O(V_\sigma^+)$ (\cref{prop:tracker})---reacting up
 on a short robust median and releasing down only geometrically keeps every upward move a
 genuine rise (\cref{tab:tracker}: $100\%$ lower bracket, $W_s=6.6\,V_\sigma^+$). A fast,
 \emph{unwinsorized} EMA can in principle churn on heavy-tailed $\norm{\gt}$ spikes
-(\cref{tab:tracker}: $W_s=62\,V_\sigma^+$); winsorizing the EMA at $k\cdot\mathrm{median}$
+(\cref{tab:tracker}: $W_s=60\,V_\sigma^+$); winsorizing the EMA at $k\cdot\mathrm{median}$
 caps each upward step and is what keeps the deployed default's $W_s$ finite in practice,
 though we do not give it a closed-form bound.
 
-\paragraph{Which tracker to deploy.} Both are bounded and usable; they trade reactivity
-against upward variation, and we do \emph{not} claim one is uniformly more accurate. On
-our stream a slow regime-timescale (block-median) tracker is in fact \emph{more} accurate
-and more stable than the winsorized EMA at large learning rates (\cref{sec:tracker}), and
-it also minimizes the $W_s$ constant of \cref{thm:regret}; the EMA is simply the standard,
-reactive default. Deployment can pick either without risking divergence.
+\paragraph{Which tracker to deploy.} Both are usable within tuning; they trade reactivity
+against upward variation, and we do \emph{not} claim one is uniformly more accurate. On our
+stream the slow regime-timescale (block-median, $B{=}10^4\approx$ one day) tracker is in
+fact \emph{more} accurate than the winsorized EMA at the tuned rate ($R^2\approx0.38$ vs.\
+$0.28$ at $\mathrm{lr}{=}2$; \cref{sec:tracker}), it degrades far more gracefully as the
+rate is pushed past tuning (peak rolling loss $7.9$ vs.\ $54$ at $\mathrm{lr}{=}5$), and it
+minimizes the $W_s$ constant of \cref{thm:regret}. We treated this flattering comparison
+with the suspicion it deserves: the block advantage is not a sweep-edge artifact (block
+$R^2$ peaks at the \emph{interior} $\mathrm{lr}{=}2$) but it is high-variance ($8/10$
+contiguous folds, per-fold gap $0.16\pm0.37$), and at $\mathrm{lr}{=}10$ \emph{both}
+trackers diverge, so ``pick either without risking divergence'' holds only within the tuned
+range. We therefore keep the winsorized EMA as the reported default---it is the standard
+reactive choice and it makes \cref{tab:jane} \emph{conservative} rather than optimistic (a
+better tracker exists that we do not headline).
+
+This may look in tension with \cref{sec:tracker}/\cref{fig:main}, where long windows are
+penalized for lagging regime onsets. The tension is only apparent, and it is exactly the
+distinction between the two uses of the scale. When the scale is a \emph{divisor}
+($\hat{g}_t=\gt/s_t$), a lagging $s_t$ merely mis-normalizes the step magnitude---the divisor
+cancels first-order and a slightly stale scale costs little, so a slow block median is
+tolerable and even helpful (it is smoother and higher-bracket). When the scale is a
+\emph{threshold} (clipping $\norm{\gt}$ at $s_t$, the \cref{sec:tracker} lag experiment), a
+lagging $s_t$ clips hardest precisely when the scale jumps up---the stale threshold throws
+away the informative post-onset gradients---so lag is genuinely costly there. Long windows
+are bad for thresholding and fine for normalizing; the one-day block tracker is a
+normalizer, so no contradiction arises.
 
 \paragraph{Closing the gap.} Either run the envelope in deployment, accepting the small
 accuracy cost, or prove a $W_s$ bound for the winsorized EMA under a heavy-tailed scale

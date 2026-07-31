@@ -168,3 +168,60 @@ above sqrt", "pushes dynamic regret": **no survivors.**
    an error — surfaced here because it changes what the paper claims as new.
 3. **A3 round count 357k→200k** and the tracker-ratio rounding (6.7/8.1/62 → 6.6/7.9/60):
    number corrections, no claim changes (qualitative conclusions unchanged).
+
+## Stress-test of the flattering block-tracker result (A7 follow-up)
+
+The A7 win (block tracker beats EMA, R² 0.38 vs 0.28) is a *flattering* number, so it got
+the same discipline as the β rescue and MNIST. Extended
+`scripts/research_audit_checks.py --a7` from lr∈{0.05..2} to include **lr=5, 10**, added a
+paired 10-fold R² band, and confirmed the lower-bracket/divergence behaviour across the full
+sweep. Real Jane stream, 150k rows, dim=79, deterministic (no RNG — the "band" is over
+contiguous folds, not seeds).
+
+| lr | block R² | block peak | EMA R² | EMA peak |
+|----|----------|-----------|--------|----------|
+| 0.5 | 0.211 | 5.1 | 0.169 | 4.7 |
+| 1.0 | 0.299 | 4.7 | 0.246 | 4.3 |
+| **2.0** | **0.380** | **3.9** | **0.284** | **8.1** |
+| 5.0 | 0.364 | 7.9 | −0.101 | 54.3 |
+| 10.0 | −0.084 | 30.3 | −2.03 | 229.9 |
+
+Findings, and what changed in the paper:
+- **(a) lr=2 is NOT the sweep edge.** Block R² peaks at the *interior* lr=2 (0.380), then
+  falls at lr=5 (0.364) and collapses at lr=10. So neither "0.38" nor "peaks at lr=2" is a
+  boundary artifact. Claim survives.
+- **(b) The fold band is real but high-variance.** Paired 10-fold gap at lr=2:
+  mean **+0.159, std 0.372, block>EMA in 8/10 folds.** A genuine sign, not one lucky
+  aggregate — but the paper now states the variance, not just the point estimate.
+- **(c) Table 1 (tab:jane) is *understated*, and stays that way deliberately.** The SN-OMD
+  row uses the winsorized-EMA tracker (R²≈0.28-class); the block tracker reaches 0.38. Rather
+  than swap the headline to the better-but-higher-variance tracker, **kept EMA as the reported
+  default and added a caption note that the block tracker reaches R²≈0.38**, so the table is
+  conservative rather than optimistic. (Rationale: EMA is the standard reactive default;
+  headlining a tracker with a ±0.37 fold band would be the flattering choice.)
+- **(d) "Bounded throughout" was a boundary artifact — corrected.** Old §4.3 said "peak
+  rolling loss ≤5.3 throughout." True only for lr≤2. At lr=5 block peak is 7.9; at lr=10 it
+  is 30.3 and the EMA is 229.9 — **both diverge past tuning.** §4.3 and A.8 now say the block
+  tracker stays bounded *through the tuned range* and degrades *far more gracefully* than the
+  EMA (30 vs 230 at lr=10), and the "pick either without risking divergence" line in A.8 was
+  removed (false at lr=10).
+- **Narrative-conflict resolution (long-windows-bad vs one-day block tracker best).** §4.3 /
+  Fig 2b penalize long windows for lagging regime onsets, yet a one-day block tracker is now
+  the most accurate config. Added a paragraph to A.8 distinguishing the two *uses* of the
+  scale: as a **divisor** (ĝ=g/s) a lagging s only mis-normalizes magnitude and cancels to
+  first order, so a slow block median is tolerable; as a **threshold** (clip ‖g‖ at s, the
+  §4.3 lag experiment) a lagging s clips hardest exactly when the scale jumps up, discarding
+  the informative post-onset gradients. Long windows are bad for *thresholding*, fine for
+  *normalizing*; the block tracker is a normalizer, so no contradiction.
+
+## Mechanical staleness guard (new test)
+
+This bug class cost the paper twice (leaky-R² CSV; stale 6.7/8.1/62 tracker ratios left after
+the causal fix). Added `tests/test_artifacts_fresh.py`: it re-runs each deterministic
+artifact's generator into a temp dir and **fails on numeric diff** against the committed CSV.
+Currently guards `results/research/tracker_a1.csv` (via `scripts/research_tracker.py`, ~4 s);
+`ARTIFACTS` is a one-line-per-CSV registry for adding more. Skips when the Jane parquet is
+absent (no-op in data-less CI). Verified it *fails* when the old 62.26 ratio is re-injected
+and *passes* on the current file, and that it never touches the committed artifact. Stochastic
+/ expensive outputs (MNIST, 400-seed synthetic) and PNGs are out of scope by design
+(seed-pinned in their own scripts; figure numbers live in the guarded CSVs). Suite now 76 tests.

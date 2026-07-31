@@ -98,20 +98,49 @@ def a7():
         return types.SimpleNamespace(predictions=np.asarray(preds), targets=np.asarray(tg),
                                      weights=np.asarray(wt), losses=np.asarray(ls))
 
-    print("\n" + "=" * 74)
-    print("A7 -- does a B=1e4 block-tracker SN-OMD destabilize across the lr sweep?")
-    print("=" * 74)
+    def fold_r2(t, p, w, K=10):
+        """Paired per-fold weighted R^2 (contiguous folds) -> a band on deterministic data."""
+        idx = np.array_split(np.arange(t.size), K)
+        return np.array([weighted_r2(t[i], p[i], w[i]) for i in idx])
+
+    print("\n" + "=" * 78)
+    print("A7 -- block-tracker SN-OMD across the FULL lr sweep (extended to 5, 10).")
+    print("      Stress-test: is lr=2 the sweep edge? does block>EMA hold off-boundary?")
+    print("=" * 78)
     ds = JaneStreetDataset(date_range=(0, 120), max_rows=150000, standardize=True)
     rows = [(ds.X[i], float(ds.y[i]), float(ds.weights[i])) for i in range(len(ds.y))]
     dim = ds.X.shape[1]
-    print(f"  {len(rows)} rows, dim={dim};  peak rolling loss <=~5 => bounded")
-    print(f"  {'lr':>6} {'block R2':>9} {'block peak':>11} {'EMA R2':>8} {'EMA peak':>9}")
-    for lr in [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]:
+    print(f"  {len(rows)} rows, dim={dim} (DETERMINISTIC real data: no seed -> band is over folds)")
+    print(f"  {'lr':>6} {'block R2':>9} {'block peak':>11} {'EMA R2':>8} {'EMA peak':>9} {'blk-EMA':>8}")
+    lrs = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
+    store = {}
+    for lr in lrs:
         rb = run(BlockSNOGD(dim=dim, learning_rate=lr, cap=5.0, B=10000), iter(rows))
         re = run(ScaleNormalizedOGD(dim=dim, learning_rate=lr, cap=5.0), iter(rows))
-        print(f"  {lr:>6} {weighted_r2(rb.targets,rb.predictions,rb.weights):>9.4f} "
-              f"{rolling_max_loss(rb.losses):>11.1f} {weighted_r2(re.targets,re.predictions,re.weights):>8.4f} "
-              f"{rolling_max_loss(re.losses):>9.1f}")
+        r2b = weighted_r2(rb.targets, rb.predictions, rb.weights)
+        r2e = weighted_r2(re.targets, re.predictions, re.weights)
+        store[lr] = (rb, re, r2b, r2e)
+        print(f"  {lr:>6} {r2b:>9.4f} {rolling_max_loss(rb.losses):>11.1f} "
+              f"{r2e:>8.4f} {rolling_max_loss(re.losses):>9.1f} {r2b - r2e:>8.4f}")
+    lr_b = max(lrs, key=lambda k: store[k][2]); lr_e = max(lrs, key=lambda k: store[k][3])
+    print(f"  => block argmax lr = {lr_b} (peak {'INTERIOR' if lr_b not in (lrs[0], lrs[-1]) else 'ON BOUNDARY'}); "
+          f"EMA argmax lr = {lr_e}")
+    print(f"     max peak-rolling-loss over the whole sweep: "
+          f"block={max(rolling_max_loss(store[k][0].losses) for k in lrs):.1f}, "
+          f"EMA={max(rolling_max_loss(store[k][1].losses) for k in lrs):.1f}")
+
+    # Paired fold band: is block>EMA a robust sign, or one lucky aggregate?
+    print("  paired 10-fold weighted-R2 band (block - EMA), at lr=2 and at each method's best lr:")
+    for tag, lr in [("lr=2.0", 2.0), (f"block@{lr_b}/EMA@{lr_e}", None)]:
+        if lr is None:
+            fb = fold_r2(store[lr_b][0].targets, store[lr_b][0].predictions, store[lr_b][0].weights)
+            fe = fold_r2(store[lr_e][1].targets, store[lr_e][1].predictions, store[lr_e][1].weights)
+        else:
+            fb = fold_r2(store[lr][0].targets, store[lr][0].predictions, store[lr][0].weights)
+            fe = fold_r2(store[lr][1].targets, store[lr][1].predictions, store[lr][1].weights)
+        d = fb - fe
+        print(f"    {tag:20s} mean gap={d.mean():+.4f}  std={d.std():.4f}  "
+              f"folds block>EMA: {int((d > 0).sum())}/{len(d)}")
 
 
 if __name__ == "__main__":
