@@ -143,7 +143,150 @@ def a7():
               f"folds block>EMA: {int((d > 0).sum())}/{len(d)}")
 
 
+def cmp_normgd():
+    """CMP -- does the block-median tracker beat *normalized-GD* (the M->0 baseline the
+    paper concedes it "ties"), per-row AND per-step, judged on a paired 10-fold band?
+
+    Table 1 concedes SN-OMD(EMA) ~= normalized-GD on real data. But the block tracker
+    reaches R^2~0.38 per-row. If block>normGD with a supporting band, the "ties" framing
+    understates the method against the very baseline that motivated the repositioning. If
+    it is inside the fold noise, "comparable" stands and we say so explicitly. Per-step
+    (where normGD is strongest, 0.316) is the protective check.
+    """
+    from research_normalize import ScaleNormalizedOGD  # noqa: F401  (import parity)
+    from dfsl import JaneStreetDataset
+    from dfsl.evaluation.metrics import weighted_r2
+
+    def norm(v):
+        return float(np.linalg.norm(v))
+
+    def perrow_preds(X, y, wts, method, lr, B=10000, cap=5.0):
+        d = X.shape[1]; w = np.zeros(d); s = None; buf = []; blk = None; k = 0
+        preds = np.empty(len(y))
+        for i in range(len(y)):
+            with np.errstate(over="ignore", invalid="ignore"):
+                pred = float(w @ X[i]); preds[i] = pred; k += 1
+                g = 2.0 * wts[i] * (pred - y[i]) * X[i]
+            gn = norm(g)
+            if not np.isfinite(gn) or gn == 0:
+                continue
+            if method == "normgd":
+                w -= (lr / np.sqrt(k)) * (g / gn); continue
+            if method == "ema":
+                s = gn if s is None else 0.99 * s + 0.01 * min(gn, 8.0 * s)
+                sc = max(s, 1e-8)
+            else:  # block
+                sc = blk if blk is not None else max(gn, 1e-8)
+                buf.append(gn)
+                if len(buf) >= B:
+                    blk = max(float(np.median(buf)), 1e-8); buf = []
+                sc = max(sc, 1e-8)
+            ghat = g / sc; gnn = norm(ghat)
+            if gnn > cap:
+                ghat = ghat * (cap / gnn)
+            if np.isfinite(ghat).all():
+                w -= (lr / np.sqrt(k)) * ghat
+        return preds
+
+    def batched_preds(X, y, wts, starts, method, lr, Bg=None, cap=5.0):
+        d = X.shape[1]; w = np.zeros(d); s = None; buf = []; blk = None
+        ends = np.append(starts[1:], len(y)); preds = np.empty(len(y))
+        for k, (a, b) in enumerate(zip(starts, ends), start=1):
+            with np.errstate(over="ignore", invalid="ignore"):
+                p = X[a:b] @ w; preds[a:b] = p
+                g = 2.0 * (X[a:b] * (wts[a:b] * (p - y[a:b]))[:, None]).sum(axis=0)
+            gn = norm(g)
+            if not np.isfinite(gn) or gn == 0:
+                continue
+            if method == "normgd":
+                w -= (lr / np.sqrt(k)) * (g / gn); continue
+            if method == "ema":
+                s = gn if s is None else 0.99 * s + 0.01 * min(gn, 8.0 * s)
+                sc = max(s, 1e-8)
+            else:
+                sc = blk if blk is not None else max(gn, 1e-8)
+                buf.append(gn)
+                if len(buf) >= Bg:
+                    blk = max(float(np.median(buf)), 1e-8); buf = []
+                sc = max(sc, 1e-8)
+            ghat = g / sc; gnn = norm(ghat)
+            if gnn > cap:
+                ghat = ghat * (cap / gnn)
+            if np.isfinite(ghat).all():
+                w -= (lr / np.sqrt(k)) * ghat
+        return preds
+
+    def fold_band(y, preds, wts, K=10):
+        idx = np.array_split(np.arange(y.size), K)
+        return np.array([weighted_r2(y[i], preds[i], wts[i]) for i in idx])
+
+    def tuned(runner, methods, lrs, *extra):
+        best = {}
+        for m in methods:
+            r2s = {lr: weighted_r2(y, runner(X, y, wts, *extra, m, lr), wts) for lr in lrs}
+            lr_star = max(r2s, key=r2s.get)
+            best[m] = (lr_star, r2s[lr_star])
+        return best
+
+    def report_pair(tag, y, pa, pb, wts, name_a, name_b):
+        """Paired fold band a-b with SE, t and a two-sided sign test."""
+        fa = fold_band(y, pa, wts); fb = fold_band(y, pb, wts); dgap = fa - fb
+        K = len(dgap); mean = dgap.mean(); sd = dgap.std(ddof=1)
+        se = sd / np.sqrt(K); t = mean / se if se > 0 else np.nan
+        wins = int((dgap > 0).sum())
+        # exact two-sided sign test p-value (binomial, p=0.5)
+        from math import comb
+        k = max(wins, K - wins)
+        p = min(1.0, 2.0 * sum(comb(K, j) for j in range(k, K + 1)) / 2 ** K)
+        print(f"    {tag:16s} {name_a}-{name_b}: mean={mean:+.4f} sd={sd:.4f} "
+              f"se={se:.4f} t={t:+.2f}  {name_a}>{name_b}: {wins}/{K} (sign p={p:.3f})")
+
+    print("\n" + "=" * 82)
+    print("CMP -- block-median tracker vs normalized-GD (and EMA), per-row AND per-step,")
+    print("       each at its own tuned lr, judged on a PAIRED 10-fold band.")
+    print("=" * 82)
+    ds = JaneStreetDataset(date_range=(0, 120), max_rows=150000, standardize=True)
+    X, y, wts = ds.X, ds.y, ds.weights
+    d = ds.meta["date_id"].to_numpy().astype(np.int64)
+    tk = ds.meta["time_id"].to_numpy().astype(np.int64)
+    key = d * (tk.max() + 1) + tk
+    starts = np.flatnonzero(np.r_[True, key[1:] != key[:-1]])
+    rows_per_group = len(y) / len(starts)
+    ndays = int(np.unique(d).size)
+    groups_per_day = max(1, int(round(len(starts) / max(ndays, 1))))
+    print(f"  {len(y)} rows, {len(starts)} (date,time) groups, {rows_per_group:.1f} rows/group, "
+          f"{ndays} days, ~{groups_per_day} groups/day (batched block size)")
+
+    lrs = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+    methods = ["normgd", "ema", "block"]
+
+    print("\n  PER-ROW, each method at its tuned lr:")
+    br = tuned(perrow_preds, methods, lrs)
+    for m in methods:
+        print(f"    {m:8s} lr*={br[m][0]:<4}  R2={br[m][1]:+.4f}")
+    pr = {m: perrow_preds(X, y, wts, m, br[m][0]) for m in methods}
+    report_pair("per-row", y, pr["block"], pr["normgd"], wts, "block", "normgd")
+    report_pair("per-row", y, pr["block"], pr["ema"], wts, "block", "ema")
+    report_pair("per-row", y, pr["ema"], pr["normgd"], wts, "ema", "normgd")
+
+    print("\n  PER-STEP (batched by (date,time)), each method at its tuned lr:")
+    bb = tuned(batched_preds, ["normgd", "ema"], lrs, starts)  # block needs Bg -> separate
+    r2s = {lr: weighted_r2(y, batched_preds(X, y, wts, starts, "block", lr, Bg=groups_per_day), wts)
+           for lr in lrs}
+    bb["block"] = (max(r2s, key=r2s.get), max(r2s.values()))
+    for m in methods:
+        print(f"    {m:8s} lr*={bb[m][0]:<4}  R2={bb[m][1]:+.4f}")
+    pb = {"normgd": batched_preds(X, y, wts, starts, "normgd", bb["normgd"][0]),
+          "ema": batched_preds(X, y, wts, starts, "ema", bb["ema"][0]),
+          "block": batched_preds(X, y, wts, starts, "block", bb["block"][0], Bg=groups_per_day)}
+    report_pair("per-step", y, pb["block"], pb["normgd"], wts, "block", "normgd")
+    report_pair("per-step", y, pb["block"], pb["ema"], wts, "block", "ema")
+    report_pair("per-step", y, pb["ema"], pb["normgd"], wts, "ema", "normgd")
+
+
 if __name__ == "__main__":
     a3()
     if "--a7" in sys.argv:
         a7()
+    if "--cmp" in sys.argv:
+        cmp_normgd()

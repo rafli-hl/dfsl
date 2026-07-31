@@ -156,11 +156,12 @@ above sqrt", "pushes dynamic regret": **no survivors.**
   itself anywhere after this pass.
 
 ## Claims-changing list (surface, per Part D — not silently fixed)
-1. **A7 contradicts old Appendix B.8 (now A.8).** A block/regime-timescale tracker is *more*
-   accurate and more stable than the winsorized-EMA at large lr (R² 0.38 vs 0.28 at lr=2;
-   peak loss 3.9 vs 8.1). The old A.8 claimed the EMA was more accurate and the smoother
-   envelope underfit. **Changed the claim:** A.8 no longer asserts EMA superiority; it now
-   says a slow block-median tracker is more accurate/stable at large lr and cites §4.3.
+1. **A7 revised old Appendix B.8 (now A.8), then the 2nd pass tightened it.** The old A.8
+   claimed the EMA was more accurate and the smoother envelope underfit. First pass overturned
+   that (block "more accurate"); the **2nd pass walked *that* back too**: block > EMA is *not*
+   significant (t≈1.3, 8/10 folds). Net: A.8 no longer asserts EMA superiority OR block
+   superiority-over-EMA; it says the trackers are indistinguishable within fold noise, cites
+   §4.3, and states the prove-vs-deploy gap explicitly (item 4 below).
 2. **Part C narrows the novelty claim.** The paper now explicitly concedes the
    scale-mixture / stochastic-volatility mechanism is classical *for asset returns* and
    claims novelty only for (i) gradients / (ii) the interaction effect / (iii) the
@@ -168,6 +169,12 @@ above sqrt", "pushes dynamic regret": **no survivors.**
    an error — surfaced here because it changes what the paper claims as new.
 3. **A3 round count 357k→200k** and the tracker-ratio rounding (6.7/8.1/62 → 6.6/7.9/60):
    number corrections, no claim changes (qualitative conclusions unchanged).
+4. **Block tracker beats the *baseline* (normalized-GD) per-row, but only per-row.** New,
+   claims-relevant (see 2nd-pass section): block > normGD is significant per-row (0.38 vs
+   0.197, t=10.6, 10/10) so "ties normalized-GD" is over-generous for that configuration —
+   but it **vanishes under the batched per-step protocol** (t=−0.1), and the reported EMA
+   default ties normGD on both. The headline "comparable" survives for the reported method;
+   §4.3 now carries the per-row/per-step asymmetry rather than the bare per-row number.
 
 ## Stress-test of the flattering block-tracker result (A7 follow-up)
 
@@ -190,21 +197,24 @@ Findings, and what changed in the paper:
 - **(a) lr=2 is NOT the sweep edge.** Block R² peaks at the *interior* lr=2 (0.380), then
   falls at lr=5 (0.364) and collapses at lr=10. So neither "0.38" nor "peaks at lr=2" is a
   boundary artifact. Claim survives.
-- **(b) The fold band is real but high-variance.** Paired 10-fold gap at lr=2:
-  mean **+0.159, std 0.372, block>EMA in 8/10 folds.** A genuine sign, not one lucky
-  aggregate — but the paper now states the variance, not just the point estimate.
-- **(c) Table 1 (tab:jane) is *understated*, and stays that way deliberately.** The SN-OMD
-  row uses the winsorized-EMA tracker (R²≈0.28-class); the block tracker reaches 0.38. Rather
-  than swap the headline to the better-but-higher-variance tracker, **kept EMA as the reported
-  default and added a caption note that the block tracker reaches R²≈0.38**, so the table is
-  conservative rather than optimistic. (Rationale: EMA is the standard reactive default;
-  headlining a tracker with a ±0.37 fold band would be the flattering choice.)
-- **(d) "Bounded throughout" was a boundary artifact — corrected.** Old §4.3 said "peak
-  rolling loss ≤5.3 throughout." True only for lr≤2. At lr=5 block peak is 7.9; at lr=10 it
-  is 30.3 and the EMA is 229.9 — **both diverge past tuning.** §4.3 and A.8 now say the block
-  tracker stays bounded *through the tuned range* and degrades *far more gracefully* than the
-  EMA (30 vs 230 at lr=10), and the "pick either without risking divergence" line in A.8 was
-  removed (false at lr=10).
+- **(b) The block-vs-EMA fold band is NOT significant** (corrected from the first pass's
+  over-reading). Paired 10-fold gap at lr=2: mean **+0.159, sd 0.392 (ddof=1), SE 0.124,
+  t≈1.28, block>EMA 8/10 (two-sided sign p≈0.11).** The first pass called this "a genuine
+  sign"; the statistics don't support that — it is *not distinguishable from the EMA at this
+  sample size*. §4.3 and A.8 now say exactly this (t≈1.3, 8/10), not just the point estimate.
+- **(c) Caption note REVERSED.** The first-pass caption said "block reaches R²≈0.38, so this
+  row is conservative" — that smuggled an unbanded optimistic number into the one line a
+  skimming reviewer reads, and (per (b)) block>EMA isn't significant so "conservative" was
+  unearned. **Removed it**; the caption now says only that a block-median tracker "changes the
+  per-row number but not per-step, and not beyond fold noise against this row." The full banded
+  story lives in §4.3/A.8.
+- **(d) "Bounded throughout" was a boundary artifact — corrected; and "diverge" was wrong.**
+  Old §4.3 said "peak rolling loss ≤5.3 throughout" (true only lr≤2). Past tuning the *loss*
+  degrades (lr=10: block peak 30.3, EMA 229.9) but **neither diverges in the sense of
+  Thm 3.1** — the O(√t) iterate bound still holds; it is the loss, not the iterate, that
+  grows, unlike OGD's genuine 10^100 blow-up. Fixed §4.3, A.8 (and the abstract/intro
+  "remain bounded for any lr" → "grow at most O(√t) on ℝᵈ / bounded on bounded 𝒲"). The
+  "pick either without risking divergence" line is gone.
 - **Narrative-conflict resolution (long-windows-bad vs one-day block tracker best).** §4.3 /
   Fig 2b penalize long windows for lagging regime onsets, yet a one-day block tracker is now
   the most accurate config. Added a paragraph to A.8 distinguishing the two *uses* of the
@@ -213,6 +223,42 @@ Findings, and what changed in the paper:
   §4.3 lag experiment) a lagging s clips hardest exactly when the scale jumps up, discarding
   the informative post-onset gradients. Long windows are bad for *thresholding*, fine for
   *normalizing*; the block tracker is a normalizer, so no contradiction.
+
+## Second-pass review (block-vs-baseline, statistics, boundedness language)
+
+Prompted by a reviewer catch that the block result might change the paper's central
+concession. `scripts/research_audit_checks.py --cmp` — block vs **normalized-GD** (the M→0
+baseline the paper concedes it "ties") and vs the EMA default, per-row AND per-step (batched
+by (date,time), the "honest" competition-like protocol), each at its tuned lr, paired 10-fold
+band with SE/t/sign-test. Numbers reproduce Table 1 exactly (normGD 0.197/0.316, EMA
+0.285/0.309), confirming same stream/protocol.
+
+| pairing | per-row gap (t, folds) | per-step gap (t, folds) | verdict |
+|---|---|---|---|
+| **block − normGD** | **+0.176 (t=10.6, 10/10, p=0.002)** | −0.009 (t=−0.1, 8/10) | sig. per-row, **ties per-step** |
+| block − EMA | +0.159 (t=1.3, 8/10) | +0.060 (t=1.2, 6/10) | not sig. either protocol |
+| EMA − normGD | +0.017 (t=0.1, 9/10) | −0.069 (t=−0.5, 8/10) | not sig. — "comparable" holds |
+
+- **Item 1 (could-change-a-claim): checked, framing survives — with one honest addition.**
+  The reported EMA default *does* tie normalized-GD on both protocols (t=0.1 per-row, −0.5
+  per-step), so the paper's "comparable" concession is correct **for the reported method**.
+  The block tracker beats normGD **per-row and significantly** (0.38 vs 0.197, t=10.6, all 10
+  folds — and block/normGD are tightly coupled fold-to-fold, sd 0.052, so it is robust, not
+  one lucky fold), so "ties normalized-GD" is over-generous *for that configuration on the
+  per-row protocol*. **But it is protocol-specific**: batched per-step aggregation erases it
+  (t=−0.1). So the flattering per-row number does not survive the stricter protocol — the
+  headline tie stands where it is measured most conservatively. §4.3 now states (i) block >
+  normGD per-row significant, (ii) vanishes per-step, (iii) block ≈ EMA within noise. This is
+  claims-relevant and is added to the claims-changing list.
+- **Item 4 (A.8 three-way gap):** A.8 now names which proposition covers which tracker —
+  `prop:tracker` proves W_s=O(V_σ⁺) **only for the envelope** (s=max{c·m̂,(1−ρ)s}); the EMA
+  and the block median are **both uncovered** (only empirical W_s), and the *best-performing*
+  tracker (block) is the *least analyzed*. The prove-vs-deploy gap is stated as **wider**, not
+  narrower — a clean open problem, not a defect.
+- **Item 2 (caption / statistics):** see (b),(c) above — over-reading corrected, caption note
+  removed.
+- **Item 3 (boundedness language):** see (d) above — "diverge" reserved for OGD's blow-up;
+  abstract/intro "bounded for any lr" qualified to O(√t) on ℝᵈ.
 
 ## Mechanical staleness guard (new test)
 
