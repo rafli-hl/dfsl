@@ -1112,12 +1112,20 @@ penalized for lagging regime onsets. The tension is only apparent, and it is exa
 distinction between the two uses of the scale. When the scale is a \emph{divisor}
 ($\hat{g}_t=\gt/s_t$), a lagging $s_t$ merely mis-normalizes the step magnitude---the divisor
 cancels first-order and a slightly stale scale costs little, so a slow block median is
-tolerable and even helpful (it is smoother and higher-bracket). When the scale is a
-\emph{threshold} (clipping $\norm{\gt}$ at $s_t$, the \cref{sec:tracker} lag experiment), a
-lagging $s_t$ clips hardest precisely when the scale jumps up---the stale threshold throws
-away the informative post-onset gradients---so lag is genuinely costly there. Long windows
-are bad for thresholding and fine for normalizing; the one-day block tracker is a
-normalizer, so no contradiction arises.
+tolerable and even helpful (it is smoother and higher-bracket). We measured this rather than
+asserting it: sweeping the tracker's block timescale over $B\in\{50,\dots,20{,}000\}$ (a
+$400\times$ window range) moves the divisor's best-tuned weighted $R^2$ only within
+$[0.363,0.386]$ (spread $0.022$), if anything \emph{rising} with the window---so a longer,
+laggier scale does not hurt the normalizer. When the scale is instead a \emph{threshold}
+(clipping $\norm{\gt}$ at $s_t$; the lag mechanism is the \cref{sec:tracker} clip-rate/dynamic-range
+tension), a lagging $s_t$ clips hardest precisely when the scale jumps up---the stale
+threshold throws away the informative post-onset gradients. In the same sweep the threshold
+use never leaves $R^2\approx0.003$ at \emph{any} window---scale-dependent clipping is stable
+only at a tiny step size, so it is dominated by that first-order tax rather than by the
+window, and the normalizer beats it at every tracker length (we therefore do \emph{not} claim
+a clean window-monotone threshold curve, only that the threshold is uniformly worse). Long
+windows are thus fine for normalizing and never help thresholding; the one-day block tracker
+is a normalizer, so no contradiction arises.
 
 \paragraph{Closing the gap.} Either run the envelope in deployment, accepting the small
 accuracy cost, or prove a $W_s$ bound for the winsorized EMA under a heavy-tailed scale

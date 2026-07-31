@@ -271,3 +271,44 @@ absent (no-op in data-less CI). Verified it *fails* when the old 62.26 ratio is 
 and *passes* on the current file, and that it never touches the committed artifact. Stochastic
 / expensive outputs (MNIST, 400-seed synthetic) and PNGs are out of scope by design
 (seed-pinned in their own scripts; figure numbers live in the guarded CSVs). Suite now 76 tests.
+
+## Item 5 (polish): measure the divisor-vs-threshold claim; widen the staleness guard
+
+**5a — divisor-vs-threshold, MEASURED not asserted** (`research_audit_checks.py --divthresh`).
+A.8 asserted "long windows are bad for thresholding, fine for normalizing." Tested it directly:
+one tracked scale (block-median of ‖g‖, block length B = the window/lag knob), swept
+B∈{50,200,1000,5000,20000} (a 400× range), used the *same* scale two ways, each tuned over its
+own lr grid, downstream weighted R² on the real 150k Jane stream (deterministic).
+
+| use | R² short→long window | spread | verdict |
+|---|---|---|---|
+| **divisor** (g/s, capped) | 0.363 → 0.380 (range [0.363, 0.386], lr\*=2 throughout) | **0.022** | **flat / if anything rising — confirmed** |
+| **threshold** (clip ‖g‖ at s) | 0.003 → 0.004 (~0.003 at every B, lr\*≈3e-4) | 0.002 | uniformly ≈0 |
+
+- **Divisor half confirmed decisively:** a 400× change in window length barely moves R²
+  (spread 0.022), and it *rises* slightly with the window — first-order cancellation is real, a
+  laggy/long scale does not hurt the normalizer. This is the load-bearing half (it resolves the
+  "long-windows-bad vs one-day-block-tracker-best" conflict: the block tracker is a normalizer).
+- **Threshold half NOT cleanly demonstrable by R²** (reported honestly, not massaged): the
+  threshold use is floored near R²≈0.003 at *every* window because scale-dependent clipping is
+  stable only at a tiny step size (lr≈3e-4 — the same first-order instability the paper documents
+  for OGD/clippers), so any window-lag effect is swamped by that tax. First attempt used the
+  divisor's lr grid and the threshold **diverged to −10²⁸** (a clean illustration that clipping ‖g‖
+  at s is scale-*dependent* OGD, not scale-free) — corrected with a per-use small-lr grid.
+- **What A.8 now says (measured):** reports the divisor flatness with numbers; states the
+  threshold stays ≈0.003 at every window so the normalizer dominates it at every tracker length;
+  and explicitly **declines to claim a window-monotone threshold degradation** (the mechanism —
+  clip-rate/dynamic-range tension as W grows — stays cited to `research_nonstationarity.py`, which
+  is where that evidence actually lives). No claim exceeds the data.
+
+**5b — widened the mechanical guard** (`tests/test_artifacts_fresh.py`, suite 76→77). Added an
+**input-hash tripwire**: pins the sha256 of `gradnorm_at_wstar.npy` (the 200k @w* gradient-norm
+sample that feeds A3's W_s/β, tab:tracker's ratios, the tracker_a1.csv regeneration guard, *and*
+the headline α@w* tail index). Byte-hash only → no Jane data, no regeneration, platform-independent;
+if the file is ever rebuilt the test fails and names every dependent number to re-verify. This
+closes a gap: the existing regeneration guard for tracker_a1.csv is only meaningful while its own
+input is pinned. **Table 1 (research_batched_check.py) deliberately NOT added:** it writes no CSV
+(prints only) and its numbers need a full 150k online per-row+per-step run — too slow for a fast
+unit test and there is no committed artifact to diff; flagged here rather than forced. The α CSV
+(intrinsic_gradient_tails.csv) is covered upstream by the pinned npy (same @w* sample), so it is
+guarded at its input without paying research_findings.py's slow lr-sweep in the test.

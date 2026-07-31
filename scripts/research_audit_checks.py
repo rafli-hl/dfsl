@@ -284,9 +284,87 @@ def cmp_normgd():
     report_pair("per-step", y, pb["ema"], pb["normgd"], wts, "ema", "normgd")
 
 
+def divthresh():
+    """5a -- divisor-vs-threshold, MEASURED (A.8 currently asserts it).
+
+    A.8 claims a lagging scale $s_t$ hurts a THRESHOLD use (clip $\\|g\\|$ at
+    $s_t$) but is tolerable for a DIVISOR use ($\\hat g=g/s_t$, cancels
+    first-order). We test it directly: use the *same* tracked scale (a
+    block-median of $\\|g\\|$ whose block length $B$ IS the window/lag knob --
+    long $B$ = more lag at regime onsets) and sweep $B$, comparing downstream
+    weighted $R^2$ under the two uses, each at its own tuned lr (the two uses
+    live on different step scales, so a shared lr would be unfair). Prediction
+    to confirm/refute: divisor $R^2$ ~flat in $B$; threshold $R^2$ falls as $B$
+    grows. Real Jane stream, deterministic (no RNG), same load as --cmp.
+    """
+    from dfsl import JaneStreetDataset
+    from dfsl.evaluation.metrics import weighted_r2
+
+    def norm(v):
+        return float(np.linalg.norm(v))
+
+    def run(X, y, wts, use, B, lr, cap=5.0):
+        d = X.shape[1]; w = np.zeros(d); buf = []; blk = None; k = 0
+        preds = np.empty(len(y))
+        for i in range(len(y)):
+            with np.errstate(over="ignore", invalid="ignore"):
+                pred = float(w @ X[i]); preds[i] = pred; k += 1
+                g = 2.0 * wts[i] * (pred - y[i]) * X[i]
+            gn = norm(g)
+            if not np.isfinite(gn) or gn == 0:
+                continue
+            sc = blk if blk is not None else max(gn, 1e-8)  # predictable: prior block only
+            buf.append(gn)
+            if len(buf) >= B:
+                blk = max(float(np.median(buf)), 1e-8); buf = []
+            sc = max(sc, 1e-8)
+            if use == "divisor":            # g / s, capped at M -- direction preserved
+                step = g / sc; sn = norm(step)
+                if sn > cap:
+                    step = step * (cap / sn)
+            else:                            # threshold: clip ||g|| at s -- lag clips onsets
+                step = g if gn <= sc else g * (sc / gn)
+            if np.isfinite(step).all():
+                w -= (lr / np.sqrt(k)) * step
+        return preds
+
+    print("\n" + "=" * 82)
+    print("5a -- divisor vs threshold under a window (block timescale B) sweep.")
+    print("      Same tracked scale, two uses; each tuned over lr. A.8's claim, measured.")
+    print("=" * 82)
+    ds = JaneStreetDataset(date_range=(0, 120), max_rows=150000, standardize=True)
+    X, y, wts = ds.X, ds.y, ds.weights
+    print(f"  {len(y)} rows, dim={X.shape[1]} (DETERMINISTIC real data)")
+    Bs = [50, 200, 1000, 5000, 20000]
+    # Per-use lr grids: the divisor+cap step is scale-free (best lr ~O(1)); the threshold
+    # step is the raw clipped gradient, i.e. scale-DEPENDENT OGD, stable only at small lr
+    # (the paper's own clip experiments run at 5e-3..1e-2). Tuning each on its own grid
+    # isolates the window-lag SHAPE from that first-order divergence difference.
+    lrs = {"divisor": [0.1, 0.2, 0.5, 1.0, 2.0],
+           "threshold": [3e-4, 1e-3, 3e-3, 1e-2, 3e-2]}
+    print(f"  {'B (window)':>11} {'divisor R2':>11} {'div lr*':>8} {'threshold R2':>13} {'thr lr*':>8}")
+    best = {"divisor": [], "threshold": []}
+    for B in Bs:
+        row = {}
+        for use in ("divisor", "threshold"):
+            r2s = {lr: weighted_r2(y, run(X, y, wts, use, B, lr), wts) for lr in lrs[use]}
+            lr_star = max(r2s, key=r2s.get); row[use] = (r2s[lr_star], lr_star)
+            best[use].append(r2s[lr_star])
+        print(f"  {B:>11} {row['divisor'][0]:>11.4f} {row['divisor'][1]:>8} "
+              f"{row['threshold'][0]:>13.4f} {row['threshold'][1]:>8}")
+    dv = np.array(best["divisor"]); th = np.array(best["threshold"])
+    print(f"  => divisor  R2 range over B: [{dv.min():.4f}, {dv.max():.4f}]  "
+          f"spread {dv.max() - dv.min():.4f}  (short->long: {dv[0]:.3f}->{dv[-1]:.3f})")
+    print(f"     threshold R2 range over B: [{th.min():.4f}, {th.max():.4f}]  "
+          f"spread {th.max() - th.min():.4f}  (short->long: {th[0]:.3f}->{th[-1]:.3f})")
+    print("     A.8 confirmed if threshold degrades with B while divisor stays ~flat.")
+
+
 if __name__ == "__main__":
     a3()
     if "--a7" in sys.argv:
         a7()
     if "--cmp" in sys.argv:
         cmp_normgd()
+    if "--divthresh" in sys.argv:
+        divthresh()

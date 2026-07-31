@@ -16,10 +16,21 @@ produce false failures; the numbers a figure encodes live in the CSV it is drawn
 
 Skips cleanly when the Jane Street parquet is absent (same guard as test_dataset.py), so it
 is a no-op in a data-less CI checkout and a real check on the author's machine.
+
+Two guard styles.
+  (1) Regeneration guard (``ARTIFACTS``): re-run the generator and diff. Requires the Jane
+      data and a fast, deterministic generator.
+  (2) Input-hash tripwire (``INPUT_HASHES``): pin the sha256 of a *derived input* that many
+      paper numbers are computed from but which is too slow to regenerate in a unit test
+      (the @w* gradient-norm sample feeds the A3 W_s/beta numbers, tab:tracker, the
+      tracker_a1.csv regeneration above, and the headline alpha@w*). If that file ever
+      changes, every downstream number must be re-derived -- this test fails and says which.
+      It only reads bytes, so it runs even in a data-less checkout (a pure identity check).
 """
 
 from __future__ import annotations
 
+import hashlib
 import runpy
 import sys
 from pathlib import Path
@@ -43,6 +54,20 @@ requires_jane_data = pytest.mark.skipif(
 # under its module-level ``OUT`` directory, which the test redirects to a temp dir.
 ARTIFACTS = [
     ("research_tracker", PROJECT_ROOT / "results" / "research" / "tracker_a1.csv", "tracker"),
+]
+
+# Derived inputs too slow to regenerate in a unit test, pinned by content hash instead.
+# Each entry: (committed path, expected sha256, one-line note on what depends on it). If a
+# hash mismatches, the file was regenerated -> re-verify every paper number it feeds.
+# ``gradnorm_at_wstar.npy`` is written by research_findings.py (200k causal gradient norms at
+# the fixed least-squares predictor); research_tracker.py consumes it, so the regeneration
+# guard above is only meaningful while this input is itself pinned.
+INPUT_HASHES = [
+    (
+        PROJECT_ROOT / "results" / "research" / "gradnorm_at_wstar.npy",
+        "f0ec26872105da240f37250bebfe06ebe9a0e247fc7732ee105ce9310d19c42f",
+        "A3 W_s/beta (Sec 4.3), tab:tracker ratios, tracker_a1.csv, and the alpha@w* tail index",
+    ),
 ]
 
 
@@ -103,6 +128,23 @@ def test_committed_csv_matches_generator(
         f"{committed_csv.name} is STALE -- it no longer matches {module_name}.py. "
         f"Regenerate it (`python scripts/{module_name}.py`) and re-check every paper "
         f"number sourced from it:\n" + "\n".join(stale)
+    )
+
+
+@pytest.mark.parametrize("path,expected_sha,depends", INPUT_HASHES,
+                         ids=[p.name for p, _, _ in INPUT_HASHES])
+def test_input_artifact_hash_pinned(path: Path, expected_sha: str, depends: str) -> None:
+    """A derived input feeding several paper numbers must not silently change.
+
+    Pure byte-hash of a committed file: no Jane data, no regeneration, platform-independent.
+    A mismatch means the file was rebuilt -> the numbers it feeds are potentially stale.
+    """
+    assert path.exists(), f"pinned input artifact missing: {path}"
+    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    assert actual == expected_sha, (
+        f"{path.name} CHANGED (sha256 {actual} != pinned {expected_sha}). It feeds: {depends}. "
+        f"Re-derive those numbers from the new file, then update the pinned hash in "
+        f"INPUT_HASHES to bless the change."
     )
 
 
