@@ -173,7 +173,8 @@ convergence) that needs no moment assumption.
   confirm with an \emph{exogenous} scale, and which recurs, in weaker form, on
   image-model training gradients. This is the paper's central finding.
   \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
-  We propose SN-OMD, prove its iterates are unconditionally bounded (\cref{thm:stability}),
+  We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
+  bounded on a bounded domain; \cref{thm:stability}),
   and show it is a one-parameter family in the cap $M$ interpolating normalized-GD
   ($M\!\to\!0$) and uncapped scale-adaptive OGD ($M\!\to\!\infty$); a two-directional test
   predicts \emph{when} the finite cap matters---non-divergence at large steps, and an
@@ -225,7 +226,7 @@ the notion appropriate for regime-switching streams; static regret is the specia
 case $u_t\equiv u$. We report the sample-weighted zero-mean $R^2=
 1-\sum_i\omega_i(y_i-\hat y_i)^2/\sum_i\omega_i y_i^2$ on data.
 
-\subsection{A budget heuristic for the dynamic wall}
+\subsection{A budget heuristic for dynamic regret under drift}
 \label{sec:lower}
 
 The achievable rate degrades smoothly with the tail. The core primitive is robust mean
@@ -336,7 +337,9 @@ clipping, and where the cap earns its keep.
 \paragraph{Setup and protocol.} We use the Jane Street Real-Time Market Data Forecasting
 dataset \citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
 features, $39$ symbols; target \texttt{responder\_6}; metric the sample-weighted
-zero-mean $R^2$. We evaluate \emph{progressive online} prediction on the historical
+zero-mean $R^2$. The stability sweeps (\cref{tab:jane},~\cref{fig:main}) stream a
+continuous $150{,}000$-row slice (the first ${\sim}20$ trading days). We evaluate
+\emph{progressive online} prediction on the historical
 record: each round the learner plays $w_t$, then observes $(x_t,y_t)$ and updates---the
 protocol our theory concerns. Features are standardized \emph{causally} (running
 past-only statistics; a full-sample standardizer inflates $R^2$ by look-ahead and is not
@@ -347,7 +350,8 @@ aggregated update), the latter carrying no contemporaneous cross-sectional infor
 day-lagged responders, scored on a held-out future window), so our $R^2$ is not
 comparable to competition leaderboard scores in either direction; we report it only for
 cross-method comparison and the stability contrast. Tail measurements are
-learner-independent (gradients at the fixed best linear predictor $w^\star$).
+learner-independent (gradients at the fixed predictor $w^\star$): the pooled index from
+${\sim}200{,}000$ gradients, the daily-drift index from the full record.
 
 \begin{figure*}[t]
 \centering
@@ -456,10 +460,12 @@ standardization, per-row). The cap family: OGD (scale-dependent) vs.\ the $M\!\t
 endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD),
 and SN-OMD ($M{=}5$). (a) Weighted $R^2$ vs.\ learning rate: OGD cliffs above
 $\mathrm{lr}=10^{-2}$ (off-scale), the scale-invariant methods climb to $R^2\approx0.2$--
-$0.3$; SN-OMD leads normalized-GD here (per-row; the two are comparable per-timestep,
-\cref{tab:jane}), and uncapped scale-adaptive OGD diverges at large rates. (b) Peak
-rolling loss: OGD explodes early and uncapped scale-adaptive OGD at large rates; SN-OMD
-and normalized-GD stay bounded ($\approx5$) throughout.}
+$0.3$; SN-OMD and normalized-GD are comparable here (the per-row point estimate is
+slightly higher for SN-OMD but within fold noise, $t\approx0.1$; \cref{tab:jane}), and
+uncapped scale-adaptive OGD diverges at large rates. (b) Peak rolling loss: OGD explodes
+early and uncapped scale-adaptive OGD at large rates ($10^2$--$10^{30}$); normalized-GD's
+peak loss stays $\approx5$ across the range and SN-OMD's stays single-digit, rising to
+$\approx8$ at its top stable rate $\mathrm{lr}{=}2$.}
 \label{fig:main}
 \end{figure*}
 
@@ -499,13 +505,15 @@ Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $0.080$ & $\le 1$ \\
 
 SN-OMD is a one-parameter family in the cap $M$: when $\norm{\gt}/s_t>M$,
 $\clip(\gt/s_t,M)=M\,\gt/\norm{\gt}$ and $s_t$ cancels, so $M\to0$ is \emph{normalized-GD}
-and $M\to\infty$ is uncapped \emph{scale-adaptive OGD}. Both satisfy \cref{thm:stability},
-so non-divergence is not what singles out SN-OMD; the point is that a finite $M$
+and $M\to\infty$ is uncapped \emph{scale-adaptive OGD}. Every \emph{finite}-$M$ member
+satisfies \cref{thm:stability} ($\norm{\hat g_t}\le M$)---the normalized-GD endpoint
+included, its step being $M\,\gt/\norm{\gt}$; the uncapped $M\!\to\!\infty$ endpoint is the
+lone exception ($\norm{\hat g_t}=\norm{\gt}/s_t$ is unbounded) and is exactly the member
+that diverges (\cref{tab:jane}). So against the \emph{other} stable member, normalized-GD,
+non-divergence is not what singles out SN-OMD; the point is that a finite $M$
 \emph{preserves gradient magnitude within the bulk} (the step shrinks near a good
 predictor) and truncates only the tail, whereas normalized-GD discards magnitude every
-round. The tracked $s_t$ makes ``the bulk'' regime-independent: the test
-$\norm{\gt}/s_t\le M$ is scale-free, which a fixed threshold cannot be under $6\times$
-drift.
+round.
 
 Sweeping $M$ (each cap at its own tuned step, error bars over seeds) turns the cap into a
 \emph{mechanism test}. Normalization already removes most of the tail
@@ -671,30 +679,31 @@ motivates why a moving comparator under such drift is hard (we do not lean on it
 super-$\sqrt T$ growth is driven by pooled-tail regimes that vanish after normalization).
 The right response is to decouple the update from the tail scale: SN-OMD
 normalizes the gradient by a tracked scale and caps it at a scale-free constant, so its
-iterates provably stay bounded (for any learning rate) and it attains the worst-tail
-rate $T^{1/p}$ \emph{per regime}. The scale drift enters as $\sqrt{W_s}$, and $W_s$ grows
+iterates provably cannot diverge---at most $O(\sqrt t)$ for any learning rate---and it
+attains the worst-tail rate $T^{1/p}$ \emph{per regime}. The scale drift enters as $\sqrt{W_s}$, and $W_s$ grows
 linearly with $T$ on a persistently fluctuating scale---so the drift is a genuine rate,
 not a free constant, and the regret is $T^{1/p}$ only per regime; a regime-timescale
-tracker shrinks the constant but not the exponent (\cref{sec:tracker}). Empirically SN-OMD
-stays bounded across the whole tested learning-rate range where OGD and scale-dependent
-clipping diverge, and it matches the classical normalized-GD in accuracy while adding a
-regret guarantee and non-divergence at large steps.
+tracker shrinks the constant but not the exponent (\cref{sec:tracker}). Empirically SN-OMD's
+iterates stay bounded across the whole tested learning-rate range where OGD and
+scale-dependent clipping diverge---accuracy degrading gracefully past the tuned range
+rather than blowing up (\cref{sec:tracker})---and it matches the classical normalized-GD
+in accuracy while adding a regret guarantee and non-divergence at large steps.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free: its best learning rate is
 setting-dependent, and its cap $M$, decay, and winsorization are untuned defaults---though
-its stable learning-rate range is far wider than the scale-dependent baselines' (which
-are unstable above $\mathrm{lr}=10^{-2}$) and it degrades gracefully.
-The proven $W_s=O(V_\sigma^+)$ guarantee is for the two-timescale envelope tracker,
-whereas the empirically strongest default is a winsorized EMA; closing that gap with a
-single tracker that is both provably bounded-variation and empirically best is open, as
-is making the envelope's release rate $\rho$ adaptive to an unknown regime length.
-Consequently the dynamic-regret bound is fully proven for the envelope variant under
-\cref{ass:moment,ass:track}, while the deployed EMA variant's high-probability dynamic
-regret under drifting $(\sigma_t,p_t)$ is supported empirically. Empirically, three gaps
-remain: our baselines omit the Adam family of coordinate-wise adaptive optimizers
+its stable learning-rate range is far wider than the scale-dependent baselines' and it
+degrades gracefully.
+The proven $W_s=O(V_\sigma^+)$ guarantee is for the two-timescale envelope tracker; the
+deployed default is a winsorized EMA and the most accurate per-row on our stream is a
+block median, neither of which \cref{prop:tracker} covers (\cref{sec:tracker}). Closing
+that gap with a single tracker that is both provably bounded-variation and empirically
+best is open, as is making the envelope's release rate $\rho$ adaptive to an unknown
+regime length.
+So the dynamic-regret bound is proven only for the envelope variant
+(\cref{ass:moment,ass:track}); the deployed EMA's high-probability regret under drift is
+supported empirically. Empirically, three gaps remain: our baselines omit the Adam family
 (\cref{sec:related}); evaluation centers on accuracy and stability rather than
-mechanism-level diagnostics; and validation beyond our two domains is warranted. Open
-directions include per-coordinate normalization and tighter dynamic constants.
+mechanism-level diagnostics; and validation beyond our two domains is warranted.
 
 \section*{Software and Data}
 The released code provides the \texttt{ScaleNormalizedOGD} learner as a library class,

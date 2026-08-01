@@ -327,3 +327,50 @@ input is pinned. **Table 1 (research_batched_check.py) deliberately NOT added:**
 unit test and there is no committed artifact to diff; flagged here rather than forced. The α CSV
 (intrinsic_gradient_tails.csv) is covered upstream by the pinned npy (same @w* sample), so it is
 guarded at its input without paying research_findings.py's slow lr-sweep in the test.
+
+## Claims-vs-data pass (reviewer-flagged: one correctness error + over-reads)
+
+All adjudicated by RUNNING the scripts, not from memory (`research_audit_checks.py --a7 --cmp
+--divthresh` + the `normalize_continuous.csv` the figure plots). Each: what was wrong → data → fix.
+
+1. **§4.1 "Both [M→0 and M→∞ endpoints] satisfy Theorem 3.1" — FALSE (correctness).** Thm 3.1's
+   content is ‖ĝ_t‖≤M; at M→∞, ‖ĝ_t‖=‖g‖/s_t is unbounded, so the uncapped endpoint does NOT
+   satisfy it — and it is the member that diverges (Table 1 / CSV: scale_adaptive stable only to
+   lr≤1, R²→−63 and peak loss 1978 at lr=2). The paragraph even self-contradicted (later line:
+   "stability unconditionally — uncapped … diverges"). Fixed: *every finite-M member* (incl. the
+   normalized-GD endpoint, step M·g/‖g‖) satisfies Thm 3.1; the uncapped M→∞ endpoint is the lone
+   exception and is exactly what diverges. Strengthens the narrative (the cap is what buys stability).
+2. **Fig 3(a) "SN-OMD leads normalized-GD (per-row)" — over-read.** The *reported* SN-OMD uses the
+   winsorized-EMA tracker; `cmp` gives ema−normgd per-row **mean +0.017, t=+0.12** (aggregate 0.285
+   vs 0.197 but the fold gap is within noise). Table 1 + §4 already say "comparable." Fixed the
+   caption to "comparable … within fold noise, t≈0.1." (The significant per-row win, block−normgd
+   t=10.59 10/10, belongs only to the *block* tracker — an A.8 sub-result, not the headline config.)
+3. **Fig 3(b) "stay bounded (≈5) throughout" + plot band "bounded (≤6)" — FALSE for reported SN-OMD.**
+   `normalize_continuous.csv` (the exact series the figure plots, lr 0.002→2.0): sn_ogd peak rolling
+   loss = 4.3–5.0 up to lr=1 then **8.09 at lr=2** — the point plots ABOVE the ≤6 band. normalized-GD
+   is ≈5 (max 5.29). Fixed caption (normGD ≈5; SN-OMD single-digit, ≈8 at its top rate lr=2; divergent
+   methods 10²–10³⁰) and the plot band → `axhspan(0,10)` / "bounded (<10)"; regenerated fig3_main.png.
+   (a7 also confirms past the plotted range: at lr=10 peak loss 30 block / 230 EMA — iterate O(√t)
+   bound holds, usability degrades; consistent with A.8's existing note.)
+4. **Streaming row count appeared nowhere.** Setup cited only the full 47,127,338-row / 1,699-day
+   dataset; the stability sweeps (Table 1, Fig 3) actually run on a continuous **150,000-row / 20-day**
+   slice (`research_normalize.py:163`, date_range=(0,120), max_rows=150000 — verified 150000 rows,
+   16369 (date,time) groups, 20 days). Added it to Setup, and split the tail-measurement Ns (pooled
+   index ~200k gradients @w*; daily-drift index the full record) onto their experiments.
+
+**Survivor sweep (framing left stale by earlier reversals):**
+- §2.1 heading "A budget heuristic for **the dynamic wall**" → "…for **dynamic regret under drift**"
+  (undefined dramatic term; body/conclusion call it "a budget heuristic").
+- **"unconditionally bounded"** in contribution bullet 2 and conclusion → the theorem's own precise
+  statement (**O(√t) on ℝᵈ, bounded on a bounded domain**). Thm 3.1 itself was already correct; only
+  these two restatements over-claimed (bounded is false on ℝᵈ). Conclusion's "stays bounded across the
+  whole tested range" scoped to the *iterate* (O(√t)); accuracy "degrades gracefully past the tuned range."
+- **Limitations described a two-tracker world** (envelope + EMA) → three, matching A.8/Software&Data:
+  envelope (proven W_s), winsorized EMA (deployed default), block median (most accurate per-row, least
+  analyzed — neither of the latter two covered by Prop B.5).
+
+**Page budget:** these edits pushed Limitations to spill ~5 lines onto p9 (body >8pp). Reclaimed by
+tightening my own additions + cutting genuine redundancy (dropped a duplicated scale-free-test sentence
+in §4.1, the "unstable above lr=1e-2" parenthetical and a generic "open directions" sentence in
+Limitations). Rebuilt: Limitations ends on **p8**; Software&Data + Impact + References on **p9** (none
+count). 0 undefined refs, 0 overfull hboxes, 77 tests pass. Body ≤8pp under the verified-official style.

@@ -156,8 +156,8 @@ def fig3_main():
     for n in ORDER:
         s = df.filter(pl.col("method") == n).sort("learning_rate")
         a1.plot(s["learning_rate"], s["peak_rolling_loss"], color=COLORS[n], marker=MARK[n], ms=3.2)
-    a1.set_xscale("log"); a1.set_yscale("log"); a1.axhspan(0, 6, color="#2ca02c", alpha=0.08)
-    a1.text(0.97, 0.05, r"bounded ($\leq 6$)", fontsize=6, color="#2ca02c",
+    a1.set_xscale("log"); a1.set_yscale("log"); a1.axhspan(0, 10, color="#2ca02c", alpha=0.08)
+    a1.text(0.97, 0.05, r"bounded ($<10$)", fontsize=6, color="#2ca02c",
             ha="right", va="bottom", transform=a1.transAxes)
     a1.set_xlabel("learning rate"); a1.set_ylabel("peak rolling loss")
     a1.set_title("(b) Stability vs. learning rate")
