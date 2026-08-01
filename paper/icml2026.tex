@@ -1096,7 +1096,15 @@ On accuracy we are deliberately careful, because the numbers are easy to over-re
 $10$-fold bands, each method at its tuned rate; \cref{sec:tracker}). The block tracker
 \emph{does} beat the normalized-GD baseline per-row---$0.38$ vs.\ $0.197$, $t\approx10.6$,
 all $10$ folds---but that edge is \emph{protocol-specific}: under the batched per-timestep
-protocol it vanishes ($0.351$ vs.\ $0.316$, $t\approx-0.1$). Against the EMA \emph{default}
+protocol it vanishes ($0.351$ vs.\ $0.316$, $t\approx-0.1$). The mechanism is substitution,
+not coincidence: per-timestep batching averages the $\sim\!9$ correlated symbols in each
+$(\text{date},\text{time})$ group, and that averaging is itself the variance reduction the
+smooth block scale supplies per-row, so the two do not compound---when the protocol smooths
+the update, a smoother tracker adds nothing. The same averaging is what lifts
+normalized-GD ($0.197\to0.316$, it had no such smoothing per-row) while, uncapped, it
+\emph{enlarges} the untruncated step and halves scale-adaptive OGD ($0.162\to0.080$,
+\cref{sec:experiments}); the block tracker's edge sitting exactly where the protocol lacks
+the smoothing is the same story from the tracker side. Against the EMA \emph{default}
 its edge is \emph{not} significant on either protocol ($+0.16$ per-row but $t\approx1.3$,
 $8/10$ folds). So we do \emph{not} claim the block tracker is uniformly more accurate, and
 we keep the winsorized EMA as the reported default: it is the standard reactive choice, and
@@ -1117,15 +1125,18 @@ asserting it: sweeping the tracker's block timescale over $B\in\{50,\dots,20{,}0
 $400\times$ window range) moves the divisor's best-tuned weighted $R^2$ only within
 $[0.363,0.386]$ (spread $0.022$), if anything \emph{rising} with the window---so a longer,
 laggier scale does not hurt the normalizer. When the scale is instead a \emph{threshold}
-(clipping $\norm{\gt}$ at $s_t$; the lag mechanism is the \cref{sec:tracker} clip-rate/dynamic-range
-tension), a lagging $s_t$ clips hardest precisely when the scale jumps up---the stale
-threshold throws away the informative post-onset gradients. In the same sweep the threshold
-use never leaves $R^2\approx0.003$ at \emph{any} window---scale-dependent clipping is stable
-only at a tiny step size, so it is dominated by that first-order tax rather than by the
-window, and the normalizer beats it at every tracker length (we therefore do \emph{not} claim
-a clean window-monotone threshold curve, only that the threshold is uniformly worse). Long
-windows are thus fine for normalizing and never help thresholding; the one-day block tracker
-is a normalizer, so no contradiction arises.
+(clipping $\norm{\gt}$ at $s_t$), the same sweep says something \emph{sharper} than ``long
+windows hurt thresholding.'' The threshold use never leaves $R^2\approx0.003$ at \emph{any}
+window: clipping $\norm{\gt}$ at a tracked scale is scale-\emph{dependent} OGD, stable only at
+a tiny step ($\mathrm{lr}\approx3\times10^{-4}$), so it is unusable no matter how the scale is
+tracked. Window choice is therefore moot on the threshold side---there is no usable operating
+point to tune toward---while the divisor is usable and window-insensitive across the whole
+$400\times$ range. This is the paper's central fragility finding (\cref{sec:experiments})
+arriving from the tracker-design direction: normalization decouples the step from the scale and
+thresholding does not, so the very lag that would wreck a threshold (it clips hardest exactly
+when the scale jumps up, discarding the informative post-onset gradients---the
+\cref{sec:tracker} clip-rate/dynamic-range tension) merely re-normalizes a divisor. The
+one-day block tracker is a normalizer, so no contradiction arises.
 
 \paragraph{Closing the gap.} Either run the envelope in deployment, accepting the small
 accuracy cost, or prove a $W_s$ bound for the winsorized EMA under a heavy-tailed scale

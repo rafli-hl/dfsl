@@ -250,6 +250,15 @@ band with SE/t/sign-test. Numbers reproduce Table 1 exactly (normGD 0.197/0.316,
   headline tie stands where it is measured most conservatively. §4.3 now states (i) block >
   normGD per-row significant, (ii) vanishes per-step, (iii) block ≈ EMA within noise. This is
   claims-relevant and is added to the claims-changing list.
+  - **Mechanism added (why per-row but not per-step).** A reviewer will ask why the edge is
+    protocol-specific; the answer is *substitution*: per-timestep batching averages the ~9
+    correlated symbols per (date,time) group (measured 9.16), which is itself the variance
+    reduction the smooth block scale supplies per-row — so the two don't compound (a smoother
+    tracker adds nothing once the protocol already smooths). Consistent with the two companion
+    facts already in the body: normalized-GD *gains* most from batching (0.197→0.316, no per-row
+    smoothing to begin with) and uncapped scale-adaptive OGD *loses* (0.162→0.080, aggregation
+    enlarges the untruncated step). One sentence in A.8 links all three; turns the
+    protocol-dependence caveat into a coherent mechanism.
 - **Item 4 (A.8 three-way gap):** A.8 now names which proposition covers which tracker —
   `prop:tracker` proves W_s=O(V_σ⁺) **only for the envelope** (s=max{c·m̂,(1−ρ)s}); the EMA
   and the block median are **both uncovered** (only empirical W_s), and the *best-performing*
@@ -295,11 +304,17 @@ own lr grid, downstream weighted R² on the real 150k Jane stream (deterministic
   for OGD/clippers), so any window-lag effect is swamped by that tax. First attempt used the
   divisor's lr grid and the threshold **diverged to −10²⁸** (a clean illustration that clipping ‖g‖
   at s is scale-*dependent* OGD, not scale-free) — corrected with a per-use small-lr grid.
-- **What A.8 now says (measured):** reports the divisor flatness with numbers; states the
-  threshold stays ≈0.003 at every window so the normalizer dominates it at every tracker length;
-  and explicitly **declines to claim a window-monotone threshold degradation** (the mechanism —
-  clip-rate/dynamic-range tension as W grows — stays cited to `research_nonstationarity.py`, which
-  is where that evidence actually lives). No claim exceeds the data.
+- **What A.8 now says (measured; the floor is a FINDING, not a failure).** First draft read
+  apologetically ("we do not claim a window-monotone curve, only that the threshold is uniformly
+  worse"). Reframed on review: the floor is the paper's *central fragility claim arriving from the
+  tracker-design direction*. Scale-dependent thresholding is so learning-rate-constrained
+  (stable only at lr≈3e-4) that window tuning can't even be measured — there is no usable
+  operating point to tune toward — while the divisor is usable and window-insensitive across the
+  full 400× range. That is *stronger* than the monotone degradation originally sought: the
+  threshold doesn't degrade *with* window length, it's unusable *regardless* of it. A.8 now says
+  it that way (normalization decouples the step from the scale, thresholding doesn't; the same lag
+  that would wreck a threshold merely re-normalizes a divisor), keeping the clip-rate/dynamic-range
+  tension (`research_nonstationarity.py`) as the mechanism. No claim exceeds the data.
 
 **5b — widened the mechanical guard** (`tests/test_artifacts_fresh.py`, suite 76→77). Added an
 **input-hash tripwire**: pins the sha256 of `gradnorm_at_wstar.npy` (the 200k @w* gradient-norm
