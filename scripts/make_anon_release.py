@@ -120,8 +120,8 @@ def main() -> int:
         "- No .git history is included (author identity lived there).\n"
         "- LICENSE / pyproject author fields anonymized.\n"
         "- Internal audit/rebuttal notes excluded.\n"
-        "BEFORE SUBMITTING: replace paper/icml2026.sty and paper/icml2026.bst with the\n"
-        "official ICML 2026 author-kit files (the tracked ones are local preview shims).\n",
+        "- Style files (icml2026.sty/.bst, algorithm/algorithmic/fancyhdr) are the OFFICIAL\n"
+        "  ICML 2026 author-kit files, verified byte-identical (SHA256) -- no swap needed.\n",
         encoding="utf-8",
     )
 

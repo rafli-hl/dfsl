@@ -1,6 +1,8 @@
 %%%%%%%% ICML 2026 SUBMISSION -- Distribution-Free Sequential Learning %%%%%%%%
-% NOTE: icml2026.sty / icml2026.bst in this folder are LOCAL PREVIEW SHIMS.
-% Replace them with the official ICML 2026 author-kit files before submitting.
+% NOTE: icml2026.sty / icml2026.bst / algorithm.sty / algorithmic.sty / fancyhdr.sty in
+% this folder are the OFFICIAL ICML 2026 author-kit files -- verified byte-identical
+% (SHA256) on 2026-08-01 against media.icml.cc/Conferences/ICML2026/Styles/icml2026.zip.
+% The page-count/layout below is therefore the real submission layout, not an approximation.
 
 \documentclass{article}
 
@@ -695,10 +697,12 @@ mechanism-level diagnostics; and validation beyond our two domains is warranted.
 directions include per-coordinate normalization and tighter dynamic constants.
 
 \section*{Software and Data}
-An implementation (the \texttt{ScaleNormalizedOGD} learner and scale trackers), configs,
-and scripts reproducing every figure and number will be released. The primary data is the
-public Jane Street Real-Time Market Data Forecasting competition; the second-domain
-gradient norms are logged from a small CNN trained on MNIST (\cref{sec:experiments}).
+The released code provides the \texttt{ScaleNormalizedOGD} learner as a library class,
+the scale-tracker implementations used in the experiments (winsorized EMA, two-timescale
+envelope, and block median) as experiment scripts, the configs, and the scripts that
+reproduce every figure and number. The primary data is the public Jane Street Real-Time
+Market Data Forecasting competition; the second-domain gradient norms are logged from a
+small CNN trained on MNIST (\cref{sec:experiments}).
 
 \section*{Impact Statement}
 This paper presents work whose goal is to advance the field of machine learning. There
