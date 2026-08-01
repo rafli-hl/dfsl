@@ -13,8 +13,9 @@ produces one *without touching the canonical repo*:
 
 Run:  python scripts/make_anon_release.py [--out DIR]
 Default DIR is a sibling ``dfsl-anon-release/`` next to the repo, cleared and rebuilt each run.
-The export is a code supplement; swap the local ICML style shims for the official author-kit
-before you actually submit (see RELEASE_NOTES.txt it writes).
+The export is a code supplement; its ICML style files (icml2026.sty/.bst,
+algorithm/algorithmic/fancyhdr) are the official ICML 2026 author-kit, verified byte-identical
+(SHA256) -- no swap needed before submitting (see RELEASE_NOTES.txt it writes).
 """
 
 from __future__ import annotations
