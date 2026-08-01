@@ -1,24 +1,29 @@
 # dfsl — Distribution-Free Sequential Learning
 
-Robust online (sequential) regression under heavy-tailed and contaminated data streams.
-`dfsl` plugs robust mean estimators (Catoni's M-estimator, median-of-means, trimmed mean)
-into clipped online gradient methods, so that gradient-clipping thresholds are set by
-distribution-free robust statistics instead of hand-tuned constants. The library is
-evaluated on synthetic heavy-tailed streams (Student-t, Pareto, Cauchy noise with
-optional adversarial contamination) and on the Jane Street Real-Time Market Data
-Forecasting dataset from Kaggle, using only a finite-variance assumption on the noise.
+Online (sequential) regression when the **gradient scale is heavy-tailed and
+nonstationary**. `dfsl`'s central method, `ScaleNormalizedOGD` (SN-OMD), divides each
+gradient by a *tracked robust scale* and caps the normalized gradient at a *scale-free*
+constant, so the update never inherits the drifting scale and its iterates provably cannot
+blow up — they grow at most as `O(√t)` at any learning rate (a stability, not convergence,
+guarantee). The library also ships the classical robust-clipping baselines SN-OMD is
+compared against — Catoni's M-estimator, median-of-means, and trimmed-mean clipping
+thresholds. Everything is evaluated on synthetic heavy-tailed streams (Student-t, Pareto,
+Cauchy noise with optional adversarial contamination) and on the Jane Street Real-Time
+Market Data Forecasting dataset from Kaggle, under only a finite-variance assumption on the
+noise.
 
 ## Features
 
+- **Online learners** — `ScaleNormalizedOGD` (SN-OMD: a *scale-invariant* step that divides
+  the gradient by a tracked robust scale and caps it at a scale-free constant, so the update
+  never inherits the drifting scale and its iterates provably cannot blow up — see
+  `results/research/THEORY_SNOGD.md`), alongside the baselines it is measured against:
+  `OnlineGradientDescent`, `AdaptiveClip` (quantile-based gradient clipping), and `RobustOMD`
+  (online mirror descent with a robust-statistics clipping threshold), all sharing the
+  `OnlineLearner` prequential `run` protocol.
 - **Robust mean estimators** — `catoni_mean`, `median_of_means`, `trimmed_mean` with a
-  uniform "array in, float out" contract and a `get_estimator` registry.
-- **Online learners** — `OnlineGradientDescent`, `AdaptiveClip` (quantile-based gradient
-  clipping), `RobustOMD` (online mirror descent with a robust-statistics clipping
-  threshold), and `ScaleNormalizedOGD` (SN-OGD: a *scale-invariant* step that divides the
-  gradient by a tracked robust scale and caps it at a constant, so the update never
-  inherits the drifting scale and provably cannot diverge — see
-  `results/research/THEORY_SNOGD.md`), all sharing the `OnlineLearner` prequential `run`
-  protocol.
+  uniform "array in, float out" contract and a `get_estimator` registry (used by the
+  clipping baselines).
 - **Sequential datasets** — `SyntheticHeavyTailed` streams with configurable noise and
   contamination, and `JaneStreetDataset` backed by lazy polars scans of the competition
   parquet files.
@@ -38,7 +43,7 @@ distribution-free-sequential-learning/
 │   └── processed/      # cleaned parquet written by scripts/preprocess.py
 ├── experiments/        # train.py, evaluate.py, benchmark.py, ablation.py CLIs
 ├── notebooks/          # dataset characterization and analysis notebooks
-├── paper/              # LaTeX sources (main.tex, appendix.tex, references.bib)
+├── paper/              # LaTeX sources (icml2026.tex, refs.bib, figures)
 ├── results/            # runs, figures, benchmark and ablation outputs
 ├── scripts/            # download_data.py, preprocess.py, reproduce.sh, run_all.sh
 ├── src/dfsl/           # the importable library (src layout)
