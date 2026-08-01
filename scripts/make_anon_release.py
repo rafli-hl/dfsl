@@ -32,6 +32,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXCLUDE_EXACT = {
     "paper/audit-findings.md",   # names the reviewer dialogue + every walked-back claim
     "paper/rebuttal-notes.md",   # internal anticipated-objections notes
+    # This builder must not ship in the anonymized artifact: its denylist below hardcodes the
+    # author's identity tokens, so exporting it would re-introduce exactly what it strips.
+    "scripts/make_anon_release.py",
 }
 EXCLUDE_GLOBS = ("__pycache__/", ".pyc")  # committed bytecode -> junk, never in a release
 
