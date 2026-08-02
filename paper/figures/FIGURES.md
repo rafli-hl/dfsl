@@ -18,7 +18,12 @@ All PNG, 300 dpi, uniform ICML styling.
 - **fig4_tracker.png** — discharging assumption A1. A two-timescale envelope tracker holds
   the stability-critical lower bracket at 100% (a) with the smallest upward variation
   $W_s/V_\sigma^+$ (b), on the real gradient-scale process.
+- **fig5_null.png** — the estimator null (rules out the "normalization mechanically lightens
+  any tail" artifact). (a) causal $\div s_t$ leaves a genuinely heavy iid tail
+  ($\hat\alpha\approx2.4$) unchanged ($\Delta\approx0$) while removing a drift-manufactured
+  one; (b) the induced lightening is $\approx0$ for the iid null and grows with how trackable
+  the drift is (regime length). 12 seeds; source `research_review5_checks.py`.
 
-These four figures are the definitive set used by `paper/icml2026.tex`. The old-story
+These figures are the definitive set used by `paper/icml2026.tex`. The old-story
 first-pass paper (`main.tex`, `appendix.tex`) and its figures (`fig_heavytails.pdf`,
 `fig_results.pdf`, `fig_ablation.pdf`) were removed 2026-07-30.
