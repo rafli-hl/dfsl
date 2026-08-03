@@ -196,7 +196,8 @@ convergence) that needs no moment assumption.
   predicts \emph{when} the finite cap matters---non-divergence at large steps, and an
   accuracy optimum only when the normalized tail is genuinely heavy.
   \item \textbf{A protocol-careful study, and deferred theory (\cref{sec:experiments}).}
-  Under causal standardization SN-OMD stays bounded and most accurate where OGD and
+  Under causal standardization SN-OMD stays bounded and accurate (one of several
+  co-leading bounded scale-free methods, not the single best; \cref{tab:jane}) where OGD and
   scale-dependent clipping diverge; it is invariant to per-row vs.\ per-timestep updates
   (no contemporaneous leakage) and its advantage vanishes on a genuinely stationary
   control. A per-regime dynamic-regret bound (\cref{thm:regret}) is deferred to the
@@ -841,6 +842,22 @@ is handled by a strongly-adaptive wrapper \citep{daniely2015,cutkosky2020} using
 interval-regret property (\cref{thm:stability} gives the required bounded feedback).
 \end{remark}
 
+\begin{remark}[Scope: comparator and step schedule]
+\label{rmk:scope}
+Two limitations are worth stating plainly. \emph{(i) Comparator.} The high-probability
+guarantee is per \emph{fixed} (predictable) comparator sequence $u_{1:T}$: the martingale
+term needs $u_t$ to be $\mathcal F_{t-1}$-measurable (\cref{lem:freedman}), so the Freedman
+event is comparator-specific and \cref{thm:regret} does not hold uniformly over all
+comparators without a union/chaining bound. In particular the \emph{per-round minimizer}
+$u_t=\argmin_u\ell_t(u)$ is $\mathcal F_t$-measurable, not predictable, and is \emph{not}
+covered; our dynamic comparator must be fixed in advance with a given path length. \emph{(ii)
+Step schedule.} \cref{thm:regret} is proven for the tuned constant step $\eta_t\equiv\eta$
+(known horizon $T$, or a doubling schedule), whereas \cref{alg:snomd} and \cref{thm:stability}
+deploy the anytime $\eta_t=\eta/\sqrt t$ for horizon-free stability. These are the same update
+under two schedules; carrying the fixed-$\eta$ regret to the $1/\sqrt t$ schedule is the
+standard anytime/doubling reduction, which we do not reproduce here.
+\end{remark}
+
 \section{Proofs}
 \label{app:proofs}
 
@@ -891,7 +908,8 @@ Let $(X_t)$ be a martingale difference sequence with $|X_t|\le b$ and
 $\sum_{t\le T}\E[X_t^2\mid\mathcal F_{t-1}]\le V$ almost surely. Then w.p.\ $\ge1-\delta$,
 $\sum_{t\le T}X_t\le\sqrt{2V\log(1/\delta)}+\tfrac{2b}{3}\log(1/\delta)$. In particular,
 for feedback $Z_t$ with $\norm{Z_t}\le B$ and $X_t=\ip{Z_t-\E[Z_t\mid\mathcal F_{t-1}]}
-{w_t-u_t}$ ($u_t$ deterministic, $\norm{w_t-u_t}\le D$), one may take $b=2BD$ and
+{w_t-u_t}$ ($u_t$ \emph{predictable}, i.e.\ $\mathcal F_{t-1}$-measurable, so $X_t$ is a
+martingale difference; $\norm{w_t-u_t}\le D$), one may take $b=2BD$ and
 $V=D^2\sum_t\E[\norm{Z_t}^2\mid\mathcal F_{t-1}]$.
 \end{lemma}
 \begin{proof}
@@ -1159,8 +1177,9 @@ now three trackers in play and the accuracy/guarantee trade-off has three corner
 $W_s=O(V_\sigma^+)$. \emph{(2) The winsorized EMA} (deployed default) has no closed-form
 $W_s$ bound---\cref{prop:tracker} does not cover it, as its functional form is not the
 envelope's---only the empirical $W_s=60\,V_\sigma^+$ of \cref{tab:tracker}. \emph{(3) The
-block median} ($B{=}10^4\approx$ one day) is the most accurate on our stream yet the least
-analyzed: \cref{prop:tracker} does not cover it either, and we prove nothing about its
+block median} ($B{=}10^4\approx$ one day) is the most accurate \emph{per-row} on our stream
+(per-timestep the constant-$\tau$ clip edges it, $0.382$ vs.\ $0.351$; \cref{tab:jane}) yet
+the least analyzed: \cref{prop:tracker} does not cover it either, and we prove nothing about its
 $W_s$. So the best-performing tracker is the one with no guarantee; the gap between what we
 can \emph{prove} (envelope) and what we would \emph{deploy} (EMA, or block) is if anything
 wider than before, and stating that cleanly is more honest than implying it narrowed.
