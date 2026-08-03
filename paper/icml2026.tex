@@ -795,8 +795,8 @@ $P_T^s=\sum_t s_t\norm{u_t-u_{t-1}}$.
 \begin{theorem}[Dynamic regret]
 \label{thm:regret}
 Under \cref{ass:moment,ass:track}, SN-OMD with $M=\Theta(T^{1/p})$ (or a
-doubling schedule, requiring no knowledge of $p$) satisfies, with probability
-$\ge1-\delta$, simultaneously for all comparators $u_{1:T}$,
+doubling schedule, requiring no knowledge of $p$) satisfies, for any fixed comparator
+sequence $u_{1:T}$, with probability $\ge1-\delta$,
 \begin{align}
 \label{eq:mainbound}
 R_T(u_{1:T})
@@ -955,7 +955,11 @@ $\le M^{2-p}\kappa'\sum_t\sigma_t=M^{2-p}\kappa'S_1$, with $S_1=\sum_t\sigma_t$.
 \emph{(B)} The increments $\ip{m_t'-d_t}{w_t-u_t}$ form a martingale difference with
 $\norm{d_t}\le Ms_t$ and $\E[\norm{d_t}^2\mid\mathcal F_{t-1}]\le M^{2-p}\kappa'
 \sigma_t^2$; \cref{lem:freedman} bounds this sum by
-$\tilde O(D M^{1-p/2}\sqrt{\sup_t\sigma_t\cdot S_1}\,)$, the same order as (A).
+$\tilde O(D M^{1-p/2}\sqrt{\sup_t\sigma_t\cdot S_1}\,)$, the same order as (A). This step
+requires $u_t$ predictable (\cref{lem:freedman}), so the Freedman event is
+comparator-specific; \cref{thm:regret} is accordingly a guarantee \emph{per fixed}
+$u_{1:T}$, not one holding uniformly over all comparators (which would need a union or
+chaining bound over comparator sequences, not pursued here).
 \emph{(C)} $\norm{\beta_t}\le\E[\norm{\gt}^p\mid\mathcal F_{t-1}]/(Ms_t)^{p-1}\le
 \kappa'\sigma_t/M^{p-1}$ (\cref{lem:moment}), so (C) $\le D\kappa'S_1/M^{p-1}$.
 Choosing $\eta=\Theta\bigl(\sqrt{(D^2W_s+D P_T^s)/(M^{2-p}S_1)}\bigr)$ and
