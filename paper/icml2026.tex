@@ -431,7 +431,11 @@ small preview of the cap's role.)
 SN-OMD and normalized-GD are \emph{comparable} on this data ($0.29/0.31$ per-row/
 per-timestep vs.\ $0.20/0.32$): \emph{normalization}---dividing by the scale---is what
 earns the gain over the divergent baselines, and normalized-GD is a valid simple instance
-of it. SN-OMD's specific contributions lie elsewhere. First, its scale is a
+of it. The same holds for two further scale-free bounded baselines---a constant-threshold
+fixed-$\tau$ clip and AdaGrad-Norm---which are likewise competitive here (each the most
+accurate entry on one protocol; \cref{tab:jane}), confirming that it is bounded scale-free
+updating in general, not SN-OMD in particular, that closes the accuracy gap to the
+divergent methods. SN-OMD's specific contributions lie elsewhere. First, its scale is a
 \emph{predictable} tracker, which is what makes the regret bound (\cref{thm:regret}) go
 through; normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and discards
 gradient magnitude every round. Second, the cap buys \emph{non-divergence at large
@@ -476,7 +480,17 @@ largest stable learning rate. Scale-\emph{dependent} methods (top) are fragile
 (stable only to $\mathrm{lr}\!\approx\!10^{-2}$); scale-\emph{invariant} methods (bottom)
 stay bounded much higher (SN-OMD and normalized-GD to $\mathrm{lr}=2$, uncapped only to
 $\mathrm{lr}=1$) and are far more accurate. SN-OMD and normalized-GD are \emph{comparable}
-here; the cap's role is non-divergence (uncapped diverges at $\mathrm{lr}\ge2$). $R^2$ is not comparable to competition scores (different protocol,
+here; the cap's role is non-divergence (uncapped diverges at $\mathrm{lr}\ge2$). Two
+further scale-free bounded baselines---a constant-threshold \emph{fixed-$\tau$ clip}
+($\tau{=}20$) and \emph{AdaGrad-Norm}---both satisfy \cref{thm:stability} and are
+accuracy-competitive, each the most accurate entry on one protocol (fixed-$\tau$ per-step
+$0.382$, AdaGrad-Norm per-row $0.329$); this supports the thesis that \emph{bounded
+scale-free} updating, not SN-OMD specifically, is what earns the accuracy over the
+divergent baselines, SN-OMD's distinct contributions being its \emph{predictable} tracker
+(\cref{thm:regret}) and non-divergence at large steps. The constant threshold cannot track
+the $\sim6\times$ scale drift, so its peak loss still grows with the rate (usefully stable
+only to $\mathrm{lr}\approx0.2$), whereas AdaGrad-Norm's monotone accumulator keeps its
+step $\le\eta$. $R^2$ is not comparable to competition scores (different protocol,
 see text). The reported SN-OMD row uses the winsorized-EMA tracker; an alternative
 block-median tracker changes the per-row number but not per-step, and not beyond fold noise
 against this row (\cref{sec:tracker}).}
@@ -492,9 +506,11 @@ OGD                                  & $0.018$ & $0.139$ & $\le 10^{-2}$ \\
 AdaptiveClip / RobustOMD             & $\sim0.01$ & --- & $\le 10^{-2}$ \\
 \midrule
 \multicolumn{4}{l}{\emph{Scale-invariant (bounded; stable lr per row):}}\\
-Normalized-GD ($M\!\to\!0$)          & $0.197$ & $\mathbf{0.316}$ & $\le 2$ \\
+Normalized-GD ($M\!\to\!0$)          & $0.197$ & $0.316$ & $\le 2$ \\
 Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $0.080$ & $\le 1$ \\
-\textbf{SN-OMD ($M{=}5$, ours)}      & $\mathbf{0.285}$ & $0.309$ & $\le 2$ \\
+Fixed-$\tau$ clip (const $M$)        & $0.246$ & $\mathbf{0.382}$ & $\le 0.2$ \\
+AdaGrad-Norm                         & $\mathbf{0.329}$ & $0.219$ & $\le 10$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}      & $0.285$ & $0.309$ & $\le 2$ \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -660,14 +676,21 @@ supplies the required interval-regret interface.
 \paragraph{Adaptive optimizers.} Coordinate-wise adaptive methods (AdaGrad, RMSProp,
 Adam) also rescale the gradient by a running second-moment estimate and superficially
 resemble our normalization, so a natural question is whether they already provide
-robustness to a drifting scale. The difference is decisive under a heavy tail: their
+robustness to a drifting scale. The answer splits by whether the preconditioner is
+\emph{monotone}. For the \emph{EMA-denominator} members (RMSProp, Adam) it is no: their
 preconditioner divides by $\sqrt{\mathrm{EMA}(\gt^2)}$, which \emph{itself} spikes with
-a heavy-tailed gradient (the same round enters numerator and denominator), and there is
-no scale-\emph{free} cap, so a single extreme gradient still yields an unbounded step.
-Our unconditional stability (\cref{thm:stability}) comes precisely from capping the
-\emph{normalized} gradient at a constant $M$; adaptive rescaling alone does not prevent
-the divergence documented in \cref{sec:experiments}. An empirical head-to-head against
-the Adam family is a natural addition.
+a heavy-tailed gradient (the same round enters numerator and denominator), and with no
+scale-\emph{free} cap a single extreme gradient still yields an unbounded step---so
+adaptive rescaling alone does not prevent the divergence documented in
+\cref{sec:experiments}. \emph{AdaGrad-Norm}, however, divides by the \emph{monotone}
+accumulator $\sqrt{\sum_s\norm{g_s}^2}$, which bounds its step by $\eta$ and so does not
+diverge; run head-to-head on the Jane stream (\cref{tab:jane}) it stays bounded and is
+accuracy-competitive with SN-OMD (indeed best per-row), placing it with the scale-free
+bounded family rather than the divergent one. What it lacks relative to SN-OMD is a
+\emph{predictable} scale (its denominator depends on the current round) and the
+accompanying dynamic-regret guarantee (\cref{thm:regret}). Our unconditional stability
+(\cref{thm:stability}) still comes precisely from capping the \emph{normalized} gradient
+at a constant $M$.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -701,9 +724,11 @@ best is open, as is making the envelope's release rate $\rho$ adaptive to an unk
 regime length.
 So the dynamic-regret bound is proven only for the envelope variant
 (\cref{ass:moment,ass:track}); the deployed EMA's high-probability regret under drift is
-supported empirically. Empirically, three gaps remain: our baselines omit the Adam family
-(\cref{sec:related}); evaluation centers on accuracy and stability rather than
-mechanism-level diagnostics; and validation beyond our two domains is warranted.
+supported empirically. Empirically, three gaps remain: the EMA-denominator adaptive optimizers (RMSProp, Adam)
+are argued to diverge but not yet run head-to-head, though the monotone AdaGrad-Norm and a
+constant-threshold clip now are (\cref{sec:related,tab:jane}); evaluation centers on
+accuracy and stability rather than mechanism-level diagnostics; and validation beyond our
+two domains is warranted.
 
 \section*{Software and Data}
 The released code provides the \texttt{ScaleNormalizedOGD} learner as a library class,
