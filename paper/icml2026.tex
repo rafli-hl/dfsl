@@ -662,15 +662,17 @@ through $\mathrm{lr}\le2$ (peak rolling loss $3.9$ at $\mathrm{lr}{=}2$, versus 
 the winsorized-EMA default at the same rate). We stress-tested this configuration rather
 than banking its flattering headline number. Two things survive and one does not.
 \emph{(i) Against the normalized-GD baseline the block tracker is genuinely better
-per-row}: $R^2=0.38$ vs.\ $0.197$ at each method's tuned rate, a paired $10$-fold gap of
-$+0.176$ that is tight and significant ($t\approx10.6$, all $10$ folds), so the ``ties
-normalized-GD'' concession (\cref{tab:jane}) is \emph{over-generous for this configuration}
-on the per-row protocol. \emph{(ii) But the advantage is protocol-specific}: under the
-honest batched (per-timestep) protocol it evaporates---block $0.351$ vs.\ normalized-GD
-$0.316$, a paired gap of $-0.009$ ($t\approx-0.1$), indistinguishable---so the headline tie
-still stands where it is measured most conservatively. \emph{(iii) The edge over the EMA
-\emph{default} is not significant} either way ($+0.16$ per-row but $t\approx1.3$, $8/10$
-folds; not distinguishable at this sample size). Past the tuned range both trackers
+per-row}: $R^2=0.38$ vs.\ $0.197$ at each method's tuned rate, an aggregate gap of $+0.18$
+whose $95\%$ circular block-bootstrap interval (the \emph{same} one-day blocks as
+\cref{tab:jane}) is $[+0.16,+0.21]$ and excludes zero, so the ``ties normalized-GD''
+concession (\cref{tab:jane}) is \emph{over-generous for this configuration} on the per-row
+protocol. \emph{(ii) But the advantage is protocol-specific}: under the honest batched
+(per-timestep) protocol it evaporates---block $0.351$ vs.\ normalized-GD $0.316$, gap
+$+0.035$ with interval $[-0.05,+0.12]$ straddling zero---so the headline tie still stands
+where it is measured most conservatively. \emph{(iii) The edge over the EMA \emph{default}
+is not significant} either way (per-row gap $+0.10$, interval $[-0.04,+0.23]$). We use the
+same block bootstrap throughout, in place of a paired-fold $t$-test, since the aggregate
+$R^2$ is a ratio of sums and its fold-mean is not the aggregate. Past the tuned range both trackers
 \emph{degrade in loss} but neither diverges in the sense of \cref{thm:stability}: at
 $\mathrm{lr}{=}10$ the peak rolling loss grows to $\approx30$ (block) vs.\ $\approx230$
 (EMA) while the $O(\sqrt t)$ iterate bound still holds---it is the loss, not the iterate,
@@ -876,7 +878,10 @@ standard anytime/doubling reduction, which we do not reproduce here.
 \section{Proofs}
 \label{app:proofs}
 
-Throughout, $v_t=\gt/s_t$, $\hat g_t=\clip(v_t,M)$ with $M\ge1$, and $p=\inf_t p_t$.
+Throughout, $v_t=\gt/s_t$, $\hat g_t=\clip(v_t,M)$ with $M\ge1$, and $p=\inf_t p_t$. (The
+regret bound takes $M=\Theta(T^{1/p})\ge1$, the genuine-truncation regime; the $M\!\to\!0$
+endpoint of \cref{sec:msweep} is the classical normalized-GD, whose regret is standard and
+not re-derived here. \cref{thm:stability}, by contrast, holds for every $M>0$.)
 We use the filtration $(\mathcal F_t)$ with $\E[\gt\mid\mathcal F_{t-1}]=\bar g_t$ and
 $s_t$ predictable ($\mathcal F_{t-1}$-measurable).
 
@@ -994,7 +999,9 @@ $\sum_t\ip{d_t}{w_t-u_t}\le\tfrac{1}{2\eta}(D^2W_s+2D P_T^s)+\tfrac{\eta}{2}
 \sum_t\norm{d_t}^2/s_t$. Since $\norm{d_t}^2=\norm{\clip(\gt,Ms_t)}^2\le
 (Ms_t)^{2-p}\norm{\gt}^p$ (\cref{lem:clip}) and $s_t\ge c_1\sigma_t$
 (\cref{ass:track}), the curvature sum has conditional mean
-$\le M^{2-p}\kappa'\sum_t\sigma_t=M^{2-p}\kappa'S_1$, with $S_1=\sum_t\sigma_t$.
+$\le M^{2-p}\kappa'\sum_t\sigma_t=M^{2-p}\kappa'S_1$, with $S_1=\sum_t\sigma_t$ and
+$\kappa'{:=}\kappa_0 c_1^{1-p}$ an absolute constant (the moment/lower-bracket constants of
+\cref{ass:moment,lem:moment}).
 \emph{(B)} The increments $\ip{m_t'-d_t}{w_t-u_t}$ form a martingale difference with
 $\norm{d_t}\le Ms_t$ and $\E[\norm{d_t}^2\mid\mathcal F_{t-1}]\le M^{2-p}\kappa'
 \sigma_t^2$; \cref{lem:freedman} bounds this sum by
@@ -1199,11 +1206,12 @@ $W_s$. So the best-performing tracker is the one with no guarantee; the gap betw
 can \emph{prove} (envelope) and what we would \emph{deploy} (EMA, or block) is if anything
 wider than before, and stating that cleanly is more honest than implying it narrowed.
 
-On accuracy we are deliberately careful, because the numbers are easy to over-read (paired
-$10$-fold bands, each method at its tuned rate; \cref{sec:tracker}). The block tracker
-\emph{does} beat the normalized-GD baseline per-row---$0.38$ vs.\ $0.197$, $t\approx10.6$,
-all $10$ folds---but that edge is \emph{protocol-specific}: under the batched per-timestep
-protocol it vanishes ($0.351$ vs.\ $0.316$, $t\approx-0.1$). The mechanism is substitution,
+On accuracy we are deliberately careful, because the numbers are easy to over-read (block
+bootstrap of the aggregate gap, each method at its tuned rate; \cref{sec:tracker}). The
+block tracker \emph{does} beat the normalized-GD baseline per-row---$0.38$ vs.\ $0.197$,
+gap $+0.18$, $95\%$ CI $[+0.16,+0.21]$---but that edge is \emph{protocol-specific}: under
+the batched per-timestep protocol it vanishes ($0.351$ vs.\ $0.316$, gap $+0.035$, CI
+$[-0.05,+0.12]$). The mechanism is substitution,
 not coincidence: per-timestep batching averages the $\sim\!9$ correlated symbols in each
 $(\text{date},\text{time})$ group, and that averaging is itself the variance reduction the
 smooth block scale supplies per-row, so the two do not compound---when the protocol smooths
@@ -1212,8 +1220,8 @@ normalized-GD ($0.197\to0.316$, it had no such smoothing per-row) while, uncappe
 \emph{enlarges} the untruncated step and halves scale-adaptive OGD ($0.162\to0.080$,
 \cref{sec:experiments}); the block tracker's edge sitting exactly where the protocol lacks
 the smoothing is the same story from the tracker side. Against the EMA \emph{default}
-its edge is \emph{not} significant on either protocol ($+0.16$ per-row but $t\approx1.3$,
-$8/10$ folds). So we do \emph{not} claim the block tracker is uniformly more accurate, and
+its edge is \emph{not} significant on either protocol (per-row gap $+0.10$, CI
+$[-0.04,+0.23]$). So we do \emph{not} claim the block tracker is uniformly more accurate, and
 we keep the winsorized EMA as the reported default: it is the standard reactive choice, and
 the block tracker does not beat it beyond fold noise. Past the tuned range every tracker
 \emph{degrades in loss} without diverging in the sense of \cref{thm:stability}---at

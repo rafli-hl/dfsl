@@ -241,6 +241,29 @@ def cmp_normgd():
         print(f"    {tag:16s} {name_a}-{name_b}: mean={mean:+.4f} sd={sd:.4f} "
               f"se={se:.4f} t={t:+.2f}  {name_a}>{name_b}: {wins}/{K} (sign p={p:.3f})")
 
+    def agg_r2(yy, pp, ww, idx=None):
+        if idx is not None:
+            yy, pp, ww = yy[idx], pp[idx], ww[idx]
+        with np.errstate(over="ignore", invalid="ignore"):
+            den = float(np.sum(ww * yy * yy))
+            return 0.0 if (not np.isfinite(den) or den == 0) else \
+                1.0 - float(np.sum(ww * (yy - pp) ** 2)) / den
+
+    def report_pair_boot(tag, y, pa, pb, wts, block_len, rng, na, nb, n_boot=4000):
+        """Paired CIRCULAR block-bootstrap of the AGGREGATE weighted-R^2 gap -- the same
+        estimator and one-trading-day blocks as Table 1, so tracker comparisons use the
+        bootstrap throughout rather than a paired-fold t-test."""
+        n = len(y); nblk = int(np.ceil(n / block_len)); offs = np.arange(block_len)
+        gap = agg_r2(y, pa, wts) - agg_r2(y, pb, wts)
+        reps = np.empty(n_boot)
+        for bts in range(n_boot):
+            st = rng.integers(0, n, size=nblk)
+            idx = ((st[:, None] + offs) % n).ravel()[:n]
+            reps[bts] = agg_r2(y, pa, wts, idx) - agg_r2(y, pb, wts, idx)
+        se = float(reps.std(ddof=1))
+        print(f"    {tag:16s} {na}-{nb}: aggregate gap={gap:+.4f} +-{se:.4f}  "
+              f"[95% CI {gap - 1.96 * se:+.4f}, {gap + 1.96 * se:+.4f}]")
+
     print("\n" + "=" * 82)
     print("CMP -- block-median tracker vs normalized-GD (and EMA), per-row AND per-step,")
     print("       each at its own tuned lr, judged on a PAIRED 10-fold band.")
@@ -256,6 +279,7 @@ def cmp_normgd():
     groups_per_day = max(1, int(round(len(starts) / max(ndays, 1))))
     print(f"  {len(y)} rows, {len(starts)} (date,time) groups, {rows_per_group:.1f} rows/group, "
           f"{ndays} days, ~{groups_per_day} groups/day (batched block size)")
+    block_len = max(1, len(y) // ndays); boot_rng = np.random.default_rng(0)
 
     lrs = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
     methods = ["normgd", "ema", "block"]
@@ -268,6 +292,10 @@ def cmp_normgd():
     report_pair("per-row", y, pr["block"], pr["normgd"], wts, "block", "normgd")
     report_pair("per-row", y, pr["block"], pr["ema"], wts, "block", "ema")
     report_pair("per-row", y, pr["ema"], pr["normgd"], wts, "ema", "normgd")
+    print("  per-row aggregate-R2 gap, circular block-bootstrap (block ~ 1 day):")
+    report_pair_boot("per-row", y, pr["block"], pr["normgd"], wts, block_len, boot_rng, "block", "normgd")
+    report_pair_boot("per-row", y, pr["block"], pr["ema"], wts, block_len, boot_rng, "block", "ema")
+    report_pair_boot("per-row", y, pr["ema"], pr["normgd"], wts, block_len, boot_rng, "ema", "normgd")
 
     print("\n  PER-STEP (batched by (date,time)), each method at its tuned lr:")
     bb = tuned(batched_preds, ["normgd", "ema"], lrs, starts)  # block needs Bg -> separate
@@ -282,6 +310,10 @@ def cmp_normgd():
     report_pair("per-step", y, pb["block"], pb["normgd"], wts, "block", "normgd")
     report_pair("per-step", y, pb["block"], pb["ema"], wts, "block", "ema")
     report_pair("per-step", y, pb["ema"], pb["normgd"], wts, "ema", "normgd")
+    print("  per-step aggregate-R2 gap, circular block-bootstrap:")
+    report_pair_boot("per-step", y, pb["block"], pb["normgd"], wts, block_len, boot_rng, "block", "normgd")
+    report_pair_boot("per-step", y, pb["block"], pb["ema"], wts, block_len, boot_rng, "block", "ema")
+    report_pair_boot("per-step", y, pb["ema"], pb["normgd"], wts, block_len, boot_rng, "ema", "normgd")
 
 
 def divthresh():
