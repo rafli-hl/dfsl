@@ -495,7 +495,8 @@ $\approx8$ at its top stable rate $\mathrm{lr}{=}2$.}
 \begin{table}[t]
 \caption{Best weighted $R^2$ (each method at its own tuned rate) on the continuous Jane
 Street stream, \emph{causal} standardization, for both round granularities, with the
-largest stable learning rate. Scale-\emph{dependent} methods (top) are fragile
+largest stable learning rate; each $R^2$ carries $\pm$ one circular block-bootstrap
+standard error (block $\approx$ one trading day, $4000$ resamples). Scale-\emph{dependent} methods (top) are fragile
 (stable only to $\mathrm{lr}\!\approx\!10^{-2}$); scale-\emph{invariant} methods (bottom)
 stay bounded much higher (SN-OMD and normalized-GD to $\mathrm{lr}=2$, uncapped only to
 $\mathrm{lr}=1$) and are far more accurate. SN-OMD and normalized-GD are \emph{comparable}
@@ -516,20 +517,21 @@ against this row (\cref{sec:tracker}).}
 \label{tab:jane}
 \centering
 \begin{small}
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lccc}
 \toprule
 Method & $R^2$ per-row & $R^2$ per-step & Stable lr \\
 \midrule
 \multicolumn{4}{l}{\emph{Scale-dependent (fragile):}}\\
-OGD                                  & $0.018$ & $0.139$ & $\le 10^{-2}$ \\
+OGD                                  & $0.018{\scriptscriptstyle\pm.006}$ & $0.139{\scriptscriptstyle\pm.012}$ & $\le 10^{-2}$ \\
 AdaptiveClip / RobustOMD             & $\sim0.01$ & --- & $\le 10^{-2}$ \\
 \midrule
 \multicolumn{4}{l}{\emph{Scale-invariant (bounded; stable lr per row):}}\\
-Normalized-GD ($M\!\to\!0$)          & $0.197$ & $0.316$ & $\le 2$ \\
-Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162$ & $0.080$ & $\le 1$ \\
-Fixed-$\tau$ clip (const $M$)        & $0.246$ & $\mathbf{0.382}$ & $\le 0.2$ \\
-AdaGrad-Norm                         & $\mathbf{0.329}$ & $0.219$ & $\le 10$ \\
-\textbf{SN-OMD ($M{=}5$, ours)}      & $0.285$ & $0.309$ & $\le 2$ \\
+Normalized-GD ($M\!\to\!0$)          & $0.197{\scriptscriptstyle\pm.024}$ & $0.316{\scriptscriptstyle\pm.021}$ & $\le 2$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162{\scriptscriptstyle\pm.022}$ & $0.080{\scriptscriptstyle\pm.013}$ & $\le 1$ \\
+Fixed-$\tau$ clip (const $M$)        & $0.246{\scriptscriptstyle\pm.046}$ & $\mathbf{0.382}{\scriptscriptstyle\pm.047}$ & $\le 0.2$ \\
+AdaGrad-Norm                         & $\mathbf{0.329}{\scriptscriptstyle\pm.030}$ & $0.219{\scriptscriptstyle\pm.014}$ & $\le 10$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}      & $0.285{\scriptscriptstyle\pm.079}$ & $0.309{\scriptscriptstyle\pm.056}$ & $\le 2$ \\
 \bottomrule
 \end{tabular}
 \end{small}
