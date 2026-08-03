@@ -399,7 +399,7 @@ is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank
 autocorrelation $\approx0.16$ at lag $100$, rank-based Ljung--Box $Q_{100}\approx7\!\times\!
 10^{5}$ (ranks are bounded, so the $\chi^2$ is valid; a shuffled control gives $\approx116$),
 of which the $\approx6\times$ daily drift (\cref{fig:problem}b) is only the low-frequency
-component. Three controls (released \texttt{research\_null\_normalization.py}) pin this
+component. Three controls (\cref{fig:nullcontrol}; released \texttt{research\_null\_normalization.py}) pin this
 down: (i) a marginal-preserving order-\emph{shuffle} leaves the pooled index unchanged but
 destroys the lightening, so the tracker exploits temporal \emph{order}, not the marginal;
 (ii) the same causal normalization is tail-index \emph{preserving} on iid streams of known
@@ -417,6 +417,21 @@ days; since those regimes are themselves a pooled-tail artifact---they largely d
 once the gradient is normalized (the tail the learner sees has $p\approx2$)---we treat
 that budget only as qualitative motivation for why a moving comparator under drift is
 hard, not as a measured quantity.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig7_nullcontrol.png}
+\caption{\textbf{The lightening is removability, not manufacture.} (a) Hill index before
+(open) and after (filled) causal scale-normalization, $k{=}0.01$. The \emph{same}
+operation lightens the real gradient tail ($2.43\!\to\!3.73$) and a GARCH surrogate with
+light innovations ($\approx2.3\!\to\!3.9$--$4.5$), but leaves an order-\emph{shuffle} of the
+real series, iid heavy streams of known index, and a bounded $6\times$ drift essentially
+unchanged ($\Delta\!\approx\!0$)---so what is removed is serial dependence, not the marginal,
+and it is not an estimator artifact. (b) Rank autocorrelation of $\norm{\gt}$ is
+slowly-decaying (the volatility clustering the tracker exploits) and vanishes under
+shuffling.}
+\label{fig:nullcontrol}
+\end{figure*}
 
 \paragraph{A second domain, and its limit.} On the per-step gradient norm of a small CNN
 trained on MNIST ($2{,}814$ steps), the pooled tail is heavy ($\hat\alpha\approx2.6$) and

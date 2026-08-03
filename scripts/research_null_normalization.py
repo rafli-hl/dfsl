@@ -250,6 +250,109 @@ def run_real_controls() -> list[dict]:
              "delta_k0.01": round(float(shm[KMAIN] - raw[KMAIN]), 3)}]
 
 
+def make_figure() -> None:
+    """Render paper/figures/fig7_nullcontrol.png: (a) raw->normalized Hill alpha across
+    streams (real and a GARCH surrogate lighten; shuffle/iid/bounded-drift do not);
+    (b) ACF of ||g|| real vs shuffled (the volatility clustering the tracker exploits)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    FIG = ROOT / "paper" / "figures"
+    TEXT_W = 6.75  # ICML text width (in), matching scripts/make_paper_figures.py
+    plt.rcParams.update({
+        "font.family": "serif", "font.serif": ["Times New Roman", "Nimbus Roman", "DejaVu Serif"],
+        "mathtext.fontset": "cm", "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8,
+        "legend.fontsize": 6.5, "xtick.labelsize": 7, "ytick.labelsize": 7,
+        "axes.linewidth": 0.6, "lines.linewidth": 1.2, "legend.frameon": False,
+        "axes.spines.top": False, "axes.spines.right": False,
+        "figure.dpi": 150, "savefig.dpi": 300, "savefig.bbox": "tight", "savefig.pad_inches": 0.02,
+    })
+    seeds = 12
+
+    def a(x):  # Hill alpha at the headline k=0.01
+        return hill_row(x)[KMAIN]
+
+    def synth(gen, drift=None):
+        r = n_ = 0.0
+        for sd in range(seeds):
+            rng = np.random.default_rng(1000 + sd)
+            base = gen(N, rng)
+            x = base if drift is None else base * smooth_drift(N, drift, rng)
+            r += a(x); n_ += a(normalized(x))
+        return r / seeds, n_ / seeds
+
+    def garch(ab):
+        r = n_ = 0.0
+        for sd in range(seeds):
+            rng = np.random.default_rng(9000 + sd)
+            gx, _ = garch_stream(N, 1e-6, ab[0], ab[1], rng)
+            r += a(gx); n_ += a(normalized(gx))
+        return r / seeds, n_ / seeds
+
+    g = np.load(RES / "gradnorm_at_wstar.npy").astype(float)
+    g = g[np.isfinite(g) & (g > 0)]
+    rng = np.random.default_rng(0)
+    real_raw, real_norm = a(g), a(normalized(g))
+    real_shuf = float(np.mean([a(normalized(rng.permutation(g))) for _ in range(20)]))
+    p24 = synth(lambda n, r: pareto(2.4, n, r))
+    t24 = synth(lambda n, r: student_abs(2.4, n, r))
+    bnd = synth(lambda n, r: pareto(2.4, n, r), drift=6.0)
+    g22, g30 = garch((0.22, 0.77)), garch((0.30, 0.69))
+
+    # (label, raw, norm, lightens)  -- controls at bottom, lightening streams on top
+    rows = [
+        ("real, shuffled",              real_raw, real_shuf, False),
+        (r"iid Pareto($\alpha$=2.4)",   p24[0],   p24[1],    False),
+        (r"iid $|t|$($\nu$=2.4)",       t24[0],   t24[1],    False),
+        (r"bounded 6$\times$ drift",    bnd[0],   bnd[1],    False),
+        ("GARCH clustering (a=.22)",    g22[0],   g22[1],    True),
+        ("GARCH clustering (a=.30)",    g30[0],   g30[1],    True),
+        (r"real $\|g\|$",               real_raw, real_norm, True),
+    ]
+
+    fig, ax = plt.subplots(1, 2, figsize=(TEXT_W, 2.5))
+    a0 = ax[0]
+    a0.axvline(real_raw, color="0.6", ls="--", lw=0.7)
+    a0.axvline(real_norm, color="#1f77b4", ls="--", lw=0.7)
+    for i, (lbl, raw, nrm, light) in enumerate(rows):
+        c = "#1f77b4" if light else "#7f7f7f"
+        a0.plot([raw, nrm], [i, i], color=c, lw=1.3, zorder=1)
+        a0.scatter([raw], [i], s=22, facecolors="white", edgecolors=c, zorder=2)
+        a0.scatter([nrm], [i], s=24, color=c, zorder=3)
+        if abs(nrm - raw) > 0.15:
+            a0.annotate("", xy=(nrm, i), xytext=(raw, i),
+                        arrowprops=dict(arrowstyle="-|>", color=c, lw=1.1))
+        a0.text(max(raw, nrm) + 0.12, i, f"$\\Delta${nrm - raw:+.2f}", va="center",
+                fontsize=6, color=c)
+    a0.axhline(3.5, color="0.85", lw=0.6)  # separator between control / lightening groups
+    a0.set_yticks(range(len(rows))); a0.set_yticklabels([r[0] for r in rows])
+    a0.set_xlim(1.9, 5.1); a0.set_ylim(-0.6, len(rows) - 0.4)
+    a0.set_xlabel(r"Hill tail index $\hat\alpha$ (k=0.01);  open=raw, filled=$/s_t$")
+    a0.set_title(r"Same normalization, opposite effect")
+    a0.text(real_raw, len(rows) - 0.35, "raw 2.43", fontsize=6, color="0.4", ha="center")
+    a0.text(real_norm, len(rows) - 0.35, "3.73", fontsize=6, color="#1f77b4", ha="center")
+
+    a1 = ax[1]
+    lags = np.arange(1, 251)
+    dev = g - g.mean(); den = float(np.dot(dev, dev))
+    acf = np.array([np.dot(dev[:-L], dev[L:]) / den for L in lags])
+    gp = np.random.default_rng(1).permutation(g); dp = gp - gp.mean(); dpden = float(np.dot(dp, dp))
+    acf_s = np.array([np.dot(dp[:-L], dp[L:]) / dpden for L in lags])
+    a1.axhline(0, color="0.7", lw=0.6)
+    a1.plot(lags, acf, color="#1f77b4", label=r"real $\|g\|$")
+    a1.plot(lags, acf_s, color="#7f7f7f", lw=1.0, label="shuffled")
+    a1.set_xlabel("lag"); a1.set_ylabel("autocorrelation of $\\|g\\|$")
+    a1.set_title("Volatility clustering")
+    a1.legend(loc="upper right")
+    a1.text(0.96, 0.62, r"Ljung--Box $Q_{100}\approx7\!\times\!10^{5}$" + "\n(shuffled $\\approx$100)",
+            transform=a1.transAxes, ha="right", va="top", fontsize=6)
+
+    fig.savefig(FIG / "fig7_nullcontrol.png")
+    plt.close(fig)
+    print(f"  wrote paper/figures/fig7_nullcontrol.png")
+
+
 def main() -> None:
     print("=" * 92)
     print(f"F1 CONTROL SUITE -- causal winsorized-EMA on KNOWN-ground-truth streams   "
@@ -289,4 +392,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if "--figure" in sys.argv:
+        make_figure()
+    else:
+        main()
+        make_figure()
