@@ -81,11 +81,16 @@
 \begin{abstract}
 We study online prediction on streams whose loss-gradient \emph{scale} is strongly
 nonstationary, using a large financial dataset as a testbed. The gradient-norm scale
-drifts several-fold across the record with overnight jumps, and this drift alone makes
-the \emph{pooled} gradient look heavy-tailed (tail index $\hat\alpha\approx2.4$); the
+is strongly \emph{volatility-clustered}---predictable and persistent, drifting several-fold
+across the record with overnight jumps---and this serial dependence, not a bounded drift or
+a static scale mixture (neither of which can move a tail index), is what makes the
+\emph{pooled} gradient look heavy-tailed (tail index $\hat\alpha\approx2.4$). The
 \emph{causally scale-normalized} gradient---the quantity a learner should actually act
-on---is markedly lighter ($\hat\alpha\approx2.9$--$3.7$, estimator-dependent), so the difficulty is dominated by
-nonstationarity rather than by an intrinsically heavy tail. In this regime plain online
+on---is markedly lighter ($\hat\alpha\approx2.9$--$3.7$, estimator-dependent), and an
+order-\emph{shuffle} control that preserves the marginal removes the lightening entirely,
+confirming it is the temporal dependence, not the estimator, that is exploited; the
+difficulty is thus dominated by predictable nonstationarity rather than by an intrinsically
+heavy tail. In this regime plain online
 gradient descent (OGD) has no usable learning rate---small rates underfit while any rate
 large enough to learn diverges when the scale spikes---and clipping to a
 \emph{scale-dependent} threshold is fragile because the clipped step still inherits the
@@ -167,10 +172,14 @@ convergence) that needs no moment assumption.
 \paragraph{Contributions.}
 \begin{itemize}
   \item \textbf{Nonstationarity manufactures heavy tails (\cref{sec:experiments}).} On a
-  large market dataset the gradient scale drifts $\sim\!6\times$; this drift alone makes
-  the \emph{pooled} gradient tail heavy ($\hat\alpha\approx2.4$), while the
-  scale-normalized gradient is much lighter ($\hat\alpha\approx2.9$--$3.7$)---an effect we
-  confirm with an \emph{exogenous} scale, and which recurs, in weaker form, on
+  large market dataset the gradient scale is strongly \emph{volatility-clustered}
+  (predictable serial dependence; Ljung--Box $Q_{100}\!\approx\!7\!\times\!10^5$, drifting
+  $\sim\!6\times$ as its low-frequency component), and this clustering---not a bounded
+  drift or a static scale mixture, which provably cannot move a tail index---makes the
+  \emph{pooled} gradient tail heavy ($\hat\alpha\approx2.4$), while the
+  scale-normalized gradient is much lighter ($\hat\alpha\approx2.9$--$3.7$). A
+  marginal-preserving order-\emph{shuffle} abolishes the lightening (and a GARCH surrogate
+  with light innovations reproduces it), and the effect recurs, in weaker form, on
   image-model training gradients. This is the paper's central finding.
   \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
   We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
@@ -356,31 +365,41 @@ ${\sim}200{,}000$ gradients, the daily-drift index from the full record.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig1_problem.png}
-\caption{\textbf{The scale drifts; the pooled tail is largely a scale mixture.} (a) The
+\caption{\textbf{The scale is volatility-clustered; the pooled tail is a
+predictable-conditional-scale effect.} (a) The
 \emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than either
 its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
 co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record
 drifts; per-day estimates occasionally fall below $2$ but single-day Hill estimates are
-noisy. Normalizing by the scale lightens the tail to $\hat\alpha\approx2.9$--$3.7$
-(estimator-dependent), so the pooled heaviness is largely nonstationarity
-(\cref{sec:experiments}).}
+noisy. Normalizing by the causally-tracked scale lightens the tail to
+$\hat\alpha\approx2.9$--$3.7$ (estimator-dependent); a marginal-preserving order-shuffle
+removes this lightening entirely, so the pooled heaviness is predictable serial dependence,
+not the marginal (\cref{sec:experiments}).}
 \label{fig:problem}
 \end{figure*}
 
-\paragraph{The scale is nonstationary; the pooled tail is mostly a scale mixture.} At
+\paragraph{The scale is volatility-clustered; the pooled tail is a predictable-conditional-scale effect.} At
 the fixed optimum $w^\star$, the \emph{pooled} gradient-norm tail index is
 $\hat\alpha\approx2.43$, and it is an \emph{interaction} effect: the residual and feature
 norms each have $\hat\alpha\approx4$, but their product---the gradient---has a heavier
 tail because extreme features and residuals co-occur (\cref{fig:problem}a). Most of that
-pooled heaviness, however, is manufactured by nonstationarity. The daily gradient scale
-drifts $\approx6\times$ with overnight jumps (\cref{fig:problem}b), and once we divide by
-a robust scale $s_t$---the quantity SN-OMD actually acts on---the tail lightens markedly,
-to $\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$ (non-causal median),
-or $\approx2.9$ (trailing median), i.e.\ toward finite higher moments. This is not merely
-a self-normalization artifact: dividing by an \emph{exogenous} scale that never sees the
-gradient magnitude (an EMA of the feature norm $\norm{x_t}$) still lightens the tail to
-$\hat\alpha\approx2.9$. So the operative difficulty is the scale drift, leaving only a
-mild residual heavy tail. (Per-day $\hat\alpha$ dips below $2$ on a minority of days, but
+pooled heaviness, however, is a signature of \emph{predictable} nonstationarity, not an
+intrinsic tail. The gradient magnitude is strongly serially dependent---slowly-decaying
+autocorrelation (lag-$100\approx0.26$) and Ljung--Box $Q_{100}\approx7\!\times\!10^{5}$
+($p\approx0$; an iid null gives $\approx100$)---i.e.\ volatility clustering, of which the
+$\approx6\times$ daily drift (\cref{fig:problem}b) is the low-frequency component. Dividing
+by a causally-tracked robust scale $s_t$---the quantity SN-OMD actually acts on---lightens
+the tail markedly, to $\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$
+(non-causal median), or $\approx2.9$ (trailing median), i.e.\ toward finite higher moments.
+Three controls (released \texttt{research\_null\_normalization.py}) show this is the
+temporal dependence---not the estimator, and not a static drift: (i) a marginal-preserving
+order-\emph{shuffle} of the real series removes the lightening entirely ($\hat\alpha$ back
+to $2.4$); (ii) the same causal normalization is tail-index \emph{preserving} on iid
+streams of known index ($2.0,2.4,3.0$), so it cannot manufacture lightening; and (iii) a
+GARCH surrogate with \emph{light} (Gaussian) innovations reproduces both the pooled
+$\hat\alpha\approx2.4$ and its recovery to $\approx3.7$ under the tracker, whereas a bounded
+drift or a static long-regime scale mixture provably cannot. So the operative difficulty is
+a predictable, clustered scale, leaving only a mild residual heavy tail. (Per-day $\hat\alpha$ dips below $2$ on a minority of days, but
 single-day Hill estimates are noisy and we do not rely on them.) We note that the
 per-regime budget of \cref{sec:lower} is dominated by exactly these pooled-$\alpha\!<\!2$
 days; since those regimes are themselves a pooled-tail artifact---they largely disappear
@@ -396,8 +415,8 @@ constant-learning-rate window (nearly flat scale) the tail is \emph{already} lig
 ($\hat\alpha\approx6$--$9$), so the pooled heaviness comes from the scale decay and the
 learning-rate drops, not from within-phase drift. The drift-manufactures-tails effect thus
 recurs on training gradients, but only in this weaker, transient form; the genuine
-within-regime version---confirmed by an \emph{exogenous} scale and a feature--residual
-interaction---we establish only on the market data.
+within-regime version---confirmed by the shuffle and iid-null controls and a
+feature--residual interaction---we establish only on the market data.
 
 \begin{figure*}[t]
 \centering
