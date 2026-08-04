@@ -1007,12 +1007,14 @@ when regimes are macroscopic.
 \subsection{Discharging \texorpdfstring{\cref{ass:track}}{the scale-tracking assumption}: a bracket guarantee}
 \label{app:bracket}
 
-\cref{ass:track} posits a predictable scale that brackets $\sigma_t$. We show it is not
-an oracle: under a mild model of the drift, the two-timescale envelope of
-\cref{sec:tracker} \emph{provably} meets the essential lower bracket off a small
-exceptional set, so the burden moves from ``an accurate scale estimate exists'' to
-``the drift is piecewise slowly varying,'' and the estimate is then \emph{derived} from
-standard robust concentration.
+\cref{ass:track} posits a predictable scale that brackets $\sigma_t$. We sketch why it is
+not an oracle: under a mild model of the drift (piecewise-slow variation plus within-regime
+mixing), the two-timescale envelope of \cref{sec:tracker} meets the essential lower bracket
+off a small exceptional set, so the burden moves from ``an accurate scale estimate exists''
+to ``the drift is piecewise slowly varying with a mixing scale,'' and the estimate is then
+\emph{derived} from robust concentration. This is a sketch, not a theorem: the
+window-median step needs a blocking argument (below), which we state as an assumption rather
+than discharge.
 
 \begin{figure}[t]
 \centering
@@ -1127,10 +1129,12 @@ factor. This is the piecewise-slowly-varying picture the measured gradient scale
 $\widehat m_t=\mathrm{median}(\norm{g_{t-W}},\dots,\norm{g_{t-1}})$ is the predictable
 short-window median and $\rho\asymp1/L$ with $L=\min_r L_r$.
 
-\begin{proposition}[Bracket guarantee]
+\begin{proposition}[Bracket guarantee, informal]
 \label{prop:tracker}
-Under \cref{ass:moment} and the drift model above, for a large enough constant $c$,
-with probability $\ge1-\delta$:
+Under \cref{ass:moment}, the drift model above, and $\beta$-mixing of the within-regime
+$\norm{\gt}$ process (so a blocking argument yields window-median concentration---the iid
+order-statistic rate is otherwise only heuristic under the serial dependence documented in
+\cref{sec:experiments}), for a large enough constant $c$, with probability $\ge1-\delta$:
 \emph{(i, lower bracket)} $s_t\ge c_1\sigma_t$ for every $t$ outside at most $O(W)$
 rounds after each jump---an exceptional set of size $O(NW)$; and
 \emph{(ii, bounded variation)} $W_s=O(\sup_t\sigma_t+\rho\sum_t\sigma_t)=O(V_\sigma^+)$.
@@ -1138,11 +1142,15 @@ Consequently \cref{thm:regret} holds with one added term $O(D\,N\,W\,\sup_t\sigm
 dominated whenever $NW\ll T^{1/p}$ (macroscopic regimes).
 \end{proposition}
 
-\begin{proof}[Proof sketch]
+\medskip\noindent\textit{Proof sketch (heuristic; the window-concentration step is the
+$\beta$-mixing assumption, not a discharged bound).}
 \emph{Window concentration.} On a window lying inside one regime, the population median
-of $\norm{\gt}$ is a constant multiple of $\sigma_t$ (regular variation), and the
-empirical median concentrates around it by order-statistic bounds (needing essentially
-no moment); the slow drift shifts the constants by $O(\gamma W)=O(1)$. Hence
+of $\norm{\gt}$ is a constant multiple of $\sigma_t$ (regular variation). Under the
+within-regime $\beta$-mixing assumption a blocking argument gives empirical-median
+concentration around it---split the window into $\asymp W/\ell$ near-independent blocks of
+length $\ell\gtrsim$ the mixing time; the iid order-statistic bound is the $\ell{=}1$
+special case and is only heuristic under the serial dependence this paper documents. The
+slow drift shifts the constants by $O(\gamma W)=O(1)$. Hence
 $\widehat m_t\in[a\sigma_t,b\sigma_t]$ w.h.p., and $c\ge c_1/a$ gives
 $c\,\widehat m_t\ge c_1\sigma_t$, so the $\max$ meets the lower bracket whenever the
 window lies in one regime.
@@ -1157,8 +1165,7 @@ $\rho\asymp1/L$ (\cref{rmk:tracker}).
 \emph{Exceptional rounds.} On the $O(NW)$ lapse rounds the update is still bounded
 ($\norm{\hat g_t}\le M$, \cref{thm:stability}) but the clipping bias (C) is uncontrolled;
 charging it trivially at $O(D\sup_t\sigma_t)$ per round gives the added
-$O(D\,N\,W\,\sup_t\sigma_t)$.
-\end{proof}
+$O(D\,N\,W\,\sup_t\sigma_t)$.\medskip
 
 The residual---the post-jump lapse---is an additive term already of the form isolated in
 the Reductions above, and making $\rho$ adaptive to an unknown $L$ is exactly the
