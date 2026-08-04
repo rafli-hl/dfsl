@@ -112,7 +112,8 @@ learning-rate range where OGD and scale-dependent clipping diverge, and on this 
 dominates: the best per-protocol accuracy belongs to the constant clip and AdaGrad-Norm,
 not to SN-OMD. What singles out SN-OMD is not accuracy but that its scale is
 \emph{predictable}, which is exactly what the dynamic-regret guarantee requires; the cap
-additionally earns an accuracy optimum where the normalized tail stays heavy.
+earns an accuracy optimum only where the normalized tail stays genuinely heavy, which our
+real stream does not reach.
 \end{abstract}
 
 \section{Introduction}
@@ -141,7 +142,8 @@ a learner actually acts on, is much lighter ($\hat\alpha\approx2.9$--$3.7$), and
 lightening is a property of \emph{serial dependence}, not of the marginal; and (iii) the
 \emph{gradient} tail is heavier than either its feature or residual factor alone, an
 \emph{interaction} effect from their co-movement. What the learner faces is thus the
-\emph{predictable} part of a nonstationary scale, leaving only a mild residual tail. The
+\emph{predictable} part of a nonstationary scale; the residual is consistent with
+causal-estimation cost, not a genuine heavy tail (\cref{tab:residual}). The
 heavy pooled marginal is a \emph{volatility-clustering} effect: the bounded $\approx6\times$
 drift cannot itself move a tail index \citep{breiman1965}, but a predictable scale with a
 heavy-tailed conditional law can (the Kesten/GARCH mechanism, \citealt{kesten1973})---the
@@ -339,16 +341,16 @@ Tail measurements are learner-independent (gradients at $w^\star$): the pooled i
 ${\sim}200{,}000$ gradients, the daily-drift index from the full record.
 
 \begin{table}[t]
-\caption{\textbf{The residual index is a real, order-one property, not a tracker-lag
-artifact.} Hill $\hat\alpha$ of the normalized $\norm{\gt}$ at three tail fractions $k$
-(larger $=$ lighter). Every tracked scale lightens the raw pooled tail (the deployed
-winsorized-EMA by $+1.0$ to $+1.5$); running the \emph{same} estimator non-causally
-(two-sided, sees the future) lightens the residual only $\sim\!+0.3$ more. On a GARCH surrogate
-calibrated to the real raw index---with Gaussian innovations, hence \emph{zero} residual tail
-by construction---the \emph{causal} tracker still reads $3.9$--$4.5$ against a true-$\sigma_t$
-oracle floor of $\hat\alpha\!\approx\!9$. The real $3.73$ sits just below this, so it is
-consistent with pure causal-estimation cost: no genuine residual heavy tail is resolvable at
-this precision.}
+\caption{\textbf{The lightening is order-one and estimator-stable; the residual is
+causal-estimation cost.} Hill $\hat\alpha$ of the normalized $\norm{\gt}$ at three tail
+fractions $k$ (larger $=$ lighter). The deployed causal tracker lightens the raw pooled tail
+by $+1.0$ to $+1.5$; the \emph{same} estimator run non-causally recovers only $\sim\!+0.3$
+more ($+0.14$--$+0.38$ over $k$ and estimator). The GARCH surrogate has Gaussian innovations
+(\emph{zero} residual tail) and is calibrated to the real raw index, yet causal tracking
+alone reads $\hat\alpha\approx4$--$5$ (oracle $\approx8$--$10$); the real $3.73$ sits at or
+below this, consistent with pure causal-estimation cost---no genuine residual tail is
+resolvable, and none is reducible by removing causality or (the surrogate shows) by better
+causal estimation.}
 \label{tab:residual}
 \centering
 \begin{small}
@@ -357,11 +359,17 @@ this precision.}
 \toprule
 Normalization of $\norm{\gt}$ & $k{=}.005$ & $k{=}.01$ & $k{=}.02$ \\
 \midrule
+\multicolumn{4}{l}{\emph{Real gradient stream:}}\\
 raw pooled (none)                        & $2.55$ & $2.43$ & $2.32$ \\
 causal winsorized-EMA \emph{(deployed)}  & $4.02$ & $3.73$ & $3.36$ \\
 \quad centered EMA (non-causal twin)     & $4.16$ & $4.05$ & $3.58$ \\
 trailing median (causal)                 & $3.24$ & $2.87$ & $2.60$ \\
 \quad centered median (non-causal)       & $3.62$ & $3.18$ & $2.81$ \\
+\midrule
+\multicolumn{4}{l}{\emph{GARCH surrogate (Gaussian innov.; zero residual tail):}}\\
+raw pooled (none)                        & $2.54$ & $2.48$ & $2.44$ \\
+causal winsorized-EMA                    & $4.81$ & $4.48$ & $4.08$ \\
+\quad true-$\sigma_t$ oracle             & $10.3$ & $9.05$ & $7.75$ \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -378,10 +386,10 @@ $\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$ (non-causal m
 $\approx2.9$ (trailing median), i.e.\ toward finite higher moments. The lightening is
 positive at every threshold and estimator (\cref{tab:residual}), and what remains is
 \emph{causal-estimation cost}, not a residual property of the data: isolating causality (the
-\emph{same} estimator run non-causally) recovers only $\sim\!+0.3$ (two estimator families
-agree, $+0.32$ EMA and $+0.31$ median), and on a GARCH surrogate with Gaussian
-innovations---\emph{zero} residual tail by construction---the same causal tracker still
-reports $\hat\alpha\approx3.9$--$4.5$ against a true-$\sigma_t$ oracle of $\approx9$. The real
+\emph{same} estimator run non-causally) recovers only $\sim\!+0.3$, and on a GARCH surrogate
+with Gaussian innovations---\emph{zero} residual tail by construction---the same causal
+tracker still reads $\hat\alpha\approx4$--$4.5$ against a true-$\sigma_t$ oracle of $\approx9$
+(\cref{tab:residual}). The real
 $3.73$ sits just below that, so no genuine residual heavy tail is resolvable at this
 precision: the normalized tail appears \emph{entirely conditional}, and what is left is the
 price of not seeing the future. What makes it removable is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
@@ -399,7 +407,7 @@ $\approx6\times$ drift---a bounded scale factor cannot move a tail index
 \citep{breiman1965}---but by a predictable scale whose conditional law is heavy-tailed (the
 Kesten/GARCH mechanism, \citealt{kesten1973}; a related route is the subordination of
 \citealt{clark1973}, \cref{sec:related}). So the tail a learner faces is set by the
-\emph{predictable} part of the scale, leaving only a mild residual heavy tail. (Per-day $\hat\alpha$ dips below $2$ on a minority of days, but
+\emph{predictable} part of the scale. (Per-day $\hat\alpha$ dips below $2$ on a minority of days, but
 single-day Hill estimates are noisy and we do not rely on them.) We note that the
 per-regime budget of \cref{sec:lower} is dominated by exactly these pooled-$\alpha\!<\!2$
 days; since those regimes are themselves a pooled-tail artifact---they largely disappear
@@ -487,8 +495,9 @@ finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to 
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap at all. What
 the cap distinctly buys is an interior \emph{accuracy} optimum when the \emph{normalized}
 tail is genuinely heavy, truncating it while preserving bulk magnitude
-(\cref{sec:msweep}); on Jane that tail is only mildly heavy ($\hat\alpha\approx3.7$), so
-the optimum is flat and SN-OMD, normalized-GD, and the uncapped end are close. One
+(\cref{sec:msweep}); on Jane that tail is not distinguishable from causal-estimation cost
+($\hat\alpha\approx3.7$; \cref{tab:residual}), so the optimum is flat and SN-OMD,
+normalized-GD, and the uncapped end are close. One
 observation we flag rather than bury: SN-OMD's block-bootstrap standard errors
 ($\pm.079/.056$) run ${\approx}3\times$ normalized-GD's ($\pm.024/.021$)---its
 block-to-block $R^2$ is markedly more variable---which we have not traced to a cause and
@@ -577,8 +586,9 @@ Sweeping $M$ (each cap at its own tuned step, error bars over seeds) turns the c
 heavy normalized tail ($p=1.5$; \cref{fig:msweep}) an interior optimum appears---the best
 cap beats the uncapped end $\approx240\times$ (heavy-tail instability) and the normalized-GD
 end $\approx10\times$ (magnitude-blind oscillation), both outside the seed-noise
-band---whereas on Jane, where the normalized tail is only mildly heavy, there is \emph{no}
-meaningful interior optimum: the three cap-family members are comparable (\cref{tab:jane}).
+band---whereas on Jane, where the normalized tail is not distinguishable from
+causal-estimation cost (\cref{tab:residual}), there is \emph{no} meaningful interior
+optimum: the three cap-family members are comparable (\cref{tab:jane}).
 Same mechanism, both predictions borne out. So the cap buys \emph{accuracy} when the tail
 survives normalization, and \emph{stability unconditionally}: uncapped scale-adaptive OGD
 diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
@@ -639,9 +649,13 @@ consequence---the scale-normalized update and its cap-interpolation frontier
 trimmed mean) achieve sub-Gaussian deviations under a finite variance
 \citep{catoni2012,devroye2016,lugosi2019}, imported into sequential decision-making by
 \citet{bubeck2013}; in optimization, gradient clipping yields high-probability convergence
-under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Our normalization is
-a streaming, scale-decoupled variant whose value is specifically stability under a
-\emph{drifting} scale.
+under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Closest to ours,
+\citet{cutkoskymehta2021} \emph{normalize and clip} for high-probability non-convex
+convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing by a
+\emph{predictable} tracked scale (not the current gradient) and in targeting \emph{dynamic}
+regret under a \emph{drifting} scale rather than static convergence. Our normalization is
+thus a streaming, scale-decoupled variant whose value is specifically stability under that
+drift.
 
 \paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
@@ -652,8 +666,8 @@ the dynamic, nonstationary regime we target sits outside them, and our budget he
 open).
 
 \paragraph{Dynamic, scale-free, and adaptive OL.} Dynamic regret against a moving comparator
-goes back to \citet{zinkevich2003}; scale-free methods adapt to unknown gradient scale
-\citep{orabona2018}; strongly-adaptive and parameter-free wrappers adapt to unknown
+goes back to \citet{zinkevich2003}; normalized and scale-free methods adapt to an unknown
+gradient scale \citep{levy2017,orabona2018}; strongly-adaptive and parameter-free wrappers adapt to unknown
 interval/regime structure \citep{daniely2015,cutkosky2020}, which we use as a black box to
 remove knowledge of the regime length.
 
@@ -705,12 +719,6 @@ guarantees with no purchase here: on this data the cap earns no accuracy advanta
 is the unconditional stability of \cref{thm:stability}), and the $(1,2]$ apparatus does not
 bind.
 
-\section*{Software and Data}
-The released code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
-(winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
-reproduce every figure and number. Data: the public Jane Street Real-Time Market Data
-Forecasting competition, plus MNIST-CNN gradient norms (\cref{sec:experiments}).
-
 \section*{Impact Statement}
 This paper presents work whose goal is to advance the field of machine learning. There
 are many potential societal consequences of our work, none of which we feel must be
@@ -722,6 +730,14 @@ specifically highlighted here.
 \newpage
 \appendix
 \onecolumn
+
+\section*{Software and Data}
+The released code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
+(winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
+reproduce every figure and number (including \cref{tab:residual} and the GARCH surrogate).
+Data: the public Jane Street Real-Time Market Data Forecasting competition, plus MNIST-CNN
+gradient norms (\cref{sec:experiments}).
+
 \section{A per-regime budget heuristic}
 \label{sec:lower}
 
@@ -1152,7 +1168,8 @@ dominated whenever $NW\ll T^{1/p}$ (macroscopic regimes).
 \medskip\noindent\textit{Proof sketch (heuristic; the window-concentration step is the
 $\beta$-mixing assumption, not a discharged bound).}
 \emph{Window concentration.} On a window lying inside one regime, the population median
-of $\norm{\gt}$ is a constant multiple of $\sigma_t$ (regular variation). Under the
+of $\norm{\gt}$ is a constant multiple of $\sigma_t$---a regular-variation/scale-family
+assumption on the conditional law, \emph{beyond} the moment bound of \cref{ass:moment}. Under the
 within-regime $\beta$-mixing assumption a blocking argument gives empirical-median
 concentration around it---split the window into $\asymp W/\ell$ near-independent blocks of
 length $\ell\gtrsim$ the mixing time; the iid order-statistic bound is the $\ell{=}1$
