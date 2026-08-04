@@ -338,21 +338,33 @@ leaderboard scores; we report it for cross-method comparison and the stability c
 Tail measurements are learner-independent (gradients at $w^\star$): the pooled index from
 ${\sim}200{,}000$ gradients, the daily-drift index from the full record.
 
-\begin{figure*}[t]
+\begin{table}[t]
+\caption{\textbf{The residual index is a real, order-one property, not a tracker-lag
+artifact.} Hill $\hat\alpha$ of the normalized $\norm{\gt}$ at three tail fractions $k$
+(larger $=$ lighter). Every tracked scale lightens the raw pooled tail (the deployed
+winsorized-EMA by $+1.0$ to $+1.5$); running the \emph{same} estimator non-causally
+(two-sided, sees the future) lightens the residual only $\sim\!+0.3$ more. On a GARCH surrogate
+calibrated to the real raw index the \emph{causal} tracker recovers $3.9$--$4.5$ (matching
+the real $3.73$) against a true-$\sigma_t$ oracle floor of $\hat\alpha\!\approx\!9$---so the
+residual $\hat\alpha\!\approx\!4$ is the signature of \emph{causally} tracking a clustered
+scale, reproduced with known ground truth.}
+\label{tab:residual}
 \centering
-\includegraphics[width=\textwidth]{fig1_problem.png}
-\caption{\textbf{The pooled tail is real, but conditionally removable.} (a) The
-\emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than either
-its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
-co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record
-drifts; per-day estimates occasionally fall below $2$ but single-day Hill estimates are
-noisy. Dividing by a \emph{predictable} causally-tracked scale lightens the tail to
-$\hat\alpha\approx2.9$--$3.7$ (estimator-dependent); a marginal-preserving order-shuffle
-leaves the pooled index unchanged (an order-statistic identity) yet abolishes the
-lightening, so what the tracker removes is serial dependence, not the marginal
-(\cref{sec:experiments}).}
-\label{fig:problem}
-\end{figure*}
+\begin{small}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccc}
+\toprule
+Normalization of $\norm{\gt}$ & $k{=}.005$ & $k{=}.01$ & $k{=}.02$ \\
+\midrule
+raw pooled (none)                        & $2.55$ & $2.43$ & $2.32$ \\
+causal winsorized-EMA \emph{(deployed)}  & $4.02$ & $3.73$ & $3.36$ \\
+\quad centered EMA (non-causal twin)     & $4.16$ & $4.05$ & $3.58$ \\
+trailing median (causal)                 & $3.24$ & $2.87$ & $2.60$ \\
+\quad centered median (non-causal)       & $3.62$ & $3.18$ & $2.81$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
 
 \paragraph{The pooled tail is real, but conditionally removable.} At
 the fixed optimum $w^\star$, the \emph{pooled} gradient-norm tail index is
@@ -362,8 +374,11 @@ tail because extreme features and residuals co-occur (\cref{fig:problem}a). This
 is genuine, but \emph{conditionally removable}: dividing by a causally-tracked robust scale
 $s_t$---the quantity SN-OMD actually acts on---lightens the tail markedly, to
 $\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$ (non-causal median), or
-$\approx2.9$ (trailing median), i.e.\ toward finite higher moments. What makes it removable
-is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
+$\approx2.9$ (trailing median), i.e.\ toward finite higher moments. The lightening is
+positive at every threshold and estimator, and order-one ($+1.0$ to $+1.5$) for the deployed
+tracker (\cref{tab:residual}); isolating causality---the \emph{same} estimator run
+non-causally---adds only $\sim\!+0.3$, so the residual $\hat\alpha\!\approx\!4$ is not a
+tracker-lag artifact but the signature of causally tracking a clustered scale. What makes it removable is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
 autocorrelation $\approx0.16$ at lag $100$, rank-based Ljung--Box $Q_{100}\approx7\!\times\!
 10^{5}$ (ranks are bounded, so the $\chi^2$ is valid; a shuffled control gives $\approx116$),
 of which the $\approx6\times$ daily drift (\cref{fig:problem}b) is only the low-frequency
@@ -676,7 +691,10 @@ covers only the two-timescale envelope (\cref{ass:track}), not the deployed EMA 
 per-row-best block median, whose regret under drift is supported empirically
 (\cref{sec:tracker}); RMSProp/Adam are argued to diverge but not run head-to-head (though
 AdaGrad-Norm and a constant clip are; \cref{sec:related,tab:jane}); and validation beyond
-our two domains is warranted.
+our two domains is warranted. Finally, the deployed normalized tail sits at
+$\hat\alpha\!\approx\!3.7$--$4$ ($p>2$, finite variance; \cref{tab:residual}), so the
+$p\in(1,2]$ machinery is a worst-case guarantee, not a description of the residual faced on
+these streams.
 
 \section*{Software and Data}
 The released code provides the \texttt{ScaleNormalizedOGD} learner as a library class,
@@ -1025,6 +1043,22 @@ Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $7.9\times$ \\
 \end{tabular}
 \end{small}
 \end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig1_problem.png}
+\caption{\textbf{The pooled tail is real, but conditionally removable} (\cref{sec:experiments}).
+(a) The \emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than
+either its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
+co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record drifts;
+per-day estimates occasionally fall below $2$ but single-day Hill estimates are noisy.
+Dividing by a \emph{predictable} causally-tracked scale lightens the tail to
+$\hat\alpha\approx2.9$--$3.7$ (estimator-dependent; \cref{tab:residual}); a
+marginal-preserving order-shuffle leaves the pooled index unchanged (an order-statistic
+identity) yet abolishes the lightening, so what the tracker removes is serial dependence,
+not the marginal.}
+\label{fig:problem}
+\end{figure*}
 
 \subsection{Synthetic streams with known $(\sigma_t,p_t)$}
 \label{sec:synthetic}

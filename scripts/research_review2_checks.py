@@ -47,6 +47,16 @@ def causal_ema(g, decay=0.99, winsor=8.0):
     return s
 
 
+def centered_ema(g, decay=0.99, winsor=8.0):
+    """Non-causal counterpart of causal_ema: same winsorized-EMA estimator run
+    forward AND backward, combined by geometric mean. Isolates the *causality*
+    axis (it sees the future) while holding the estimator, decay, and
+    winsorization fixed."""
+    fwd = causal_ema(g, decay, winsor)
+    bwd = causal_ema(g[::-1], decay, winsor)[::-1]
+    return np.sqrt(fwd * bwd)
+
+
 def upward_variation_curve(x, grid):
     """Cumulative upward variation W(T) = x[0] + sum_{t<=T} (x_t - x_{t-1})_+ at horizons."""
     inc = np.diff(x, prepend=x[0])
@@ -100,9 +110,14 @@ def item4_selfnorm_control():
         print(f"  {name:42s} " + "  ".join(f"k={f}:{hill(xs,int(f*xs.size)):.2f}" for f in fracs))
 
     rep("raw ||g|| (pooled)", g)
-    rep("||g|| / causal-EMA s_t", (g / np.maximum(causal_ema(g), 1e-12))[200:])
+    # --- deployed causal tracker vs its non-causal twin (isolates causality) ---
+    rep("||g|| / causal winsorized-EMA (deployed)", (g / np.maximum(causal_ema(g), 1e-12))[200:-200])
+    rep("||g|| / centered winsorized-EMA (non-causal twin)", (g / np.maximum(centered_ema(g), 1e-12))[200:-200])
+    # --- trailing vs centered median (same estimator, isolates causality) ---
+    s_tmed = pl.Series(g).rolling_median(window_size=1001, center=False, min_samples=1).to_numpy()
     s_med = pl.Series(g).rolling_median(window_size=1001, center=True, min_samples=1).to_numpy()
-    rep("||g|| / non-causal median (ground-truth sigma)", g / np.maximum(s_med, 1e-12))
+    rep("||g|| / trailing median (causal)", (g / np.maximum(s_tmed, 1e-12))[200:-200])
+    rep("||g|| / centered median (non-causal)", (g / np.maximum(s_med, 1e-12))[200:-200])
     # exogenous: divide by feature-norm scale (EMA of ||x||), which does not see residual/weight
     rep("||g|| / EMA(||x||)  (exogenous scale)", (g / np.maximum(causal_ema(xn), 1e-12))[200:])
     rep("feature norm ||x|| (reference)", xn)
