@@ -344,10 +344,11 @@ artifact.} Hill $\hat\alpha$ of the normalized $\norm{\gt}$ at three tail fracti
 (larger $=$ lighter). Every tracked scale lightens the raw pooled tail (the deployed
 winsorized-EMA by $+1.0$ to $+1.5$); running the \emph{same} estimator non-causally
 (two-sided, sees the future) lightens the residual only $\sim\!+0.3$ more. On a GARCH surrogate
-calibrated to the real raw index the \emph{causal} tracker recovers $3.9$--$4.5$ (matching
-the real $3.73$) against a true-$\sigma_t$ oracle floor of $\hat\alpha\!\approx\!9$---so the
-residual $\hat\alpha\!\approx\!4$ is the signature of \emph{causally} tracking a clustered
-scale, reproduced with known ground truth.}
+calibrated to the real raw index---with Gaussian innovations, hence \emph{zero} residual tail
+by construction---the \emph{causal} tracker still reads $3.9$--$4.5$ against a true-$\sigma_t$
+oracle floor of $\hat\alpha\!\approx\!9$. The real $3.73$ sits just below this, so it is
+consistent with pure causal-estimation cost: no genuine residual heavy tail is resolvable at
+this precision.}
 \label{tab:residual}
 \centering
 \begin{small}
@@ -375,10 +376,15 @@ is genuine, but \emph{conditionally removable}: dividing by a causally-tracked r
 $s_t$---the quantity SN-OMD actually acts on---lightens the tail markedly, to
 $\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$ (non-causal median), or
 $\approx2.9$ (trailing median), i.e.\ toward finite higher moments. The lightening is
-positive at every threshold and estimator, and order-one ($+1.0$ to $+1.5$) for the deployed
-tracker (\cref{tab:residual}); isolating causality---the \emph{same} estimator run
-non-causally---adds only $\sim\!+0.3$, so the residual $\hat\alpha\!\approx\!4$ is not a
-tracker-lag artifact but the signature of causally tracking a clustered scale. What makes it removable is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
+positive at every threshold and estimator (\cref{tab:residual}), and what remains is
+\emph{causal-estimation cost}, not a residual property of the data: isolating causality (the
+\emph{same} estimator run non-causally) recovers only $\sim\!+0.3$ (two estimator families
+agree, $+0.32$ EMA and $+0.31$ median), and on a GARCH surrogate with Gaussian
+innovations---\emph{zero} residual tail by construction---the same causal tracker still
+reports $\hat\alpha\approx3.9$--$4.5$ against a true-$\sigma_t$ oracle of $\approx9$. The real
+$3.73$ sits just below that, so no genuine residual heavy tail is resolvable at this
+precision: the normalized tail appears \emph{entirely conditional}, and what is left is the
+price of not seeing the future. What makes it removable is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
 autocorrelation $\approx0.16$ at lag $100$, rank-based Ljung--Box $Q_{100}\approx7\!\times\!
 10^{5}$ (ranks are bounded, so the $\chi^2$ is valid; a shuffled control gives $\approx116$),
 of which the $\approx6\times$ daily drift (\cref{fig:problem}b) is only the low-frequency
@@ -691,18 +697,19 @@ covers only the two-timescale envelope (\cref{ass:track}), not the deployed EMA 
 per-row-best block median, whose regret under drift is supported empirically
 (\cref{sec:tracker}); RMSProp/Adam are argued to diverge but not run head-to-head (though
 AdaGrad-Norm and a constant clip are; \cref{sec:related,tab:jane}); and validation beyond
-our two domains is warranted. Finally, the deployed normalized tail sits at
-$\hat\alpha\!\approx\!3.7$--$4$ ($p>2$, finite variance; \cref{tab:residual}), so the
-$p\in(1,2]$ machinery is a worst-case guarantee, not a description of the residual faced on
-these streams.
+our two domains is warranted. Finally, on this stream the normalized tail appears
+\emph{entirely conditional}---the residual $\hat\alpha\approx3.7$ is consistent with pure
+causal-estimation cost, with no genuine heavy tail resolvable (\cref{tab:residual})---so both
+the $p\in(1,2]$ machinery \emph{and} the cap's tail-truncation benefit are worst-case
+guarantees with no purchase here: on this data the cap earns no accuracy advantage (its role
+is the unconditional stability of \cref{thm:stability}), and the $(1,2]$ apparatus does not
+bind.
 
 \section*{Software and Data}
-The released code provides the \texttt{ScaleNormalizedOGD} learner as a library class,
-the scale-tracker implementations used in the experiments (winsorized EMA, two-timescale
-envelope, and block median) as experiment scripts, the configs, and the scripts that
-reproduce every figure and number. The primary data is the public Jane Street Real-Time
-Market Data Forecasting competition; the second-domain gradient norms are logged from a
-small CNN trained on MNIST (\cref{sec:experiments}).
+The released code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
+(winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
+reproduce every figure and number. Data: the public Jane Street Real-Time Market Data
+Forecasting competition, plus MNIST-CNN gradient norms (\cref{sec:experiments}).
 
 \section*{Impact Statement}
 This paper presents work whose goal is to advance the field of machine learning. There
@@ -1167,7 +1174,12 @@ $\rho\asymp1/L$ (\cref{rmk:tracker}).
 charging it trivially at $O(D\sup_t\sigma_t)$ per round gives the added
 $O(D\,N\,W\,\sup_t\sigma_t)$.\medskip
 
-The residual---the post-jump lapse---is an additive term already of the form isolated in
+The blocking argument is not free: each block must span several mixing times, so the window
+$W$ needed for concentration inflates with the mixing coefficient, and with it the $O(NW)$
+exceptional set. The proposition therefore says something only for regimes long enough that
+$NW\ll T^{1/p}$ \emph{survives} this inflation; for short or rapidly-mixing regimes the lapse
+term is no longer dominated, and the guarantee degrades to the empirical discharge of
+\cref{sec:tracker}. The residual---the post-jump lapse---is an additive term already of the form isolated in
 the Reductions above, and making $\rho$ adaptive to an unknown $L$ is exactly the
 strongly-adaptive wrapper of that subsection.
 
