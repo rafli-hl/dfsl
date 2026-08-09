@@ -1,0 +1,13 @@
+protocol,comparison,mean_diff,se,t95_lo,t95_hi,boot95_lo,boot95_hi,wins_of_10,significant_t95
+per-row,block - EMA (SN-OMD default),0.17012,0.02848,0.1057,0.23455,0.12456,0.2286,10,true
+per-row,block - Normalized-GD,0.12779,0.01147,0.10185,0.15373,0.10724,0.14982,10,true
+per-row,block - Fixed-tau clip,0.10394,0.00739,0.08722,0.12066,0.09078,0.11802,10,true
+per-row,block - AdaGrad-Norm,0.11235,0.01618,0.07576,0.14895,0.08298,0.14335,10,true
+per-row,block - OGD,0.30938,0.01402,0.27768,0.34109,0.28369,0.33543,10,true
+per-row,block - Scale-adaptive OGD,0.89384,0.1757,0.49641,1.29128,0.55088,1.19473,10,true
+per-step,block - EMA (SN-OMD default),0.07315,0.03253,-0.00044,0.14674,0.00722,0.12675,9,false
+per-step,block - Normalized-GD,-0.08509,0.03382,-0.16158,-0.0086,-0.15138,-0.02585,3,true
+per-step,block - Fixed-tau clip,-0.00036,0.0061,-0.01417,0.01345,-0.01197,0.01059,5,false
+per-step,block - AdaGrad-Norm,0.01299,0.0393,-0.0759,0.10188,-0.06402,0.08208,6,false
+per-step,block - OGD,1.08728,0.10372,0.85266,1.32189,0.86453,1.23705,10,true
+per-step,block - Scale-adaptive OGD,0.10644,0.04483,0.00502,0.20785,0.01995,0.18653,8,true

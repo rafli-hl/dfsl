@@ -193,8 +193,9 @@ convergence) that needs no moment assumption.
   uncapped endpoint), and an
   accuracy optimum only when the normalized tail is genuinely heavy.
   \item \textbf{A protocol-careful study, and deferred theory (\cref{sec:experiments}).}
-  Under causal standardization SN-OMD stays bounded and accurate (one of several
-  co-leading bounded scale-free methods, not the single best; \cref{tab:jane}) where OGD and
+  Under causal standardization SN-OMD stays bounded and accurate---with a predictable
+  block-median scale the best bounded method per-row across ten frozen windows, though no
+  single member dominates both protocols (\cref{tab:replication})---where OGD and
   scale-dependent clipping diverge; it is invariant to per-row vs.\ per-timestep updates
   (no contemporaneous leakage) and its advantage vanishes on a genuinely stationary
   control. A per-regime dynamic-regret bound (\cref{thm:regret}) is deferred to the
@@ -260,8 +261,10 @@ norms) and takes a scale-invariant, constant-capped step
 (\cref{alg:snomd}). Writing $v_t=\gt/s_t$ and
 $\clip(v,M)=v\cdot\min\{1,M/\norm v\}$, the update is
 $w_{t+1}=\Pi_{\mathcal W}(w_t-\tfrac{\eta}{\sqrt t}\,\clip(v_t,M))$. The scale $s_t$
-can be any predictable robust tracker; we use a winsorized exponential moving average
-of $\norm{\gt}$ by default, and analyze a two-timescale ``peak-hold'' variant below.
+can be any predictable robust tracker; we report three---a winsorized exponential moving
+average of $\norm{\gt}$ (a cheap reactive default), a two-timescale ``peak-hold'' envelope
+(the variant with a proven $W_s$ bound, analyzed below), and a block median (the most accurate
+per-row across ten frozen windows; \cref{sec:tracker}).
 
 \begin{algorithm}[t]
   \caption{Scale-Normalized OMD (SN-OMD)}
@@ -615,10 +618,10 @@ over-estimate. So the stability-critical half of \cref{ass:track} is discharged.
 factor). A regime-timescale tracker shrinks the \emph{constant} by $\sim\!250\times$ at our
 horizon but not the exponent (\cref{rmk:tracker}); escaping the $\sqrt T$ needs a switching
 bound in the regime count, left open (\cref{app:bracket}). The most accurate per-row tracker
-on Jane is a block median; stress-tested against the circular block bootstrap its edge over
-normalized-GD is real yet narrow and protocol-specific (\cref{app:tracker}), so the ``ties
-normalized-GD'' headline stands where measured most conservatively. Past the tuned range both
-trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
+on Jane is a block median; across the ten frozen windows it is the best bounded method per-row
+($0.31\!\pm\!.04$ vs.\ normalized-GD's $0.18\!\pm\!.01$), while per-timestep normalized-GD
+leads---the accuracy verdict is protocol-dependent (\cref{tab:replication,app:tracker}). Past
+the tuned range both trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
 
 \section{Related Work}
 \label{sec:related}
@@ -671,8 +674,9 @@ gradient (numerator and denominator share the round); with no scale-\emph{free} 
 single extreme gradient still yields an unbounded step, so they exhibit the divergence
 documented in \cref{sec:experiments}. \emph{AdaGrad-Norm} instead divides by the
 \emph{monotone} accumulator $\sqrt{\sum_s\norm{g_s}^2}$, which bounds its step by $\eta$;
-head-to-head on Jane (\cref{tab:jane}) it stays bounded and is accuracy-competitive (best
-per-row), placing it with the bounded scale-free family. What it lacks is a
+head-to-head on Jane it stays bounded and is accuracy-competitive (best per-row on the tuned
+window, $0.20\!\pm\!.07$ across ten; \cref{tab:jane,tab:replication}), placing it with the
+bounded scale-free family. What it lacks is a
 \emph{predictable} scale and the dynamic-regret guarantee (\cref{thm:regret}); our
 unconditional stability (\cref{thm:stability}) comes from capping the \emph{normalized}
 gradient at $M$.
@@ -878,18 +882,22 @@ sequence $u_{1:T}$, with probability $\ge1-\delta$,
 \label{eq:mainbound}
 R_T(u_{1:T})
 &= O\!\Bigl(\bigl(D\sqrt{W_s}+\sqrt{D\,P_T^s}\,\bigr)\sqrt{S_1}\;T^{(2-p)/(2p)}
-   \sqrt{\log(1/\delta)}\\
+   \cdot\tfrac{\sup_t\sigma_t}{\bar\sigma}\log(1/\delta)\\
 &\qquad{}+(\textstyle\sup_t\sigma_t)\,D\,T^{1/p}\log(1/\delta)\Bigr)\nonumber\\
 &= \tilde O\!\Bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D P_T})\,T^{1/p}
    \log(1/\delta)\Bigr),\nonumber
 \end{align}
-where $S_1=\sum_t\sigma_t$. The $\sqrt{\log(1/\delta)}$ multiplier and the additive
-$\sup_t\sigma_t$ term are the Freedman variance and range contributions (\cref{lem:freedman};
-the curvature concentration of step~(A) in \cref{app:proofs} is of the same order), so the
-first line is a genuine high-probability bound. The second line is its \emph{bounded}-scale
-simplification ($W_s=O(1)$, with $S_1\le T\sup_t\sigma_t$); \textbf{this assumption fails on
-our data}, where $W_s\sim T$ (\cref{sec:tracker}), so the $T^{1/p}$ form is per-regime---see
-the remark below.
+where $S_1=\sum_t\sigma_t$ and $\bar\sigma=S_1/T$ is the mean scale. The leading-term
+multiplier is the \emph{peak-to-mean scale ratio} $\sup_t\sigma_t/\bar\sigma$ times
+$\log(1/\delta)$---the range branch of the curvature concentration of step~(A)
+(\cref{app:proofs}), which \emph{dominates} the bare $\sqrt{\log(1/\delta)}$ of the (B)
+martingale variance because $\sup_t\sigma_t/\bar\sigma\ge1$; the additive $\sup_t\sigma_t$ term
+is the (B) Freedman range (\cref{lem:freedman}). So the first line is a genuine
+high-probability bound whose \emph{constant} carries the scale drift as a third explicit cost,
+alongside $\sqrt{W_s}$ and the per-regime restriction. The second line is its
+\emph{bounded}-scale simplification ($W_s=O(1)$, $\sup_t\sigma_t/\bar\sigma=O(1)$,
+$S_1\le T\sup_t\sigma_t$); \textbf{this assumption fails on our data}, where $W_s\sim T$
+(\cref{sec:tracker}), so the $T^{1/p}$ form is per-regime---see the remark below.
 \end{theorem}
 
 \begin{remark}[The drift is a genuine rate]
@@ -1079,11 +1087,11 @@ $\ge1-\delta$
   \sum_t\norm{d_t}^2/s_t\;\le\;M^{2-p}\kappa'S_1
    +\sqrt{2V_A\log(1/\delta)}+\tfrac{2}{3}b_A\log(1/\delta).
 \]
-Under $M=\Theta(T^{1/p})$ and the tuned $\eta$ below, both deviation terms are of the same
-$T^{1/p}$ order as the mean after the $\eta$-balance and are absorbed into the
-$\sqrt{\log(1/\delta)}$ factor and additive range term of \eqref{eq:mainbound}. Their
-\emph{constant}, though, is worth displaying: relative to the conditional mean
-$M^{2-p}\kappa'S_1$, and writing $\bar\sigma:=S_1/T$ for the mean scale,
+After the $\eta$-balance below, these deviations \emph{multiply} the leading term
+$L=(D\sqrt{W_s}+\sqrt{D P_T^s})\sqrt{S_1}\,T^{(2-p)/(2p)}$ of \eqref{eq:mainbound}: the tuned
+$\eta$ makes $\tfrac{\eta}{2}\cdot(\text{mean})=\Theta(L)$, so each deviation contributes
+$\Theta(L)$ times its ratio to the conditional mean $M^{2-p}\kappa'S_1$. Writing
+$\bar\sigma:=S_1/T$ for the mean scale, those ratios are
 \[
 \frac{\sqrt{2V_A\log(1/\delta)}}{M^{2-p}\kappa'S_1}
  =\Theta\!\Bigl(\sqrt{\tfrac{\sup_t\sigma_t}{\bar\sigma}\,\log\tfrac1\delta}\Bigr),
@@ -1093,11 +1101,14 @@ $M^{2-p}\kappa'S_1$, and writing $\bar\sigma:=S_1/T$ for the mean scale,
 \]
 both $O(1)$ in the horizon---no change to the $T^{1/p}$ exponent---but with constant the
 \emph{peak-to-mean scale ratio} $\sup_t\sigma_t/\bar\sigma$, entering \emph{linearly} on the
-range branch. On a spiking scale this ratio is far from $O(1)$; it is large precisely because
-of the volatility clustering this paper studies (\cref{sec:experiments}), so the price of a
-high-probability curvature bound is itself a form of the scale drift---a genuine constant cost,
-not a benign one. This is the step that makes term~(A)---like (B)---a high-probability, not an
-in-expectation, bound.
+range branch. Since $\sup_t\sigma_t/\bar\sigma\ge1$, that range branch \emph{dominates} the
+square-root variance branch, so the curvature concentration multiplies $L$ by
+$(\sup_t\sigma_t/\bar\sigma)\log(1/\delta)$---the leading-term multiplier reported in
+\eqref{eq:mainbound}, not a $\sqrt{\log}$ factor. On a spiking scale this ratio is far from
+$O(1)$; it is large precisely because of the volatility clustering this paper studies
+(\cref{sec:experiments}), so the price of a high-probability curvature bound is itself a form
+of the scale drift---a genuine constant cost, not a benign one. This is the step that makes
+term~(A)---like (B)---a high-probability, not an in-expectation, bound.
 \emph{(B)} The increments $\ip{m_t'-d_t}{w_t-u_t}$ form a martingale difference with
 $\norm{d_t}\le Ms_t$ and $\E[\norm{d_t}^2\mid\mathcal F_{t-1}]\le M^{2-p}\kappa'
 \sigma_t^2$; \cref{lem:freedman} bounds this sum by
@@ -1114,7 +1125,12 @@ $M=\Theta(T^{1/p})$ balances the curvature term of (A) against the bias (C) and 
 R_T(u_{1:T})=O\bigl(\sqrt{(D^2W_s+D P_T^s)\,M^{2-p}S_1}+D S_1/M^{p-1}\bigr),
 \end{equation*}
 which with $M=\Theta(T^{1/p})$ equals $(D\sqrt{W_s}+\sqrt{D P_T^s})\sqrt{S_1}\,
-T^{(2-p)/(2p)}$ up to the bias term. \emph{If} the scale variation were bounded,
+T^{(2-p)/(2p)}$ up to the bias term. Promoting the random sums (A) and (B) to high probability
+multiplies this leading term by the curvature concentration's
+$(\sup_t\sigma_t/\bar\sigma)\log(1/\delta)$ (the (A) range branch, dominating the
+$\sqrt{\log(1/\delta)}$ variance branches) and adds the (B) Freedman range
+$(\sup_t\sigma_t)D\,T^{1/p}\log(1/\delta)$, giving \eqref{eq:mainbound}. \emph{If} the scale
+variation were bounded,
 $W_s=O(1)$, and using $S_1\le T\sup_t\sigma_t$, this collapses to
 $\tilde O((\sup_t\sigma_t)(D+\sqrt{D P_T})T^{1/p}\log(1/\delta))$---but $W_s$ is a data
 quantity, and we \emph{measure} $W_s\sim T$ (\cref{sec:tracker}). So the $\sqrt{W_s}$
@@ -1333,13 +1349,13 @@ term is no longer dominated, and the guarantee degrades to the empirical dischar
 the Reductions above, and making $\rho$ adaptive to an unknown $L$ is exactly the
 strongly-adaptive wrapper of that subsection.
 
-\subsection{The deployed EMA vs.\ the analyzed envelope tracker}
+\subsection{Trackers: guarantee versus accuracy}
 \label{app:tracker}
 
 The regret analysis discharges \cref{ass:track} with the two-timescale ``peak-hold''
-envelope of \cref{sec:tracker}, whereas the empirically strongest configuration uses a
-winsorized exponential moving average (EMA). Because a reviewer may reasonably ask
-whether the analyzed object and the deployed object are the same, we state precisely
+envelope of \cref{sec:tracker}, whereas the per-row \emph{accuracy}-optimal configuration is
+the block median and the cheap reactive default is a winsorized exponential moving average
+(EMA). Because the analyzed object and the reported object thus differ, we state precisely
 what does and does not depend on the choice of tracker.
 
 \paragraph{Stability is tracker-independent.} \cref{thm:stability} uses only
@@ -1380,29 +1396,38 @@ winsorized-EMA is the variable one. This traces the $3\times$ block-bootstrap SE
 \cref{tab:jane} to the tracker rather than the cap, and sharpens the deploy question: the
 tracker that is most accurate and most regime-robust is exactly the one we cannot yet bound.
 
-The accuracy gaps are easy to over-read, so we report block-bootstrap intervals on the
-aggregate gap, each method at its tuned rate (\cref{sec:tracker}). The
-block tracker \emph{does} beat the normalized-GD baseline per-row---$0.38$ vs.\ $0.197$,
-gap $+0.18$, $95\%$ CI $[+0.16,+0.21]$---but that edge is \emph{protocol-specific}: under
-the batched per-timestep protocol it vanishes ($0.351$ vs.\ $0.316$, gap $+0.035$, CI
-$[-0.05,+0.12]$). The mechanism is substitution,
-not coincidence: per-timestep batching averages the $\sim\!9$ correlated symbols in each
-$(\text{date},\text{time})$ group, and that averaging is itself the variance reduction the
-smooth block scale supplies per-row, so the two do not compound---when the protocol smooths
-the update, a smoother tracker adds nothing. The same averaging is what lifts
-normalized-GD ($0.197\to0.316$, it had no such smoothing per-row) while, uncapped, it
-\emph{enlarges} the untruncated step and halves scale-adaptive OGD ($0.162\to0.080$,
-\cref{sec:experiments}); the block tracker's edge sitting exactly where the protocol lacks
-the smoothing is the same story from the tracker side. Against the EMA \emph{default}
-its edge is \emph{not} significant on either protocol (per-row gap $+0.10$, CI
-$[-0.04,+0.23]$). So we do \emph{not} claim the block tracker is uniformly more accurate, and
-we keep the winsorized EMA as the reported default: it is the standard reactive choice, and
-the block tracker does not beat it significantly. Past the tuned range every tracker
-\emph{degrades in loss} without diverging in the sense of \cref{thm:stability}---at
-$\mathrm{lr}{=}10$ the peak rolling loss reaches $\approx30$ (block) or $\approx230$ (EMA)
-while the $O(\sqrt t)$ iterate bound still holds---so the earlier ``pick either without
-risking divergence'' was loose: the iterate never blows up, but usability does past tuning,
-the block tracker most gracefully.
+The accuracy gaps are easy to over-read, so we test them across regimes: the ten frozen
+windows (\cref{tab:replication}) are the instrument that varies the hypothesized variable, so
+we pair the block median against the EMA default and each baseline \emph{by window} and
+bootstrap the paired difference over the ten windows
+(\texttt{research\_tracker\_bootstrap.py}). Per-row this is decisive: the block tracker beats
+\emph{every} method with a paired $95\%$ CI clear of zero and $10/10$ window wins---the EMA
+default by $+0.17$ ($[+0.11,+0.24]$), normalized-GD by $+0.13$ ($[+0.10,+0.15]$), the
+fixed-$\tau$ clip by $+0.10$, and AdaGrad-Norm by $+0.11$. This is a \emph{measured} accuracy
+result, and it \emph{supersedes} the single-window block-bootstrap gap of $+0.10$ (CI
+$[-0.04,+0.23]$) we reported in earlier drafts: that instrument \emph{fixes} the regime, which
+is exactly the variable the effect lives in. The edge is \emph{protocol-specific}, though:
+per-timestep the block tracker does \emph{not} lead---it is statistically tied with the EMA
+default (paired $+0.07$, $[-0.00,+0.15]$), the fixed-$\tau$ clip, and AdaGrad-Norm, while
+normalized-GD \emph{beats} it ($-0.09$, $[-0.16,-0.01]$). The mechanism is substitution:
+per-timestep batching averages the $\sim\!9$ correlated symbols per $(\text{date},\text{time})$
+group, and that averaging is itself the variance reduction the smooth block scale supplies
+per-row, so the two do not compound---when the protocol smooths the update, a smoother tracker
+adds nothing (the same averaging lifts normalized-GD, $0.197\to0.316$).
+
+\paragraph{Which tracker we report, and why.} We therefore report the block median as the
+per-row \emph{accuracy-optimal} tracker---it is the significant best across regimes---while
+being explicit that it is the plug-in with \emph{no} proven $W_s$ bound (\cref{prop:tracker}
+covers only the envelope). SN-OMD's contribution is the normalize-and-cap update, stable for
+\emph{any} predictable $s_t$ (\cref{thm:stability}); the tracker is a documented choice with a
+measured trade-off---the block median when per-row accuracy is the goal, the envelope when the
+$W_s$ guarantee is, the winsorized EMA as a cheap reactive default between them. We headline
+the block median because ten frozen windows say it is the most accurate bounded method per-row,
+not because it is the most analyzable---deploying the corner with no $W_s$ bound is a deliberate
+choice the paired evidence forces, and we state it as one. Past the tuned range every tracker
+\emph{degrades in loss} without diverging (\cref{thm:stability})---at $\mathrm{lr}{=}10$ the
+peak rolling loss reaches $\approx30$ (block) or $\approx230$ (EMA) while the $O(\sqrt t)$
+iterate bound holds---the block tracker most gracefully.
 
 This may look in tension with \cref{sec:tracker}/\cref{fig:main}, where long windows are
 penalized for lagging regime onsets. The tension is only apparent, and it is exactly the
