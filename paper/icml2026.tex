@@ -530,7 +530,10 @@ member dominates across both protocols}: SN-OMD with the block-median tracker le
 ($0.31\!\pm\!.04$) and normalized-GD per-timestep ($0.29\!\pm\!.02$). SN-OMD is the only method
 shown with two tracker variants; its block median was selected on window~1 as the most
 accurate tracker, so this per-row lead is a best-case tracker choice, whereas every baseline
-uses a single fixed configuration.}
+uses a single fixed configuration. The closest prior---the normalize-and-clip method of
+\citet{cutkoskymehta2021}---stays bounded ($0/10$) but is the \emph{most variable} member
+per-row and collapses per-timestep ($0.01$): a fixed clip and a fully normalized step do not
+track the drift.}
 \label{tab:replication}
 \centering
 \begin{small}
@@ -546,6 +549,7 @@ Scale-adaptive OGD ($M\!\to\!\infty$)  & --- & $6/10$ & $0.09\pm.02$ & $0/10$ \\
 Normalized-GD ($M\!\to\!0$)            & $0.18\pm.01$ & $0/10$ & $\mathbf{0.29}\pm.02$ & $0/10$ \\
 Fixed-$\tau$ clip                      & $\mathbf{0.21}\pm.03$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
 AdaGrad-Norm                           & $0.20\pm.07$ & $0/10$ & $0.19\pm.03$ & $0/10$ \\
+Cutkosky--Mehta (2021)                 & $0.16\pm.16$ & $0/10$ & $0.01\pm.01$ & $0/10$ \\
 \textbf{SN-OMD ($M{=}5$, ours)}        & $0.14\pm.11$ & $0/10$ & $0.13\pm.14$ & $0/10$ \\
 \quad\emph{+ block-median tracker}     & $\mathbf{0.31}\pm.04$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
 \bottomrule
@@ -646,10 +650,13 @@ trimmed mean) achieve sub-Gaussian deviations under a finite variance
 under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Closest to ours,
 \citet{cutkoskymehta2021} \emph{normalize and clip} for high-probability non-convex
 convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing by a
-\emph{predictable} tracked scale (not the current gradient) and in targeting \emph{dynamic}
-regret under a \emph{drifting} scale rather than static convergence. Our normalization is
-thus a streaming, scale-decoupled variant whose value is specifically stability under that
-drift.
+\emph{predictable} tracked scale (not a fixed clip of the current gradient) and in targeting
+\emph{dynamic} regret under a \emph{drifting} scale rather than static convergence. Run
+head-to-head across the ten frozen windows (\cref{tab:replication}), their method stays
+bounded ($0/10$ divergences, so it too is scale-free) but does \emph{not} match the
+tracked-scale methods: it is the most variable member per-row ($0.16\!\pm\!.16$) and collapses
+per-timestep ($0.01$). This is direct evidence that the \emph{predictable tracked scale}, not
+clipping-plus-normalization per se, is what buys accuracy under drift.
 
 \paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free

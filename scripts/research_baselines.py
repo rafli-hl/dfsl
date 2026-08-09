@@ -176,6 +176,48 @@ def blockmed_batched(X, y, wts, starts, lr, Bg=818, cap=5.0):
     return preds
 
 
+# --------------------------------------------------- Cutkosky & Mehta (2021), live baseline
+# Normalized SGD with momentum on CLIPPED gradients (their high-probability method under
+# E||g||^p < inf): clip each raw gradient at a fixed tau, EMA it into a momentum, and step
+# in the *normalized* momentum direction. Differs from SN-OMD, which divides by a *predictable
+# tracked scale* (not a fixed clip) and caps the normalized gradient rather than fully
+# normalizing the step. Tuned over (lr, tau, beta).
+def cm_perrow(X, y, wts, tau, beta, lr):
+    d = X.shape[1]; w = np.zeros(d); m = np.zeros(d); k = 0
+    preds = np.empty(len(y))
+    for i in range(len(y)):
+        with np.errstate(over="ignore", invalid="ignore"):
+            pred = float(w @ X[i]); preds[i] = pred; k += 1
+            g = 2.0 * wts[i] * (pred - y[i]) * X[i]
+        gn = float(np.linalg.norm(g))
+        if not np.isfinite(gn):
+            continue
+        ghat = g * min(1.0, tau / gn) if gn > 0 else g          # clip raw g at tau
+        m = beta * m + (1.0 - beta) * ghat                      # momentum on clipped grad
+        mn = float(np.linalg.norm(m))
+        if mn > 0 and np.isfinite(mn):
+            w = w - (lr / np.sqrt(k)) * (m / mn)                # normalized step
+    return preds
+
+
+def cm_batched(X, y, wts, starts, tau, beta, lr):
+    d = X.shape[1]; w = np.zeros(d); m = np.zeros(d)
+    ends = np.append(starts[1:], len(y)); preds = np.empty(len(y))
+    for k, (a, b) in enumerate(zip(starts, ends), start=1):
+        with np.errstate(over="ignore", invalid="ignore"):
+            p = X[a:b] @ w; preds[a:b] = p
+            g = 2.0 * (X[a:b] * (wts[a:b] * (p - y[a:b]))[:, None]).sum(axis=0)
+        gn = float(np.linalg.norm(g))
+        if not np.isfinite(gn):
+            continue
+        ghat = g * min(1.0, tau / gn) if gn > 0 else g
+        m = beta * m + (1.0 - beta) * ghat
+        mn = float(np.linalg.norm(m))
+        if mn > 0 and np.isfinite(mn):
+            w = w - (lr / np.sqrt(k)) * (m / mn)
+    return preds
+
+
 def best_over(candidates, y, wts):
     """candidates: list of (settings_dict, preds). Return best bounded by aggregate R2."""
     best = (None, -np.inf, None)
