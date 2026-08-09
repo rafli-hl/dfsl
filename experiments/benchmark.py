@@ -27,6 +27,10 @@ def _learner_grid(algo_cfg: dict) -> list[tuple[str, dict]]:
     learning_rate = float(algo_cfg.get("learning_rate", 0.1))
     window = int(algo_cfg.get("window", 256))
     clip_multiplier = float(algo_cfg.get("clip_multiplier", 3.0))
+    # SN-OGD's step is scale-invariant, so its learning rate lives on a different
+    # (order-1) scale than the clippers'; give it its own rate for a fair entry.
+    sn_learning_rate = float(algo_cfg.get("sn_learning_rate", 1.0))
+    sn_cap = float(algo_cfg.get("sn_cap", 10.0))
     grid: list[tuple[str, dict]] = [
         ("ogd", {"name": "ogd", "learning_rate": learning_rate}),
         ("adaptive_clip", {"name": "adaptive_clip", "learning_rate": learning_rate, "window": window}),
@@ -44,6 +48,12 @@ def _learner_grid(algo_cfg: dict) -> list[tuple[str, dict]]:
                 },
             )
         )
+    grid.append(
+        (
+            "scale_normalized_ogd",
+            {"name": "scale_normalized_ogd", "learning_rate": sn_learning_rate, "cap": sn_cap},
+        )
+    )
     return grid
 
 
@@ -106,6 +116,14 @@ def main(argv: list[str] | None = None) -> Path:
         )
 
     pl.DataFrame(rows).write_csv(output / "comparison.csv")
+
+    # Persist the per-step curves so publication figures can be regenerated
+    # without re-running the learner grid.
+    n_steps = int(next(iter(regrets.values())).size)
+    steps = np.arange(1, n_steps + 1)
+    pl.DataFrame({"step": steps, **regrets}).write_parquet(output / "regret_curves.parquet")
+    pl.DataFrame({"step": steps, **losses}).write_parquet(output / "loss_curves.parquet")
+
     plot_regret_curves(regrets, path=output / "regret_curves.png")
     plot_loss_curves(losses, path=output / "loss_curves.png")
     logger.info("benchmark artifacts written to {}", output)

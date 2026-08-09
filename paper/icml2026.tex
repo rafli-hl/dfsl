@@ -1,0 +1,1438 @@
+%%%%%%%% ICML 2026 SUBMISSION -- Distribution-Free Sequential Learning %%%%%%%%
+% NOTE: icml2026.sty / icml2026.bst / algorithm.sty / algorithmic.sty / fancyhdr.sty in
+% this folder are the OFFICIAL ICML 2026 author-kit files -- verified byte-identical
+% (SHA256) on 2026-08-01 against media.icml.cc/Conferences/ICML2026/Styles/icml2026.zip.
+% The page-count/layout below is therefore the real submission layout, not an approximation.
+
+\documentclass{article}
+
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Blind version for review:
+\usepackage{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\graphicspath{{figures/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Shared numbering via thmtools `sibling=` so cleveref names each environment
+% correctly (Assumption/Lemma/Remark/Proposition) instead of all ``Theorem''.
+\usepackage{thmtools}
+\declaretheorem[name=Theorem,numberwithin=section]{theorem}
+\declaretheorem[name=Proposition,sibling=theorem]{proposition}
+\declaretheorem[name=Lemma,sibling=theorem]{lemma}
+\declaretheorem[name=Corollary,sibling=theorem]{corollary}
+\declaretheorem[name=Definition,sibling=theorem,style=definition]{definition}
+\declaretheorem[name=Assumption,sibling=theorem,style=definition]{assumption}
+\declaretheorem[name=Remark,sibling=theorem,style=remark]{remark}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{remark}{Remark}{Remarks}
+
+% Math shorthands
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\gt}{g_t}
+\newcommand{\clip}{\operatorname{clip}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\icmltitlerunning{Removable Heavy Tails in Loss Gradients}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{Predictable Scale Dependence Makes Gradient Heavy Tails Removable:\\ Scale-Normalized Sequential Learning}
+
+  \icmlsetsymbol{equal}{*}
+  \begin{icmlauthorlist}
+    \icmlauthor{Anonymous Authors}{yyy}
+  \end{icmlauthorlist}
+  \icmlaffiliation{yyy}{Anonymous Institution}
+  \icmlcorrespondingauthor{Anonymous}{anon@example.com}
+  \icmlkeywords{online learning, nonstationarity, scale normalization, heavy tails, dynamic regret}
+  \vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+We study online prediction on streams whose loss-gradient \emph{scale} is strongly
+nonstationary, using a large financial dataset as a testbed. At a fixed predictor the
+\emph{pooled} gradient-norm tail is genuinely heavy (Hill index $\hat\alpha\approx2.4$), but
+\emph{conditionally removable}: the \emph{causally scale-normalized} gradient---what a learner
+acts on---is markedly lighter ($\hat\alpha\approx2.9$--$3.7$). This is a property of
+\emph{serial dependence}, not the marginal: a marginal-preserving order-shuffle destroys it,
+while the same normalization is tail-index preserving on iid streams of known index. The heavy
+marginal is volatility clustering---a bounded drift cannot move a tail index
+\citep{breiman1965}, a predictable heavy-tailed scale can (Kesten/GARCH; \citealt{kesten1973}),
+and a GARCH surrogate with light innovations reproduces both the tail and its removal. In this
+regime plain OGD has no \emph{robust} learning rate---bounded rates underfit while competitive
+rates diverge on scale spikes---and clipping to a \emph{scale-dependent} threshold still
+inherits the drift. We propose \emph{Scale-Normalized OMD} (SN-OMD): divide the gradient by a
+predictable robust scale and cap it at a \emph{scale-free} constant $M$, so the per-step move
+is bounded by $M$ and the iterates provably cannot blow up ($O(\sqrt t)$ growth for any rate
+or realization; a stability, not convergence, guarantee). A dynamic-regret analysis attaining
+the per-regime rate $T^{1/p}$ ($p\in(1,2]$) is deferred to the appendix, since the scale drift
+enters it as a genuine $\sqrt T$ factor. Empirically, a whole family of \emph{bounded
+scale-free} updates stays bounded and accurate where OGD and scale-dependent clipping diverge;
+across ten disjoint windows with frozen hyperparameters every finite-cap member stays bounded
+($0/10$ divergences) while the uncapped endpoint and OGD do not. No single member dominates
+across \emph{both} protocols---SN-OMD, with a predictable block-median scale, is the most
+accurate per-row and normalized-GD per-timestep---so what singles out SN-OMD is a
+\emph{predictable} scale, exactly what the dynamic-regret guarantee needs, not a uniform
+accuracy win.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Financial markets are a canonical source of heavy-tailed, distribution-free data:
+returns and microstructure signals exhibit power-law tails, occasional data errors
+act as adversarial contamination, and assumptions such as sub-Gaussianity are
+untenable. Sequential prediction on such streams therefore calls for
+\emph{distribution-free} guarantees that hold under weak moment assumptions only.
+A rich line of work in robust statistics shows that the empirical mean is a poor
+estimator under heavy tails, whereas estimators such as Catoni's M-estimator,
+median-of-means, and the trimmed mean achieve sub-Gaussian deviations assuming only a
+finite variance \citep{catoni2012,devroye2016,lugosi2019}; in optimization, gradient
+clipping is the corresponding algorithmic primitive for heavy-tailed gradient noise
+\citep{zhang2020clip,gorbunov2020,nguyen2023}.
+
+This paper concerns a facet these lines mostly abstract away: on real streams the
+gradient \emph{scale} is strongly nonstationary, and this---more than an intrinsically
+heavy tail---is what breaks existing methods. Measuring the gradient of an online linear
+predictor on the Jane Street market dataset, we find (i) the gradient \emph{scale}
+drifts roughly $6\times$ across two months with overnight jumps; (ii) the \emph{pooled}
+gradient-norm tail is genuinely heavy ($\hat\alpha\approx2.4$) but \emph{conditionally
+removable}---the \emph{causally scale-normalized} gradient $\norm{\gt}/s_t$, which is what
+a learner actually acts on, is much lighter ($\hat\alpha\approx2.9$--$3.7$), and the
+lightening is a property of \emph{serial dependence}, not of the marginal; and (iii) the
+\emph{gradient} tail is heavier than either its feature or residual factor alone, an
+\emph{interaction} effect from their co-movement. What the learner faces is thus the
+\emph{predictable} part of a nonstationary scale; the residual is dominated by
+causal-estimation cost, with no heavy tail separately resolvable above it
+(\cref{tab:residual}). The
+heavy pooled marginal is a \emph{volatility-clustering} effect: the bounded $\approx6\times$
+drift cannot itself move a tail index \citep{breiman1965}, but a predictable scale with a
+heavy-tailed conditional law can (the Kesten/GARCH mechanism, \citealt{kesten1973})---the
+classical route to heavy tails in asset \emph{returns} (ARCH/GARCH and the near-Gaussianity
+of volatility-standardized returns; \cref{sec:related}). Our contribution is that it holds
+for the loss \emph{gradients} of an online learner---as a feature$\times$residual
+interaction---and that it has an exploitable algorithmic consequence, developed below. This regime---a drifting scale against a moving
+comparator---is exactly where existing distribution-free online learning results, which
+are either in expectation, on bounded domains, or against a static comparator
+\citep{zhang2026oco,zhangcutkosky2022}, do not reach.
+
+The consequences are sharp. Plain OGD has \emph{no robust} learning rate on such a
+stream: rates small enough to stay bounded underfit, while any rate large enough to be
+competitive diverges the first time the gradient scale spikes in a turbulent regime
+(across ten windows its frozen rate diverges on $9/10$; \cref{tab:replication}). The textbook fix---clip
+the gradient at a threshold $\tau_t$ tracking the local scale---does not help under a
+drifting scale, because the clipped step is $\propto\!\min(\norm{\gt},\tau_t)$ and so
+still scales \emph{with} the regime: a turbulent window produces large steps and
+diverges. We show this failure both empirically and as a structural property of any
+scale-dependent threshold.
+
+\paragraph{Our approach.} The fix is to decouple the step from the tail scale.
+\emph{Scale-Normalized OMD} (SN-OMD) divides the gradient by a predictable robust
+scale $s_t$ and caps the result at a \emph{scale-free} constant $M$,
+\[
+  \hat{g}_t \;=\; \clip\!\left(\gt/s_t,\; M\right),\qquad
+  w_{t+1} \;=\; \Pi_{\mathcal W}\!\left(w_t - \tfrac{\eta}{\sqrt t}\,\hat{g}_t\right).
+\]
+The single factor $1/s_t$ replaces clipping's scale-\emph{dependent} step bound
+$M s_t$ with a scale-\emph{free} bound $M$. Because $\norm{\hat g_t}\le M$
+deterministically, the iterates grow at most as $O(\sqrt t)$ (bounded on a bounded
+$\mathcal W$) for \emph{any} learning rate or
+realization---an unconditional \emph{stability} guarantee (not, on its own,
+convergence) that needs no moment assumption.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item \textbf{Heavy gradient tails are conditionally removable (\cref{sec:experiments}).}
+  On a large market dataset the pooled gradient tail is genuinely heavy
+  ($\hat\alpha\approx2.4$) but a learner with a \emph{predictable} causal scale tracker
+  faces a much lighter one ($\hat\alpha\approx2.9$--$3.7$). Removability is a property of
+  \emph{serial dependence}: a marginal-preserving order-\emph{shuffle} abolishes it, and the
+  same normalization is tail-index preserving on iid streams of known index (so it is no
+  artifact). The heavy marginal is volatility clustering (rank-based
+  $Q_{100}\!\approx\!7\!\times\!10^5$)---a bounded drift cannot produce it
+  \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a GARCH
+  surrogate with light innovations reproduces both the tail and its removal. The effect
+  recurs, in weaker form, on image-model training gradients (\cref{app:mnist}). This is the
+  paper's central finding.
+  \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
+  We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
+  bounded on a bounded domain; \cref{thm:stability}),
+  and show it is a one-parameter family in the cap $M$ interpolating normalized-GD
+  ($M\!\to\!0$) and uncapped scale-adaptive OGD ($M\!\to\!\infty$); a two-directional test
+  predicts \emph{when} the finite cap matters---non-divergence at large steps (against the
+  uncapped endpoint), and an
+  accuracy optimum only when the normalized tail is genuinely heavy.
+  \item \textbf{A protocol-careful study, and deferred theory (\cref{sec:experiments}).}
+  Under causal standardization SN-OMD stays bounded and accurate (one of several
+  co-leading bounded scale-free methods, not the single best; \cref{tab:jane}) where OGD and
+  scale-dependent clipping diverge; it is invariant to per-row vs.\ per-timestep updates
+  (no contemporaneous leakage) and its advantage vanishes on a genuinely stationary
+  control. A per-regime dynamic-regret bound (\cref{thm:regret}) is deferred to the
+  appendix, honest about a $\sqrt T$ drift factor; a tested implementation is provided as
+anonymized supplementary material.
+\end{itemize}
+
+\section{Problem Setup}
+\label{sec:problem}
+
+\paragraph{Protocol.} Learning proceeds in rounds $t=1,\dots,T$. At round $t$ the
+learner plays $w_t\in\mathcal W\subseteq\R^d$ (a convex set of diameter $D$; the
+unbounded case is discussed in \cref{sec:method}), observes a convex loss $\ell_t$
+(for us the sample-weighted squared error $\ell_t(w)=\omega_t(\ip{w}{x_t}-y_t)^2$),
+and receives a stochastic subgradient $\gt$ with
+$\E[\gt\mid\mathcal F_{t-1}]=\bar g_t\in\partial\ell_t(w_t)$, where $(\mathcal F_t)$ is
+the natural filtration and $\varepsilon_t=\gt-\bar g_t$ is the noise.
+
+\paragraph{Drifting heavy-tailed gradients.} We assume only a \emph{finite, time-varying}
+low-order moment of the subgradient itself---the quantity we measure and the algorithm
+acts on:
+\begin{assumption}[Drifting $p$-th moment]
+\label{ass:moment}
+For each $t$, $\E[\norm{\gt}^{p_t}\mid\mathcal F_{t-1}]\le\sigma_t^{p_t}$
+for some $p_t\in(1,2]$, where the scale $\sigma_t$ and the tail index $p_t$ are
+\emph{predictable} ($\mathcal F_{t-1}$-measurable) and may drift with $t$, and $p_t<2$
+(infinite variance) is permitted. Write $p:=\inf_t p_t$. For the high-probability regret
+analysis (\cref{app:regret}) we further take the aggregates $S_1:=\sum_t\sigma_t$ and
+$\sup_t\sigma_t$ to admit \emph{deterministic} almost-sure upper bounds, so that Freedman's
+a.s.\ variance condition (\cref{lem:freedman}) is met by a nonrandom bound.
+(This bounds $\bar g_t$ and the noise $\varepsilon_t=\gt-\bar g_t$ up to constants, and
+is exactly the tail we estimate in \cref{sec:experiments}.)
+\end{assumption}
+No sub-Gaussianity, boundedness, or stationarity is assumed. \emph{Distribution-free}
+here means the learner posits \emph{no parametric or sub-Gaussian noise law}---only the
+finite, drifting $p$-th moment of \cref{ass:moment}. Two guarantees follow, at different
+knowledge costs. The unconditional \emph{stability} guarantee (\cref{thm:stability}) uses
+\emph{no} problem constant---not $\sigma_t$, $p_t$, $D$, or the comparator norm. The
+\emph{regret} guarantee (\cref{thm:regret}) is weaker in this respect: its tuned step is set
+from scale/path aggregates, of which $p$, the comparator norm, and the regime length are
+discharged by standard doubling/parameter-free wrappers (\cref{app:proofs}), while the
+scale-path quantities $W_s,P_T^s,S_1$ enter as honest inputs rather than known constants. The
+regret analysis also requires a \emph{predictable} scale tracker (\cref{ass:track}), which we
+do not treat as free but discharge under a mild drift model (\cref{prop:tracker}).
+
+\paragraph{Dynamic regret.} Performance is measured against a moving comparator
+$u_{1:T}$ with path length $P_T=\sum_{t}\norm{u_t-u_{t-1}}$,
+\begin{equation}
+\label{eq:dynreg}
+R_T(u_{1:T})=\sum_{t=1}^T\bigl[\ell_t(w_t)-\ell_t(u_t)\bigr]
+\;\le\;\sum_{t=1}^T\ip{\bar g_t}{w_t-u_t},
+\end{equation}
+the notion appropriate for regime-switching streams; static regret is the special
+case $u_t\equiv u$. We report the sample-weighted zero-mean $R^2=
+1-\sum_i\omega_i(y_i-\hat y_i)^2/\sum_i\omega_i y_i^2$ on data.
+
+\section{Scale-Normalized Online Mirror Descent}
+\label{sec:method}
+
+\paragraph{Algorithm.} SN-OMD maintains a \emph{predictable} robust estimate $s_t>0$
+of the gradient-norm scale (an $\mathcal F_{t-1}$-measurable function of past gradient
+norms) and takes a scale-invariant, constant-capped step
+(\cref{alg:snomd}). Writing $v_t=\gt/s_t$ and
+$\clip(v,M)=v\cdot\min\{1,M/\norm v\}$, the update is
+$w_{t+1}=\Pi_{\mathcal W}(w_t-\tfrac{\eta}{\sqrt t}\,\clip(v_t,M))$. The scale $s_t$
+can be any predictable robust tracker; we use a winsorized exponential moving average
+of $\norm{\gt}$ by default, and analyze a two-timescale ``peak-hold'' variant below.
+
+\begin{algorithm}[t]
+  \caption{Scale-Normalized OMD (SN-OMD)}
+  \label{alg:snomd}
+  \begin{algorithmic}
+    \STATE {\bfseries Input:} cap $M$, step $\eta$, predictable scale tracker
+    $\mathcal S$; $w_1=0$.
+    \FOR{$t=1$ {\bfseries to} $T$}
+    \STATE play $w_t$; observe $\ell_t$ and stochastic subgradient $\gt$
+    \STATE $s_t \leftarrow \mathcal S.\mathrm{scale}$ \hfill (predictable, uses
+    $\gt$ for $t'<t$)
+    \STATE $\hat g_t \leftarrow \clip(\gt/s_t,\;M)$
+    \STATE $w_{t+1}\leftarrow \Pi_{\mathcal W}\bigl(w_t-\tfrac{\eta}{\sqrt t}\hat g_t\bigr)$
+    \STATE $\mathcal S.\mathrm{update}(\norm{\gt})$
+    \ENDFOR
+  \end{algorithmic}
+\end{algorithm}
+
+\paragraph{Why normalize, not clip.} Clipping to a scale-dependent threshold
+$\tau_t=c\,s_t$ gives a step $\propto\min\{\norm{\gt},c\,s_t\}$, which scales
+\emph{with} the drifting $s_t$: a turbulent regime yields large steps and divergence.
+Dividing by $s_t$ first gives a step $\propto\min\{\norm{\gt}/s_t,M\}$, bounded by the
+\emph{scale-free} constant $M$. The two differ by the factor $1/s_t$, and this single
+factor is what removes the scale-drift transmission.
+
+\begin{theorem}[Stability, unconditional]
+\label{thm:stability}
+For any inputs, $\norm{\hat g_t}\le M$ deterministically. Hence on a bounded domain
+$\norm{w_t}\le D$ for all $t$, and on $\R^d$ (step $\eta/\sqrt t$)
+$\norm{w_t}\le\norm{w_1}+2M\eta\sqrt t$. Hence the iterates remain uniformly bounded
+(on $\mathcal W$) or grow at most as $O(\sqrt t)$ (on $\R^d$) for any learning rate,
+scale drift, or realization---a \emph{stability} guarantee, not by itself convergence,
+that uses no moment assumption.
+\end{theorem}
+This is the crucial contrast with scale-\emph{dependent} clipping, whose per-step move
+$\propto s_t$ is bounded only by the drifting scale. The bound is a \emph{family}
+property, not special to SN-OMD---any update whose step is capped by a scale-free
+constant satisfies it, including normalized-GD, a constant-threshold clip, and
+AdaGrad-Norm (\cref{tab:jane}). So \cref{thm:stability} separates the bounded scale-free
+family from the scale-dependent methods; what singles out SN-OMD \emph{within} that
+family is taken up in \cref{sec:experiments}.
+
+\paragraph{Dynamic regret (deferred to the appendix).} Beyond stability, SN-OMD admits a
+high-probability \emph{dynamic}-regret analysis (\cref{app:regret}): under a scale-tracking
+condition---a predictable $s_t$ bracketing the local scale (\cref{ass:track})---it attains
+the per-regime rate $T^{1/p}$ under only a finite $p$-th moment. We keep it in the appendix,
+not the headline, for two honest reasons. The bound is stated through the tracker's upward
+variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$, which we \emph{measure} to grow linearly with
+$T$ on real data (\cref{sec:tracker}); so the scale drift is a genuine $\sqrt T$ factor and
+the $T^{1/p}$ rate holds per regime, not globally. And the scale-tracking condition, though
+one-sided and empirically dischargeable (\cref{prop:tracker}), remains an assumption. What
+the body develops instead is the empirically-testable content---why normalizing beats
+clipping, and where the cap earns its keep.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\paragraph{Setup and protocol.} We use the Jane Street Real-Time Market Data Forecasting
+dataset \citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
+features, $39$ symbols; target \texttt{responder\_6}; metric the sample-weighted zero-mean
+$R^2$. The stability sweeps (\cref{tab:jane},~\cref{fig:main}) stream a continuous
+$150{,}000$-row slice. We evaluate \emph{progressive online} prediction---each round the
+learner plays $w_t$, then observes $(x_t,y_t)$ and updates, the protocol our theory
+concerns---with features standardized \emph{causally} (past-only; a full-sample standardizer
+inflates $R^2$ by look-ahead). We report two granularities, \emph{per-row} and
+\emph{per-timestep} (predict the $(\text{date},\text{time})$ cross-section of $\sim\!9$
+symbols, then one aggregated update, carrying no contemporaneous cross-sectional
+information). \textbf{This is not the competition's protocol} (batched timesteps,
+day-lagged responders, held-out future window), so our $R^2$ is not comparable to
+leaderboard scores; we report it for cross-method comparison and the stability contrast.
+Tail measurements are learner-independent (gradients at $w^\star$): the pooled index from
+${\sim}200{,}000$ gradients, the daily-drift index from the full record.
+
+\paragraph{Leakage controls for the $R^2$ magnitude.} Because our prequential
+$R^2\approx0.28$ sits well above the competition's held-out leaderboard scores, we run a
+battery of look-ahead controls (\cref{tab:leakage} in \cref{app:tables}; all on the reported
+window). Permuting the $(y_t,\omega_t)$ pairs drives every method to $R^2\le0$ (SN-OMD
+$-0.00$: no label leakage); a static weighted ridge with \emph{full} look-ahead reaches only
+$0.02$ and a per-day look-ahead oracle $0.18$, both below online SN-OMD's $0.28$, so the
+accuracy is carried by fast within-day adaptation that no fixed-partition linear oracle
+matches; and the weights learned here, applied unchanged to a disjoint later window, give
+$R^2=-1.7$ (that window's own prequential is $+0.22$). The reported $R^2$ is thus a
+\emph{tracking} score on a fast-drifting stream, not a transferable static fit---itself
+evidence for the nonstationarity we study, and why it is not comparable to the competition's
+protocol.
+
+\begin{table}[t]
+\caption{\textbf{The lightening is order-one and estimator-stable; the residual is
+causal-estimation cost.} Hill $\hat\alpha$ of the normalized $\norm{\gt}$ at three tail
+fractions $k$ (larger $=$ lighter). The deployed causal tracker lightens the raw pooled tail
+by $+1.0$ to $+1.5$; the \emph{same} estimator run non-causally recovers only $\sim\!+0.3$
+more ($+0.14$--$+0.38$ over $k$ and estimator). The GARCH surrogate has Gaussian innovations
+(\emph{zero} residual tail) and is calibrated to the real raw index; after the same causal
+tracking it reads $\hat\alpha\approx4.1$--$4.8$ across the three thresholds shown (widening to
+$\approx3.9$ at lower GARCH persistence; \cref{fig:nullcontrol}) against a true-$\sigma_t$
+oracle of $\approx8$--$10$, so causal estimation \emph{alone} costs
+several index points. The real $3.73$ sits \emph{just below} this zero-residual band at every
+setting we ran: the normalized real tail is at most marginally \emph{heavier} than a null
+built to have none, and the gap ($\lesssim0.8$) is no larger than the surrogate's own
+sensitivity to its persistence. We therefore cannot separate a genuine residual conditional
+tail from a scale process slightly less predictable than GARCH(1,1)---but either reading
+gives $\hat\alpha\approx3.7$ ($p>2$), so the residual is dominated by causal-estimation cost
+and the $(1,2]$ apparatus does not bind here.}
+\label{tab:residual}
+\centering
+\begin{small}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccc}
+\toprule
+Normalization of $\norm{\gt}$ & $k{=}.005$ & $k{=}.01$ & $k{=}.02$ \\
+\midrule
+\multicolumn{4}{l}{\emph{Real gradient stream:}}\\
+raw pooled (none)                        & $2.55$ & $2.43$ & $2.32$ \\
+causal winsorized-EMA \emph{(deployed)}  & $4.02$ & $3.73$ & $3.36$ \\
+\quad centered EMA (non-causal twin)     & $4.16$ & $4.05$ & $3.58$ \\
+trailing median (causal)                 & $3.24$ & $2.87$ & $2.60$ \\
+\quad centered median (non-causal)       & $3.62$ & $3.18$ & $2.81$ \\
+\midrule
+\multicolumn{4}{l}{\emph{GARCH surrogate (Gaussian innov.; zero residual tail):}}\\
+raw pooled (none)                        & $2.54$ & $2.48$ & $2.44$ \\
+causal winsorized-EMA                    & $4.81$ & $4.48$ & $4.08$ \\
+\quad true-$\sigma_t$ oracle             & $10.3$ & $9.05$ & $7.75$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\paragraph{The pooled tail is real, but conditionally removable.} At
+the fixed optimum $w^\star$, the \emph{pooled} gradient-norm tail index is
+$\hat\alpha\approx2.43$, and it is an \emph{interaction} effect: the residual and feature
+norms each have $\hat\alpha\approx4$, but their product---the gradient---has a heavier
+tail because extreme features and residuals co-occur (\cref{fig:problem}a). This heaviness
+is genuine, but \emph{conditionally removable}: dividing by a causally-tracked robust scale
+$s_t$---the quantity SN-OMD actually acts on---lightens the tail markedly, to
+$\hat\alpha\approx3.7$ (causal winsorized-EMA $s_t$), $\approx3.2$ (non-causal median), or
+$\approx2.9$ (trailing median), i.e.\ toward finite higher moments. The lightening is
+positive at every threshold and estimator (\cref{tab:residual}), and what remains is dominated
+by \emph{causal-estimation cost} rather than a resolvable residual tail: isolating causality (the
+\emph{same} estimator run non-causally) recovers only $\sim\!+0.3$, and on a GARCH surrogate
+with Gaussian innovations---\emph{zero} residual tail by construction---the same causal
+tracker still reads $\hat\alpha\approx3.9$--$4.5$ (depending on persistence) against a
+true-$\sigma_t$ oracle of $\approx9$ (\cref{tab:residual}). The real
+$3.73$ sits \emph{below} this zero-residual band, so the normalized real tail is, if
+anything, marginally \emph{heavier} than a null with nothing left to resolve; but the
+shortfall is of the same order as the surrogate's sensitivity to its own persistence, so we
+cannot separate a genuine residual conditional tail from a scale merely less predictable than
+GARCH(1,1). Either way the residual is dominated by causal-estimation cost (the surrogate's
+own oracle-vs-causal gap is $\approx4.5$ index points), and $\hat\alpha\approx3.7$ leaves
+$p>2$. What makes it removable is \emph{serial dependence}: the gradient magnitude is strongly clustered---rank (Spearman)
+autocorrelation $\approx0.16$ at lag $100$, rank-based Ljung--Box $Q_{100}\approx7\!\times\!
+10^{5}$ (ranks are bounded, so the $\chi^2$ is valid; a shuffled control gives $\approx116$),
+of which the $\approx6\times$ daily drift (\cref{fig:problem}b) is only the low-frequency
+component. Three controls (\cref{fig:nullcontrol}; \texttt{research\_null\_normalization.py} in the anonymized supplement) pin this
+down: (i) a marginal-preserving order-\emph{shuffle} leaves the pooled index unchanged but
+destroys the lightening, so the tracker exploits temporal \emph{order}, not the marginal;
+(ii) the same causal normalization is tail-index \emph{preserving} on iid streams of known
+index ($2.0,2.4,3.0$), ruling out an estimator artifact; and (iii) a GARCH surrogate with
+\emph{light} (Gaussian) innovations reproduces both the pooled $\hat\alpha\approx2.4$ and
+its removal. The heavy \emph{marginal} is \emph{not} manufactured by the bounded
+$\approx6\times$ drift---a bounded scale factor cannot move a tail index
+\citep{breiman1965}---but by a predictable scale whose conditional law is heavy-tailed (the
+Kesten/GARCH mechanism, \citealt{kesten1973}; a related route is the subordination of
+\citealt{clark1973}, \cref{sec:related}). So the tail a learner faces is set by the
+\emph{predictable} part of the scale. (Per-day $\hat\alpha$ dips below $2$ on a minority of days, but
+single-day Hill estimates are noisy and we do not rely on them.) We note that the
+per-regime budget of \cref{sec:lower} is dominated by exactly these pooled-$\alpha\!<\!2$
+days; since those regimes are themselves a pooled-tail artifact---they largely disappear
+once the gradient is normalized (the tail the learner sees has $p\approx2$)---we treat
+that budget only as qualitative motivation for why a moving comparator under drift is
+hard, not as a measured quantity.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig7_nullcontrol.png}
+\caption{\textbf{The lightening is removability, not manufacture.} (a) Hill index before
+(open) and after (filled) causal scale-normalization, $k{=}0.01$. The \emph{same}
+operation lightens the real gradient tail ($2.43\!\to\!3.73$) and a light-innovation GARCH
+surrogate ($\approx2.3\!\to\!3.9$--$4.5$), but leaves an order-\emph{shuffle}, iid heavy
+streams of known index, and a bounded $6\times$ drift essentially unchanged
+($\Delta\!\approx\!0$)---what is removed is serial dependence, not the marginal, and it is no
+estimator artifact. (b) Rank autocorrelation of $\norm{\gt}$ decays slowly (the volatility
+clustering the tracker exploits) and vanishes under shuffling.}
+\label{fig:nullcontrol}
+\end{figure*}
+
+\paragraph{Scale-invariant updates dominate scale-dependent ones.} Streaming one learner
+through the multi-regime window and sweeping the learning rate (\cref{fig:main},
+\cref{tab:jane}), the methods split cleanly by whether their step responds to the
+gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust clippers
+(AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---are
+fragile: they stay bounded only to $\mathrm{lr}\approx10^{-2}$ and reach best
+$R^2\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
+(\cref{fig:mechanism}). The \emph{scale-invariant} family---normalized-GD, SN-OMD, uncapped
+scale-adaptive OGD, a constant-threshold fixed-$\tau$ clip, and AdaGrad-Norm---stays bounded
+far higher and reaches $R^2\approx0.08$--$0.38$ across the two protocols. Per-timestep batching
+lifts OGD from $0.02$ to $0.14$ (averaging the $\sim\!9$ correlated symbols per timestep) but
+leaves it fragile; SN-OMD is essentially unchanged ($0.285\to0.309$), so its accuracy is not a
+contemporaneous-information artifact, whereas uncapped scale-adaptive OGD \emph{halves}
+($0.162\to0.080$: aggregating enlarges the untruncated step a finite cap would contain, forcing
+a lower stable rate---its frozen-rate consequence returns with the replication).
+
+\paragraph{What the tracked scale and the cap buy---and what they do not.}
+A whole \emph{family} of bounded scale-free updates---SN-OMD, normalized-GD, a
+constant-threshold fixed-$\tau$ clip, and AdaGrad-Norm---closes the accuracy gap to the
+divergent baselines, and \emph{no single member dominates}. On the reported window the two top
+entries use \emph{neither} a tracked scale nor a cap (fixed-$\tau$ clip per-step, AdaGrad-Norm
+per-row), but neither ranking survives replication (\cref{tab:replication} below): the winner
+differs by protocol and no member leads on both, so what earns the gain is \emph{normalization
+in general}---any bounded scale-free step---of which SN-OMD is one instance. The family is not
+homogeneous, though: stable learning-rate ranges span two orders
+of magnitude (fixed-$\tau$ to $\mathrm{lr}\!\approx\!0.2$, SN-OMD and normalized-GD to $2$,
+AdaGrad-Norm to $10$), so ``bounded scale-free'' is necessary for stability while the
+\emph{ceiling} depends on how the step behaves \emph{within} the bound.
+
+What singles out SN-OMD is therefore narrower than accuracy, and we state it as such.
+\emph{(i) Predictability:} its scale $s_t$ is a \emph{predictable} tracker, which is what
+makes the dynamic-regret bound (\cref{thm:regret}) go through---normalized-GD's
+instantaneous $1/\norm{\gt}$ is not predictable and discards magnitude every round; the
+payoff is the (per-regime) bound, not a measured accuracy edge. \emph{(ii) The cap:} a
+finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
+AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
+distinctly buys is an interior accuracy optimum when the \emph{normalized} tail is genuinely
+heavy (\cref{sec:msweep}); on Jane that tail is indistinguishable from causal-estimation cost,
+so the optimum is flat and the cap-family members are close. SN-OMD's block-bootstrap standard
+errors ($\pm.079/.056$) run ${\approx}3\times$ normalized-GD's ($\pm.024/.021$), which the
+ten-window replication traces to the winsorized-EMA tracker rather than the cap: the
+block-median scale removes it (per-row std $0.11\!\to\!0.04$;
+\cref{tab:replication,sec:tracker}).
+
+\paragraph{Replication across ten disjoint windows.} A single contiguous window cannot
+settle a claim that is \emph{about} regime dependence, so we re-run the entire comparison on
+\emph{ten} disjoint $150{,}000$-row windows spanning the full $1{,}699$-day record, with every
+method's hyperparameters \emph{frozen} at its window-1 tuning---the realistic
+tune-once-then-deploy setting (\cref{tab:replication}). Two findings are sharp. \emph{(i) The
+stability partition replicates and hardens:} every finite-cap bounded scale-free method stays
+bounded on all ten windows ($0/10$ divergences), while the uncapped $M\!\to\!\infty$ endpoint
+diverges on $6/10$ (per-row) and plain OGD's frozen rate diverges on $9/10$ (per-step). The
+uncapped endpoint's $0/10$ per-step is not batching conferring robustness but a lower frozen
+rate: its per-timestep window-1 optimum sits at $\mathrm{lr}{=}0.2$ (vs.\ $0.5$ per-row), so it
+underfits ($0.09\!\pm\!.02$) instead of diverging, while the aggressive per-row rate blows
+up---the finite cap, by contrast, is stable at every rate on \emph{both} protocols. So ``OGD
+has no robust rate'' and ``the cap buys unconditional stability'' hold
+across the whole record, not merely on the reported window. \emph{(ii) No bounded member dominates, and which
+one is best is tracker-dependent:} per-row the winner rotates window to window (fixed-$\tau$,
+AdaGrad-Norm, and normalized-GD each lead some), and per-step normalized-GD is the most robust
+($0.29\!\pm\!0.02$, best on $8/10$). With its \emph{deployed} winsorized-EMA tracker SN-OMD
+stays bounded but is the most \emph{variable} member (per-row $0.14\!\pm\!0.11$, negative on
+one window); swapping in the block-median tracker (\cref{sec:tracker}) removes that variance
+and makes SN-OMD the \emph{best} bounded method per-row ($0.31\!\pm\!0.04$, never negative,
+$0/10$ divergences). So the excess variance is the EMA tracker's, not the cap's---but the
+robust-and-accurate tracker is the one \emph{without} a proven $W_s$ bound (\cref{sec:tracker}),
+the same guarantee-versus-accuracy gap stated there. What generalizes unconditionally is
+\emph{bounded scale-free stability}; \emph{which} bounded member is most accurate depends on
+the tracker and protocol---now shown on the whole record, not a slice.
+
+\begin{table}[t]
+\caption{\textbf{Ten-window replication, hyperparameters frozen from window~1}
+(\cref{sec:experiments}; ten disjoint $150$k-row windows across the $1{,}699$-day record).
+Mean$\pm$std weighted $R^2$ and divergence count (a method ``diverges'' on a window if its
+peak rolling loss blows up at the frozen rate). Every finite-cap bounded scale-free method
+stays bounded on all ten windows; the uncapped endpoint and plain OGD do not. \emph{No single
+member dominates across both protocols}: SN-OMD with the block-median tracker leads per-row
+($0.31\!\pm\!.04$) and normalized-GD per-timestep ($0.29\!\pm\!.02$). SN-OMD is the only method
+shown with two tracker variants; its block median was selected on window~1 as the most
+accurate tracker, so this per-row lead is a best-case tracker choice, whereas every baseline
+uses a single fixed configuration.}
+\label{tab:replication}
+\centering
+\begin{small}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{per-row} & \multicolumn{2}{c}{per-step} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Method & mean$\pm$std & div & mean$\pm$std & div \\
+\midrule
+OGD                                    & $0.00\pm.04$ & $0/10$ & --- & $9/10$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)  & --- & $6/10$ & $0.09\pm.02$ & $0/10$ \\
+Normalized-GD ($M\!\to\!0$)            & $0.18\pm.01$ & $0/10$ & $\mathbf{0.29}\pm.02$ & $0/10$ \\
+Fixed-$\tau$ clip                      & $\mathbf{0.21}\pm.03$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
+AdaGrad-Norm                           & $0.20\pm.07$ & $0/10$ & $0.19\pm.03$ & $0/10$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}        & $0.14\pm.11$ & $0/10$ & $0.13\pm.14$ & $0/10$ \\
+\quad\emph{+ block-median tracker}     & $\mathbf{0.31}\pm.04$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\paragraph{Negative control.} If the advantage is really about scale drift, it should
+vanish when the scale is constant. Imposing genuine stationarity in the synthetic harness
+($\sigma_t\equiv1$, $p{=}2$, static reachable comparator---the one stream where
+stationarity can be enforced), tuned SN-OMD is if anything \emph{worse} than tuned OGD
+(steady excess loss $6.6$ vs.\ $5.6\!\times\!10^{-4}$ over $400$ seeds, an $18\%$ gap the
+wrong way): the advantage disappears as the thesis
+predicts (a $100\mathrm{k}$-row Jane slice is \emph{not} a valid stationarity control---it
+still has $\sim30\%$ within-day drift---so its lead there is expected).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig3_main.png}
+\caption{\textbf{Main result} (continuous multi-regime stream, \emph{causal}
+standardization, per-row). The cap family: OGD (scale-dependent) vs.\ the $M\!\to\!0$
+endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD),
+and SN-OMD ($M{=}5$). (a) Weighted $R^2$ vs.\ learning rate: OGD cliffs above
+$\mathrm{lr}=10^{-2}$ (off-scale), the scale-invariant methods climb to $R^2\approx0.2$--$0.3$
+(SN-OMD and normalized-GD comparable, intervals overlapping; \cref{tab:jane}), and uncapped
+scale-adaptive OGD diverges at large rates. (b) Peak rolling loss: OGD and uncapped
+scale-adaptive OGD explode ($10^2$--$10^{30}$), while normalized-GD ($\approx5$) and SN-OMD
+(single-digit, $\approx8$ at its top stable $\mathrm{lr}{=}2$) stay bounded.}
+\label{fig:main}
+\end{figure*}
+
+\subsection{The cap $M$ interpolates normalized-GD and scale-adaptive OGD}
+\label{sec:msweep}
+
+SN-OMD is a one-parameter family in the cap $M$: when $\norm{\gt}/s_t>M$ the scale cancels
+($\clip(\gt/s_t,M)=M\,\gt/\norm{\gt}$), so $M\to0$ is \emph{normalized-GD} and $M\to\infty$ is
+uncapped \emph{scale-adaptive OGD}. Every \emph{finite}-$M$ member satisfies \cref{thm:stability}
+($\norm{\hat g_t}\le M$); the uncapped endpoint is the lone exception and is exactly the member
+that diverges. What a finite $M$ distinctly buys over the normalized-GD endpoint is that it
+\emph{preserves gradient magnitude within the bulk} while truncating only the tail, whereas
+normalized-GD discards magnitude every round. Sweeping $M$ turns the cap into a \emph{mechanism
+test} (\cref{app:sweep}): on a synthetic stream with an \emph{imposed} heavy normalized tail an
+interior optimum appears (the best cap beats both endpoints), while on Jane---where the
+normalized tail is indistinguishable from causal-estimation cost (\cref{tab:residual})---there
+is \emph{no} meaningful interior optimum and the three members are comparable. So the cap buys
+\emph{accuracy} only when the tail survives normalization, and \emph{stability unconditionally}.
+On synthetic streams with a \emph{known} Student-$t$ index, plain OGD's cumulative-regret
+exponent climbs past $1$ (divergent) as the tail heavies while SN-OMD stays sublinear
+(\cref{app:sweep}), so the tail is the mechanism, not a learning-rate artifact.
+
+\subsection{Discharging the scale-tracking assumption}
+\label{sec:tracker}
+
+The regret bound (\cref{thm:regret}) rests on \cref{ass:track}: a \emph{predictable} scale
+$s_t$ brackets the local noise scale. We discharge it empirically on the real gradient-scale
+process ($200{,}000$ norms at $w^\star$; \cref{fig:tracker,tab:tracker,app:tracker}). The
+requirement is one-sided \emph{in what matters} (\cref{sec:method,ass:track})---hold the lower
+bracket $s_t\ge\tfrac12\sigma_t$ everywhere (the stability-critical half) while keeping the
+upward variation $W_s$ (entering \cref{thm:regret} as $\sqrt{W_s}$) near the true drift
+$V_\sigma^+$; the upper bracket enters only the regret \emph{constant}, never divergence. A single-timescale
+trailing median cannot do both (a fast window churns on spikes, a slow one lags regime
+onsets), whereas a two-timescale ``peak-hold'' envelope---react up on a short robust median,
+release down geometrically---holds the lower bracket at \emph{$100\%$} of rounds at the
+\emph{smallest} upward variation, $W_s\approx6.6\,V_\sigma^+$, at the benign cost of a $24\%$
+over-estimate. So the stability-critical half of \cref{ass:track} is discharged.
+
+\paragraph{The drift is a genuine rate; the tracker controls only its constant.} $W_s$ grows
+\emph{linearly} in $T$ (\cref{tab:beta}), so $\sqrt{W_s}\sim\sqrt T$ is genuine and
+\cref{thm:regret}'s $T^{1/p}$ is \emph{per-regime} (globally the drift adds a $\sqrt T$
+factor). A regime-timescale tracker shrinks the \emph{constant} by $\sim\!250\times$ at our
+horizon but not the exponent (\cref{rmk:tracker}); escaping the $\sqrt T$ needs a switching
+bound in the regime count, left open (\cref{app:bracket}). The most accurate per-row tracker
+on Jane is a block median; stress-tested against the circular block bootstrap its edge over
+normalized-GD is real yet narrow and protocol-specific (\cref{app:tracker}), so the ``ties
+normalized-GD'' headline stands where measured most conservatively. Past the tuned range both
+trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Scale mixtures and volatility models.} That a drifting scale makes
+conditionally light-tailed data look unconditionally heavy-tailed is classical \emph{for
+asset returns}: Clark's subordinated-process model \citep{clark1973}, the ARCH/GARCH family
+\citep{engle1982,bollerslev1986}, and the finding that returns \emph{standardized by
+realized volatility} are approximately Gaussian \citep{andersen2001}. Our
+pooled-vs-normalized separation is the same phenomenon; we claim no novelty for the
+mechanism. What is new is (i) that it holds for the \emph{loss gradients} of an online
+learner---so it governs \emph{optimization}, not just modeling; (ii) that the gradient's
+heavy tail is an \emph{interaction} effect (feature $\times$ residual co-movement), heavier
+than either factor alone (\cref{fig:problem}); and (iii) the algorithm-design
+consequence---the scale-normalized update and its cap-interpolation frontier
+(\cref{sec:msweep})---which the volatility literature does not address.
+
+\paragraph{Robust estimation and clipping.} Robust estimators (Catoni, median-of-means,
+trimmed mean) achieve sub-Gaussian deviations under a finite variance
+\citep{catoni2012,devroye2016,lugosi2019}, imported into sequential decision-making by
+\citet{bubeck2013}; in optimization, gradient clipping yields high-probability convergence
+under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Closest to ours,
+\citet{cutkoskymehta2021} \emph{normalize and clip} for high-probability non-convex
+convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing by a
+\emph{predictable} tracked scale (not the current gradient) and in targeting \emph{dynamic}
+regret under a \emph{drifting} scale rather than static convergence. Our normalization is
+thus a streaming, scale-decoupled variant whose value is specifically stability under that
+drift.
+
+\paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
+\emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
+\emph{high-probability} static regret $\tilde O(\norm u T^{1/p})$ over unbounded domains,
+whose central obstacle---exponentially large iterates---our cap sidesteps. Both are static;
+the dynamic, nonstationary regime we target sits outside them, and our budget heuristic
+(\cref{sec:lower}) suggests why it is harder (a proper $P_T$-constrained lower bound remains
+open).
+
+\paragraph{Dynamic, scale-free, and adaptive OL.} Dynamic regret against a moving comparator
+goes back to \citet{zinkevich2003}; normalized and scale-free methods adapt to an unknown
+gradient scale \citep{levy2017,orabona2018}; strongly-adaptive and parameter-free wrappers adapt to unknown
+interval/regime structure \citep{daniely2015,cutkosky2020}, which we use as a black box to
+remove knowledge of the regime length.
+
+\paragraph{Adaptive optimizers.} Coordinate-wise adaptive methods (AdaGrad, RMSProp,
+Adam) also rescale the gradient by a running second moment, so a natural question is
+whether they already handle a drifting scale. The answer splits on whether the
+preconditioner is \emph{monotone}. The \emph{EMA-denominator} members (RMSProp, Adam)
+divide by $\sqrt{\mathrm{EMA}(\gt^2)}$, which \emph{itself} spikes with a heavy-tailed
+gradient (numerator and denominator share the round); with no scale-\emph{free} cap a
+single extreme gradient still yields an unbounded step, so they exhibit the divergence
+documented in \cref{sec:experiments}. \emph{AdaGrad-Norm} instead divides by the
+\emph{monotone} accumulator $\sqrt{\sum_s\norm{g_s}^2}$, which bounds its step by $\eta$;
+head-to-head on Jane (\cref{tab:jane}) it stays bounded and is accuracy-competitive (best
+per-row), placing it with the bounded scale-free family. What it lacks is a
+\emph{predictable} scale and the dynamic-regret guarantee (\cref{thm:regret}); our
+unconditional stability (\cref{thm:stability}) comes from capping the \emph{normalized}
+gradient at $M$.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+On real streams the difficulty is dominated by a strongly \emph{nonstationary} gradient
+scale, whose \emph{predictable} part is what the learner faces: the pooled gradient looks
+heavy-tailed (volatility clustering of a heavy-tailed conditional scale, not something the
+bounded drift can produce) while the causally normalized gradient is much lighter. SN-OMD
+normalizes and caps at a scale-free constant, so its iterates provably cannot diverge
+($O(\sqrt t)$ for any rate) and attain $T^{1/p}$ \emph{per regime} (the drift is a genuine
+$\sqrt{W_s}\!\sim\!\sqrt T$ factor). Across ten disjoint windows the \emph{bounded scale-free}
+family stays bounded where OGD and scale-dependent clipping diverge, with no member dominating
+across protocols (\cref{tab:replication}); what distinguishes SN-OMD is a \emph{predictable}
+tracker---which the dynamic-regret guarantee requires---not an accuracy win.
+
+\paragraph{Limitations.} SN-OMD is not fully tuning-free (setting-dependent learning rate;
+untuned $M$, decay, winsorization; though its stable range far exceeds the baselines').
+The $W_s=O(V_\sigma^+)$ guarantee
+covers only the two-timescale envelope (\cref{ass:track}), not the deployed EMA or block-median
+trackers (supported only empirically, \cref{sec:tracker}); RMSProp/Adam are argued to diverge
+but not run head-to-head (AdaGrad-Norm and a constant clip are); and validation beyond our two
+domains is warranted. Finally, on this stream the normalized residual tail is dominated by
+\emph{causal-estimation cost}: a zero-residual GARCH surrogate reads $\hat\alpha\approx3.9$--$4.8$
+after the same causal tracking and the real $3.73$ sits just below it (\cref{tab:residual}), so
+we cannot separate a genuine residual tail from a scale less predictable than GARCH(1,1)---either
+way $\hat\alpha\approx3.7$ leaves $p>2$, so both the $p\in(1,2]$ machinery and the cap's
+tail-truncation are worst-case guarantees with no purchase here (the cap's role is the stability
+of \cref{thm:stability}).
+
+\section*{Impact Statement}
+This paper presents work whose goal is to advance the field of machine learning. There
+are many potential societal consequences of our work, none of which we feel must be
+specifically highlighted here.
+
+\bibliography{refs}
+\bibliographystyle{icml2026}
+
+\newpage
+\appendix
+\onecolumn
+
+\section*{Software and Data}
+The accompanying anonymized code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
+(winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
+reproduce every figure and number (including \cref{tab:residual} and the GARCH surrogate).
+Data: the public Jane Street Real-Time Market Data Forecasting competition, plus MNIST-CNN
+gradient norms (\cref{sec:experiments}).
+
+\section{Additional experimental tables and figures}
+\label{app:tables}
+Collected here for space: the leakage controls (\cref{tab:leakage}), the single-window tuned
+comparison (\cref{tab:jane}), and the scale-drift/clipping mechanism figure
+(\cref{fig:mechanism}). The ten-window replication (\cref{tab:replication}) and its reading
+remain in the body, since the across-window numbers---not the single-window tuning---carry the
+accuracy claims.
+
+\begin{table}[h]
+\caption{\textbf{Leakage controls for the prequential $R^2$} (date$[0,120)$, $150$k rows,
+causal standardization). The headline $R^2\approx0.28$ survives a shuffled-label null and is
+not a look-ahead artifact: it comes from within-day adaptation on a nonstationary stream, not
+from seeing the target or a transferable static fit.}
+\label{tab:leakage}
+\centering
+\begin{small}
+\begin{tabular}{lcc}
+\toprule
+Control & $R^2$ & Reads as \\
+\midrule
+Shuffled label (perm.\ $y$)               & $-0.00$     & no label leakage \\
+Offline ridge (static\,/\,per-day oracle) & $0.02/0.18$ & online $0.28$: adaptation \\
+Frozen $w_T$, forward window              & $-1.7$      & tracking, not transfer \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{table}[h]
+\caption{Best weighted $R^2$ (each method at its own tuned rate) on the continuous Jane
+Street stream, \emph{causal} standardization, both round granularities, with the largest
+stable learning rate; each $R^2$ carries $\pm$one circular block-bootstrap standard error
+(block $\approx$ one trading day, $4000$ resamples). Scale-\emph{dependent} methods (top)
+are fragile (stable only to $\mathrm{lr}\!\approx\!10^{-2}$); the \emph{bounded scale-free}
+family (bottom)---SN-OMD, normalized-GD, a fixed-$\tau$ clip ($\tau{=}20$), and
+AdaGrad-Norm, all satisfying \cref{thm:stability}---stays bounded far higher and is far
+more accurate, with \emph{none} dominating. These are single-window tuned numbers: the
+per-protocol leaders here (fixed-$\tau$ clip per-step, AdaGrad-Norm per-row) do \emph{not}
+replicate across windows, where the robust leaders are normalized-GD (per-step) and SN-OMD
+with a block-median scale (per-row)---see \cref{tab:replication}. Interpretation, and the
+block-median tracker variant, are in \cref{sec:experiments,sec:tracker}. $R^2$ is not
+comparable to competition scores (different protocol).}
+\label{tab:jane}
+\centering
+\begin{small}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccc}
+\toprule
+Method & $R^2$ per-row & $R^2$ per-step & Stable lr \\
+\midrule
+\multicolumn{4}{l}{\emph{Scale-dependent (fragile):}}\\
+OGD                                  & $0.018{\scriptscriptstyle\pm.006}$ & $0.139{\scriptscriptstyle\pm.012}$ & $\le 10^{-2}$ \\
+AdaptiveClip / RobustOMD             & $\sim0.01$ & --- & $\le 10^{-2}$ \\
+\midrule
+\multicolumn{4}{l}{\emph{Scale-invariant (bounded; stable lr per row):}}\\
+Normalized-GD ($M\!\to\!0$)          & $0.197{\scriptscriptstyle\pm.024}$ & $0.316{\scriptscriptstyle\pm.021}$ & $\le 2$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)& $0.162{\scriptscriptstyle\pm.022}$ & $0.080{\scriptscriptstyle\pm.013}$ & $\le 1$ \\
+Fixed-$\tau$ clip (const $M$)        & $0.246{\scriptscriptstyle\pm.046}$ & $\mathbf{0.382}{\scriptscriptstyle\pm.047}$ & $\le 0.2$ \\
+AdaGrad-Norm                         & $\mathbf{0.329}{\scriptscriptstyle\pm.030}$ & $0.219{\scriptscriptstyle\pm.014}$ & $\le 10$ \\
+\textbf{SN-OMD ($M{=}5$, ours)}      & $0.285{\scriptscriptstyle\pm.079}$ & $0.309{\scriptscriptstyle\pm.056}$ & $\le 2$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{fig2_mechanism.png}
+\caption{\textbf{Why scale-dependent clipping fails} (\cref{sec:experiments}). (a) The gradient
+scale drifts $\sim6\times$ across days. (b) A fixed-window adaptive clip threshold cannot win: a
+short window tracks the scale (so the step inherits the swing), a long window is smooth but lags
+regime onsets.}
+\label{fig:mechanism}
+\end{figure}
+
+\section{A per-regime budget heuristic}
+\label{sec:lower}
+
+The achievable rate degrades smoothly with the tail. The core primitive is robust mean
+estimation: under a finite $p$-th moment the best estimator of a mean from $n$ samples
+has error $\Theta(\sigma\,n^{-(1-1/p)})$ \citep{devroye2016,lugosi2019}, which
+interpolates the sub-Gaussian rate ($p=2$) and no concentration ($p\to1$). Aggregated
+online this yields, and is matched by, a regret of order $T^{1/p}$
+\citep{zhang2026oco}:
+\begin{equation}
+\label{eq:tp}
+R_T \;\asymp\; \sigma\cdot T^{1/p},\qquad
+T^{1/2}\ (p{=}2)\ \longrightarrow\ T\ (p\to1).
+\end{equation}
+Two refinements matter under nonstationarity. Partitioning $[T]$ into regimes $r$ of
+length $L_r$, index $p_r$, and scale $\sigma_r$, and applying the bound within each,
+\emph{static} regret (one comparator) is governed by the worst regime, while
+\emph{dynamic} regret (a comparator per regime) has the per-regime costs \emph{add}:
+\begin{equation}
+\label{eq:budgets}
+R_T^{\mathrm{stat}}\gtrsim\max_r \sigma_r L_r^{1/p_r},
+\qquad
+R_T^{\mathrm{dyn}}\gtrsim\sum_r \sigma_r L_r^{1/p_r}.
+\end{equation}
+Because $L^{1/p}$ is convex, heavy-tail cost cannot be averaged across regimes: a few
+short heavy regimes ($p_r<2$) dominate the sum. Three caveats keep \eqref{eq:budgets}
+honest. First, it is a per-regime \emph{budget}, not a proved regret lower bound at a
+fixed path length: it charges each regime its worst-case cost against a \emph{fresh}
+comparator, so it lower-bounds dynamic regret only against an \emph{unconstrained}
+comparator sequence---which is trivially $\Omega(T)$ in any case. The interesting object
+is regret at a given path length $P_T$, which \eqref{eq:budgets} does not constrain.
+Second, it separates drift from the static case only qualitatively: prior heavy-tailed
+results fix a \emph{single} $p$, a stationary scale, and a \emph{static} comparator, and
+recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{zhang2026oco,zhangcutkosky2022,bubeck2013},
+whereas here the per-regime costs \emph{add} across a drifting exponent, and the static
+budget (a $\max$, not a sum) does not see this. Third---and this is why we keep
+\eqref{eq:budgets} \emph{qualitative}---the sum is dominated by regimes with $p_r<2$,
+which we measure only on \emph{pooled} gradients; after scale normalization the tail the
+learner actually sees has $p\approx2$ (\cref{sec:experiments}), and the super-$\sqrt T$
+growth of the pooled budget largely evaporates. We therefore read \eqref{eq:budgets} as
+a \emph{motivating heuristic}---the interaction of tail drift with a moving comparator is
+what makes the dynamic problem hard---and not as a measured wall; a proper
+$P_T$-constrained $\Omega$ is left open. What SN-OMD delivers is to attain the per-regime
+worst-tail rate $T^{1/p}$ rather than diverge.
+
+\section{Dynamic-regret analysis}
+\label{app:regret}
+
+Beyond the unconditional stability of \cref{thm:stability}, SN-OMD admits a dynamic-regret
+bound under a condition on the scale tracker. We state it here (the proof is in
+\cref{app:proofs}) and are explicit about its two soft spots---an assumption on the
+tracker, and a drift factor we measure to be a genuine rate on real data---which is why
+the body leads with the empirical results instead.
+
+\begin{assumption}[Scale tracking]
+\label{ass:track}
+The predictable scale brackets the local noise scale: $c_1\sigma_t\le s_t\le
+c_2\sigma_t$ for constants $0<c_1\le1\le c_2$. Taking $c_1\le1$ is without loss---it absorbs
+a constant factor into the cap $M$---and is the normalization \cref{lem:moment} uses.
+\end{assumption}
+Only the lower bracket is essential---it bounds $\norm{v_t}$ and hence the rate, and
+under-estimating the scale is the sole divergence risk---while over-estimation merely
+shrinks the step $\eta/s_t$ into mild underfitting, never divergence. \cref{ass:track}
+is thus \emph{one-sided in what matters}, which is what makes it dischargeable rather than an
+oracle (\cref{prop:tracker}, and \cref{sec:tracker} empirically); the upper bracket
+$s_t\le c_2\sigma_t$ is used only to bound the Freedman range constant of \cref{thm:regret}
+(any predictable almost-sure upper bound on $s_t$ would serve), never the exponent. Define the tracker's upward
+variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$ and the scale-weighted path
+$P_T^s=\sum_t s_t\norm{u_t-u_{t-1}}$.
+
+\begin{theorem}[Dynamic regret]
+\label{thm:regret}
+Under \cref{ass:moment,ass:track}, SN-OMD with $M=\Theta(T^{1/p})$ (or a
+doubling schedule, requiring no knowledge of $p$) satisfies, for any fixed comparator
+sequence $u_{1:T}$, with probability $\ge1-\delta$,
+\begin{align}
+\label{eq:mainbound}
+R_T(u_{1:T})
+&= O\!\Bigl(\bigl(D\sqrt{W_s}+\sqrt{D\,P_T^s}\,\bigr)\sqrt{S_1}\;T^{(2-p)/(2p)}
+   \sqrt{\log(1/\delta)}\\
+&\qquad{}+(\textstyle\sup_t\sigma_t)\,D\,T^{1/p}\log(1/\delta)\Bigr)\nonumber\\
+&= \tilde O\!\Bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D P_T})\,T^{1/p}
+   \log(1/\delta)\Bigr),\nonumber
+\end{align}
+where $S_1=\sum_t\sigma_t$. The $\sqrt{\log(1/\delta)}$ multiplier and the additive
+$\sup_t\sigma_t$ term are the Freedman variance and range contributions (\cref{lem:freedman};
+the curvature concentration of step~(A) in \cref{app:proofs} is of the same order), so the
+first line is a genuine high-probability bound. The second line is its \emph{bounded}-scale
+simplification ($W_s=O(1)$, with $S_1\le T\sup_t\sigma_t$); \textbf{this assumption fails on
+our data}, where $W_s\sim T$ (\cref{sec:tracker}), so the $T^{1/p}$ form is per-regime---see
+the remark below.
+\end{theorem}
+
+\begin{remark}[The drift is a genuine rate]
+The tail index $p$ sets the exponent (through $M^{2-p}=T^{(2-p)/p}$, giving $T^{1/p}$),
+while the scale drift enters through $\sqrt{W_s}$. On a persistently fluctuating scale
+$W_s$ accumulates \emph{linearly} in $T$ ($W_s\sim T$, verified in \cref{sec:tracker}), so
+$\sqrt{W_s}\sim\sqrt T$ is a genuine rate: \eqref{eq:mainbound} is $T^{1/p}$ \emph{per
+regime}, or $T^{1/p+1/2}$ over a horizon with a growing number of regimes---which at
+$p=2$ is the \emph{vacuous} $T$, so the theorem's content is strictly per-regime. The tracker's
+update timescale controls the \emph{constant} in $W_s$ (\cref{rmk:tracker}), not the
+exponent. Escaping the $\sqrt T$ would need a switching bound in the regime count, left
+open.
+\end{remark}
+
+\begin{remark}[Tracker design]
+\label{rmk:tracker}
+A peak-hold envelope $s_t=\max\{c\cdot\mathrm{median}(\text{recent }\norm{\gt}),(1-\rho)s_{t-1}\}$
+has $W_s\approx\sup_t s_t+\rho\sum_t s_t$; choosing $\rho\asymp1/L$ (the regime length)
+minimizes the $W_s$ constant, whereas too large a $\rho$ churns. An unknown regime length
+is handled by a strongly-adaptive wrapper \citep{daniely2015,cutkosky2020} using SN-OMD's
+interval-regret property (\cref{thm:stability} gives the required bounded feedback).
+\end{remark}
+
+\begin{remark}[Scope: comparator and step schedule]
+\label{rmk:scope}
+Two limitations are worth stating plainly. \emph{(i) Comparator.} The high-probability
+guarantee is per \emph{fixed} (predictable) comparator sequence $u_{1:T}$: the martingale
+term needs $u_t$ to be $\mathcal F_{t-1}$-measurable (\cref{lem:freedman}), so the Freedman
+event is comparator-specific and \cref{thm:regret} does not hold uniformly over all
+comparators without a union/chaining bound. In particular the \emph{per-round minimizer}
+$u_t=\argmin_u\ell_t(u)$ is $\mathcal F_t$-measurable, not predictable, and is \emph{not}
+covered; our dynamic comparator must be fixed in advance with a given path length. \emph{(ii)
+Step schedule.} \cref{thm:regret} is proven for the tuned constant step $\eta_t\equiv\eta$
+(known horizon $T$, or a doubling schedule), whereas \cref{alg:snomd} and \cref{thm:stability}
+deploy the anytime $\eta_t=\eta/\sqrt t$ for horizon-free stability. These are the same update
+under two schedules; carrying the fixed-$\eta$ regret to the $1/\sqrt t$ schedule is the
+standard anytime/doubling reduction, which we do not reproduce here.
+\end{remark}
+
+\section{Proofs}
+\label{app:proofs}
+
+Throughout, $v_t=\gt/s_t$, $\hat g_t=\clip(v_t,M)$ with $M\ge1$, and $p=\inf_t p_t$. (The
+regret bound takes $M=\Theta(T^{1/p})\ge1$, the genuine-truncation regime; the $M\!\to\!0$
+endpoint of \cref{sec:msweep} is the classical normalized-GD, whose regret is standard and
+not re-derived here. \cref{thm:stability}, by contrast, holds for every $M>0$.)
+We use the filtration $(\mathcal F_t)$ with $\E[\gt\mid\mathcal F_{t-1}]=\bar g_t$ and
+$s_t$ predictable ($\mathcal F_{t-1}$-measurable).
+
+\subsection{Stability (\texorpdfstring{\cref{thm:stability}}{Theorem 1})}
+Since $\hat g_t=v_t\min\{1,M/\norm{v_t}\}$, $\norm{\hat g_t}\le M$ for every
+realization. On a bounded domain $\Pi_{\mathcal W}$ keeps $\norm{w_t}\le D$. On $\R^d$,
+$\norm{w_{t+1}-w_t}\le(\eta/\sqrt t)M$, so
+$\norm{w_t}\le\norm{w_1}+M\eta\sum_{k<t}k^{-1/2}\le\norm{w_1}+2M\eta\sqrt t$. No moment
+assumption is used. \qed
+
+\subsection{Clipped moment and bias}
+\begin{lemma}
+\label{lem:clip}
+For $v\in\R^d$, $M>0$, $p\in(1,2]$: $\norm{\clip(v,M)}^2\le M^{2-p}\norm v^p$ and
+$\norm{v-\clip(v,M)}\le\norm v^p/M^{p-1}$.
+\end{lemma}
+\begin{proof}
+If $\norm v\le M$: $\clip(v,M)=v$ and $\norm v^2=\norm v^p\norm v^{2-p}\le\norm v^p
+M^{2-p}$, while $v-\clip(v,M)=0$. If $\norm v>M$: $\norm{\clip(v,M)}^2=M^2=M^pM^{2-p}
+\le\norm v^pM^{2-p}$, and $\norm{v-\clip(v,M)}=\norm v-M\le\norm v=\norm v^p\norm
+v^{1-p}<\norm v^pM^{1-p}$.
+\end{proof}
+\begin{lemma}[Moment and bias under \cref{ass:track}]
+\label{lem:moment}
+There is a constant $\kappa$ with $\E[\norm{\hat g_t}^2\mid\mathcal F_{t-1}]\le
+M^{2-p}\kappa$, and the bias $b_t=\E[v_t-\hat g_t\mid\mathcal F_{t-1}]$ obeys
+$\norm{b_t}\le\kappa/M^{p-1}$.
+\end{lemma}
+\begin{proof}
+Take conditional expectations in \cref{lem:clip} with $v=v_t$ and use
+$\E[\norm{\gt}^{p_t}\mid\mathcal F_{t-1}]\le\kappa_0\sigma_t^{p_t}$ and
+$s_t\ge c_1\sigma_t$: $\E\norm{\hat g_t}^2\le M^{2-p}\E\norm{v_t}^p\le M^{2-p}
+\kappa_0 c_1^{-p}$, and $\norm{b_t}\le\E\norm{v_t}^{p_t}/M^{p_t-1}\le\kappa_0 c_1^{-p_t}
+/M^{p-1}$ (using $M\ge1$, $p_t\ge p$). Set $\kappa=\kappa_0 c_1^{-2}$, which dominates both
+$\kappa_0 c_1^{-p}$ and $\kappa_0 c_1^{-p_t}$ since $c_1\le1$ and $p,p_t\le2$
+(\cref{ass:track}).
+\end{proof}
+Because $M\ge1$ and $p_t\ge p$, all uses of $M^{2-p_t},M^{-(p_t-1)}$ above are bounded
+by the worst-case $M^{2-p},M^{-(p-1)}$; the single-$p$ bounds are thus valid for
+drifting $p_t$.
+
+\subsection{High probability}
+\begin{lemma}[Freedman step]
+\label{lem:freedman}
+Let $(X_t)$ be a martingale difference sequence with $|X_t|\le b$ and
+$\sum_{t\le T}\E[X_t^2\mid\mathcal F_{t-1}]\le V$ almost surely. Then w.p.\ $\ge1-\delta$,
+$\sum_{t\le T}X_t\le\sqrt{2V\log(1/\delta)}+\tfrac{2b}{3}\log(1/\delta)$. In particular,
+for feedback $Z_t$ with $\norm{Z_t}\le B$ and $X_t=\ip{Z_t-\E[Z_t\mid\mathcal F_{t-1}]}
+{w_t-u_t}$ ($u_t$ \emph{predictable}, i.e.\ $\mathcal F_{t-1}$-measurable, so $X_t$ is a
+martingale difference; $\norm{w_t-u_t}\le D$), one may take $b=2BD$ and
+$V=D^2\sum_t\E[\norm{Z_t}^2\mid\mathcal F_{t-1}]$.
+\end{lemma}
+\begin{proof}
+
+$(X_t)$ is a martingale difference sequence ($\E[X_t\mid\mathcal F_{t-1}]=0$).
+Freedman's inequality gives $\Pr(\sum_t X_t\ge\lambda)\le\exp(-\lambda^2/(2V+2b\lambda/3))$;
+inverting the right-hand side to $\delta$ and using $\sqrt{x+y}\le\sqrt x+\sqrt y$ yields
+the bound. For the instantiation, $|X_t|\le\norm{Z_t-\E[Z_t\mid\mathcal F_{t-1}]}\,
+\norm{w_t-u_t}\le2BD$ and $\E[X_t^2\mid\mathcal F_{t-1}]\le D^2\E[\norm{Z_t}^2\mid
+\mathcal F_{t-1}]$ since $\E\norm{Z-\E Z}^2\le\E\norm Z^2$.
+\end{proof}
+
+\subsection{Varying-step telescope}
+\begin{lemma}
+\label{lem:telescope}
+SN-OMD is OGD with step $\eta_t=\eta/s_t$ on the clipped raw gradient. For any
+comparator sequence $u_{1:T}$, writing $W_s=s_1+\sum_t(s_t-s_{t-1})_+$ and
+$P_T^s=\sum_t s_t\norm{u_t-u_{t-1}}$,
+\[
+\sum_{t=1}^T s_t\bigl(\norm{w_t-u_t}^2-\norm{w_{t+1}-u_t}^2\bigr)\le D^2W_s+2D\,P_T^s.
+\]
+\end{lemma}
+\begin{proof}
+Write $s_0:=0$, so that $W_s=\sum_{t=1}^T(s_t-s_{t-1})_+$. Shifting the index in the
+subtracted term, $\sum_{t=1}^T s_t\norm{w_{t+1}-u_t}^2=\sum_{t=2}^{T+1}s_{t-1}
+\norm{w_t-u_{t-1}}^2$, hence
+\[
+\sum_{t=1}^T s_t\bigl(\norm{w_t-u_t}^2-\norm{w_{t+1}-u_t}^2\bigr)
+=\sum_{t=1}^T\bigl(s_t\norm{w_t-u_t}^2-s_{t-1}\norm{w_t-u_{t-1}}^2\bigr)
+ -s_T\norm{w_{T+1}-u_T}^2,
+\]
+and the final boundary term is nonpositive and dropped. Splitting each summand into a
+comparator-move and a scale-change part,
+\[
+s_t\norm{w_t-u_t}^2-s_{t-1}\norm{w_t-u_{t-1}}^2
+=s_t\bigl(\norm{w_t-u_t}^2-\norm{w_t-u_{t-1}}^2\bigr)+(s_t-s_{t-1})\norm{w_t-u_{t-1}}^2,
+\]
+which is at most $2D s_t\norm{u_t-u_{t-1}}+(s_t-s_{t-1})_+D^2$ by the reverse triangle
+inequality and $\norm{\cdot}\le D$. Summing over $t$ gives $2D P_T^s+D^2 W_s$.
+\end{proof}
+
+\subsection{Dynamic regret (\texorpdfstring{\cref{thm:regret}}{Theorem 2})}
+
+\paragraph{Roadmap and where each assumption enters.} The linearized regret splits into
+three sums---(A) optimization, (B) martingale, (C) clipping bias---each closed by the
+lemmas below. (A) uses the varying-step telescope (\cref{lem:telescope}) for the comparator/
+scale-drift terms and the clipped second moment (\cref{lem:clip,lem:moment}) for the
+curvature (whose random sum is concentrated by a second application of \cref{lem:freedman});
+(B) uses the Freedman step (\cref{lem:freedman}); (C) uses the clipping-bias
+bound (\cref{lem:moment}). The two assumptions enter in a few isolated places:
+\cref{ass:moment} (finite $p$-th moment) only through \cref{lem:moment}, which converts
+$\E\norm{\gt}^{p_t}\le\sigma_t^{p_t}$ into the conditional second-moment and bias bounds
+of (A)--(C); \cref{ass:track}'s \emph{lower} bracket $s_t\ge c_1\sigma_t$ in the
+curvature of (A)/(B) and the bias of (C); and its \emph{upper} bracket $s_t\le c_2\sigma_t$
+in exactly one further place---the range constant $b_A$ of the curvature concentration in (A)
+below (any predictable a.s.\ upper bound on $s_t$ would serve), never the exponent. So
+over-estimating the scale is harmless to the \emph{rate}, costing only that Freedman range
+constant. The dependency is
+$\cref{lem:clip}\!\to\!\cref{lem:moment}\!\to\!\{\text{(A),(B),(C)}\}$, with
+\cref{lem:telescope} feeding (A) and \cref{lem:freedman} feeding (B); the final display
+balances (A)'s curvature against (C)'s bias through the choice of $\eta$ and $M$.
+
+Write $d_t:=\clip(\gt,Ms_t)=s_t\hat g_t$ for the clipped \emph{raw} gradient, so that
+SN-OMD is exactly OGD with adaptive step $\eta_t=\eta/s_t$ on $d_t$
+(\cref{lem:telescope}). By convexity $R_T(u_{1:T})\le\sum_t\ip{\bar g_t}{w_t-u_t}$, and
+we split the true subgradient as $\bar g_t=m_t'+\beta_t$, where
+$m_t'=\E[d_t\mid\mathcal F_{t-1}]$ and $\beta_t=\bar g_t-m_t'=\E[(\gt-d_t)\mid
+\mathcal F_{t-1}]$ is the (raw) clipping bias. Then
+\begin{equation*}
+\sum_t\ip{\bar g_t}{w_t-u_t}
+=\underbrace{\sum_t\ip{d_t}{w_t-u_t}}_{\text{(A) optimization}}
++\underbrace{\sum_t\ip{m_t'-d_t}{w_t-u_t}}_{\text{(B) martingale}}
++\underbrace{\sum_t\ip{\beta_t}{w_t-u_t}}_{\text{(C) bias}}.
+\end{equation*}
+\emph{(A)} The OGD one-step inequality with step $\eta_t$, summed and combined with
+\cref{lem:telescope}, gives
+$\sum_t\ip{d_t}{w_t-u_t}\le\tfrac{1}{2\eta}(D^2W_s+2D P_T^s)+\tfrac{\eta}{2}
+\sum_t\norm{d_t}^2/s_t$. Since $\norm{d_t}^2=\norm{\clip(\gt,Ms_t)}^2\le
+(Ms_t)^{2-p}\norm{\gt}^p$ (\cref{lem:clip}) and $s_t\ge c_1\sigma_t$
+(\cref{ass:track}), the curvature sum has conditional mean
+$\le M^{2-p}\kappa'\sum_t\sigma_t=M^{2-p}\kappa'S_1$, with $S_1=\sum_t\sigma_t$ and
+$\kappa'{:=}\kappa_0 c_1^{1-p}$ an absolute constant (the moment/lower-bracket constants of
+\cref{ass:moment,lem:moment}). The curvature sum $\sum_t\norm{d_t}^2/s_t$ is itself random,
+so its conditional-mean bound must be promoted to hold with high probability, not used
+pathwise: apply \cref{lem:freedman} a second time to the predictable-variance sequence
+$\xi_t:=\norm{d_t}^2/s_t-\E[\norm{d_t}^2/s_t\mid\mathcal F_{t-1}]$. The clip gives
+$0\le\norm{d_t}^2/s_t\le M^2 s_t\le M^2 c_2\sup_t\sigma_t=:b_A$ (\cref{ass:track}), and
+$\sum_t\E[\xi_t^2\mid\mathcal F_{t-1}]\le b_A\,M^{2-p}\kappa'S_1=:V_A$, so with probability
+$\ge1-\delta$
+\[
+  \sum_t\norm{d_t}^2/s_t\;\le\;M^{2-p}\kappa'S_1
+   +\sqrt{2V_A\log(1/\delta)}+\tfrac{2}{3}b_A\log(1/\delta).
+\]
+Under $M=\Theta(T^{1/p})$ and the tuned $\eta$ below, both deviation terms are of the same
+$T^{1/p}$ order as the mean after the $\eta$-balance and are absorbed into the
+$\sqrt{\log(1/\delta)}$ factor and additive range term of \eqref{eq:mainbound}. Their
+\emph{constant}, though, is worth displaying: relative to the conditional mean
+$M^{2-p}\kappa'S_1$, and writing $\bar\sigma:=S_1/T$ for the mean scale,
+\[
+\frac{\sqrt{2V_A\log(1/\delta)}}{M^{2-p}\kappa'S_1}
+ =\Theta\!\Bigl(\sqrt{\tfrac{\sup_t\sigma_t}{\bar\sigma}\,\log\tfrac1\delta}\Bigr),
+\qquad
+\frac{\tfrac23 b_A\log(1/\delta)}{M^{2-p}\kappa'S_1}
+ =\Theta\!\Bigl(\tfrac{\sup_t\sigma_t}{\bar\sigma}\,\log\tfrac1\delta\Bigr),
+\]
+both $O(1)$ in the horizon---no change to the $T^{1/p}$ exponent---but with constant the
+\emph{peak-to-mean scale ratio} $\sup_t\sigma_t/\bar\sigma$, entering \emph{linearly} on the
+range branch. On a spiking scale this ratio is far from $O(1)$; it is large precisely because
+of the volatility clustering this paper studies (\cref{sec:experiments}), so the price of a
+high-probability curvature bound is itself a form of the scale drift---a genuine constant cost,
+not a benign one. This is the step that makes term~(A)---like (B)---a high-probability, not an
+in-expectation, bound.
+\emph{(B)} The increments $\ip{m_t'-d_t}{w_t-u_t}$ form a martingale difference with
+$\norm{d_t}\le Ms_t$ and $\E[\norm{d_t}^2\mid\mathcal F_{t-1}]\le M^{2-p}\kappa'
+\sigma_t^2$; \cref{lem:freedman} bounds this sum by
+$\tilde O(D M^{1-p/2}\sqrt{\sup_t\sigma_t\cdot S_1}\,)$, the same order as (A). This step
+requires $u_t$ predictable (\cref{lem:freedman}), so the Freedman event is
+comparator-specific; \cref{thm:regret} is accordingly a guarantee \emph{per fixed}
+$u_{1:T}$, not one holding uniformly over all comparators (which would need a union or
+chaining bound over comparator sequences, not pursued here).
+\emph{(C)} $\norm{\beta_t}\le\E[\norm{\gt}^p\mid\mathcal F_{t-1}]/(Ms_t)^{p-1}\le
+\kappa'\sigma_t/M^{p-1}$ (\cref{lem:moment}), so (C) $\le D\kappa'S_1/M^{p-1}$.
+Choosing $\eta=\Theta\bigl(\sqrt{(D^2W_s+D P_T^s)/(M^{2-p}S_1)}\bigr)$ and
+$M=\Theta(T^{1/p})$ balances the curvature term of (A) against the bias (C) and yields
+\begin{equation*}
+R_T(u_{1:T})=O\bigl(\sqrt{(D^2W_s+D P_T^s)\,M^{2-p}S_1}+D S_1/M^{p-1}\bigr),
+\end{equation*}
+which with $M=\Theta(T^{1/p})$ equals $(D\sqrt{W_s}+\sqrt{D P_T^s})\sqrt{S_1}\,
+T^{(2-p)/(2p)}$ up to the bias term. \emph{If} the scale variation were bounded,
+$W_s=O(1)$, and using $S_1\le T\sup_t\sigma_t$, this collapses to
+$\tilde O((\sup_t\sigma_t)(D+\sqrt{D P_T})T^{1/p}\log(1/\delta))$---but $W_s$ is a data
+quantity, and we \emph{measure} $W_s\sim T$ (\cref{sec:tracker}). So the $\sqrt{W_s}$
+factor is a genuine $\sqrt T$ rate and this $T^{1/p}$ simplification holds only \emph{per
+regime}; globally the bound is $T^{1/p+1/2}$ (at $p=2$, the vacuous $T$). The stationary
+case ($\sigma_t\equiv\sigma$, $p=2$, no drift so $W_s=\sigma$) recovers
+$\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
+
+\subsection{Reductions}
+\emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using
+that the bound is unimodal in $\log M$ with a flat optimum, removes this at a
+$\mathrm{polylog}(T)$ cost \citep{zhang2026oco}. \emph{Unknown $\norm u$ / unbounded
+domain:} \cref{thm:stability} gives bounded feedback $\norm{\hat g_t}\le M$, exactly
+the input required by the parameter-free potential of \citet{zhangcutkosky2022};
+substituting our $\hat g_t$ yields the unbounded-domain analogue with $D$ replaced by
+$\norm u$. \emph{Unknown regime length:} \cref{lem:telescope} plus the interval version
+of \cref{lem:freedman} give SN-OMD an interval-regret guarantee on every $[a,b]$; a
+strongly-adaptive wrapper \citep{daniely2015,cutkosky2020} then recovers the dynamic
+bound without knowing the regime structure, at a $\mathrm{polylog}$ overhead. A
+per-regime transition cost $O(D\,N\,\mathrm{polylog}\,T^{1/p})$ is incurred while the
+scale tracker re-concentrates after each of the $N$ regime changes; it is dominated
+when regimes are macroscopic.
+
+\subsection{Discharging \texorpdfstring{\cref{ass:track}}{the scale-tracking assumption}: a bracket guarantee}
+\label{app:bracket}
+
+\cref{ass:track} posits a predictable scale that brackets $\sigma_t$. We sketch why it is
+not an oracle: under a mild model of the drift (piecewise-slow variation plus within-regime
+mixing), the two-timescale envelope of \cref{sec:tracker} meets the essential lower bracket
+off a small exceptional set, so the burden moves from ``an accurate scale estimate exists''
+to ``the drift is piecewise slowly varying with a mixing scale,'' and the estimate is then
+\emph{derived} from robust concentration. This is a sketch, not a theorem: the
+window-median step needs a blocking argument (below), which we state as an assumption rather
+than discharge.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_tracker.png}
+\caption{\textbf{Discharging \cref{ass:track}} (\cref{sec:tracker}). A two-timescale
+``peak-hold'' tracker on the real gradient-scale process (a)~holds the lower bracket
+$s_t\ge\tfrac12\sigma_t$ at every round while (b)~attaining the smallest upward variation
+$W_s/V_\sigma^+$; a fast trailing median churns ($60\times$), a slow one lags and
+violates the bracket.}
+\label{fig:tracker}
+\end{figure}
+
+\begin{table}[t]
+\caption{Scale trackers on the real gradient-scale process (\cref{sec:tracker}). The
+two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
+variation $W_s$. $V_\sigma^+$ is the true upward scale drift.}
+\label{tab:tracker}
+\centering
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Tracker & Lower bracket & $W_s$ & $W_s/V_\sigma^+$ \\
+\midrule
+Trailing median, fast ($W{=}64$)   & $0.93$ & $38.6\mathrm{k}$ & $60\times$ \\
+Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $7.9\times$ \\
+\textbf{Two-timescale envelope (ours)} & $\mathbf{1.00}$ & $\mathbf{4.2\mathrm{k}}$ & $\mathbf{6.6\times}$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig1_problem.png}
+\caption{\textbf{The pooled tail is real, but conditionally removable} (\cref{sec:experiments}).
+(a) The \emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than
+either its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
+co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record drifts;
+per-day estimates occasionally fall below $2$ but single-day Hill estimates are noisy.
+Dividing by a \emph{predictable} causally-tracked scale lightens the tail to
+$\hat\alpha\approx2.9$--$3.7$ (estimator-dependent; \cref{tab:residual}); a
+marginal-preserving order-shuffle leaves the pooled index unchanged (an order-statistic
+identity) yet abolishes the lightening, so what the tracker removes is serial dependence,
+not the marginal.}
+\label{fig:problem}
+\end{figure*}
+
+\subsection{Synthetic streams: known tail and the cap sweep}
+\label{sec:synthetic}\label{app:sweep}
+On synthetic streams with a controlled tail (Student-$t$ index $p$; \cref{fig:synthetic}),
+plain OGD's fitted cumulative-regret exponent rises $0.37\!\to\!0.70\!\to\!1.55$ as $p$
+falls $2\!\to\!1.3$---super-linear (divergent) once the tail is heavy---reproducing the
+real-data divergence with a \emph{known} tail index, so the tail is the mechanism, not a
+learning-rate artifact. SN-OMD stays sublinear, with exponents \emph{below} $1/p$ (the
+stochastic stationary instance is easier than the worst case, so this is consistent with,
+not a tightening of, \cref{thm:regret}); against a drifting comparator its dynamic regret
+grows with path length at exponent $\approx0.43$, consistent with the $\sqrt{D P_T}$ term.
+
+\paragraph{The cap sweep (\cref{fig:msweep}).} Sweeping $M$ at each cap's own tuned step turns
+the cap into a \emph{mechanism test}: normalization already removes most of the tail
+($\hat\alpha\!:2.4\to2.9$--$3.7$), so a finite cap should earn its keep only when the
+\emph{normalized} gradient is still heavy. With an \emph{imposed} heavy normalized tail
+($p=1.5$) the finite-$M$ interior optimum beats the uncapped endpoint $\approx240\times$
+(heavy-tail instability) and the normalized-GD endpoint $\approx10\times$ (magnitude-blind
+oscillation), both outside the seed-noise band; on Jane, where the normalized tail is
+indistinguishable from causal-estimation cost (\cref{tab:residual}), the same sweep has no
+interior optimum and the three cap-family members are comparable (\cref{tab:jane}). Both
+predictions of the mechanism test are thus borne out. The cap therefore buys \emph{accuracy}
+only when the tail survives normalization, and \emph{stability unconditionally}: uncapped
+scale-adaptive OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
+
+\subsection{A second domain: image-model gradients}
+\label{app:mnist}
+On the per-step gradient norm of a small CNN on MNIST ($2{,}814$ steps) the pooled tail is
+heavy ($\hat\alpha\approx2.6$) and normalizing lightens it, but this is \emph{schedule-driven}:
+within a constant-learning-rate window the tail is already light ($\hat\alpha\approx6$--$9$),
+so the heaviness is scale decay, not within-phase drift. The within-regime effect---confirmed
+by the shuffle/iid-null controls and the feature--residual interaction---we establish only on
+the market data.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_synthetic.png}
+\caption{\textbf{Known-tail synthetic} (\cref{sec:synthetic}). Cumulative regret vs.\ $T$
+at $p\in\{1.3,1.5,2.0\}$: OGD's exponent climbs past $1$ (divergent) as the tail heavies,
+while SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
+\label{fig:synthetic}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{fig6_msweep.png}
+\caption{\textbf{The cap has an interior optimum} (synthetic, $p=1.5$; \cref{sec:msweep}).
+Steady-state excess loss vs.\ $M$, each cap at its own tuned step: the finite-$M$ optimum
+beats both the normalized-GD end ($M\to0$) and the uncapped scale-adaptive-OGD end
+($M\to\infty$).}
+\label{fig:msweep}
+\end{figure}
+
+\begin{table}[t]
+\caption{The scale drift is a genuine rate, but its \emph{constant} is controllable.
+Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
+median per block) on the $200{,}000$-round gradient-scale process. Restricting the
+$W_s\sim T^{\beta}$ fit to horizons with $\gtrsim\!50$ blocks gives $\beta\approx1.0$--$1.25$
+where reliably measurable ($B{=}100,10^3$), with no monotone trend; the naive full-range
+fit's decline (to $0.17$ at large $B$) is a finite-horizon artifact---$B{=}10^4$ has only
+$\sim\!20$ blocks and no $\ge\!50$-block horizon. What $B$ controls is the constant,
+shrinking $W_s$ by $\sim\!5$ orders of magnitude while roughly holding the lower bracket.
+Escaping the resulting $\sqrt T$ drift factor needs a switching bound in the regime count,
+left open.}
+\label{tab:beta}
+\centering
+\begin{small}
+\begin{tabular}{lccccc}
+\toprule
+block $B$              & $1$ & $100$ & $10^3$ & $3{\cdot}10^3$ & $10^4$ \\
+\midrule
+$W_s$ (full record)   & $1.8\mathrm{M}$ & $3216$ & $319$ & $108$ & $29$ \\
+$\beta$ ($\ge\!50$ blk) & --- & $1.03$ & $1.25$ & $0.73$ & n/a \\
+lower bracket         & $0.72$ & $0.97$ & $0.97$ & $0.92$ & $0.93$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\paragraph{Drift model.} Partition $[T]$ into $N$ regimes by change points
+$t_0<\dots<t_N$. \emph{Slow within-regime drift:} inside a regime the scale varies
+slowly, $\sigma_t/\sigma_{t-1}\in[1-\gamma,1+\gamma]$ with $\gamma W\le c_0$ for the
+window $W$. \emph{Arbitrary jumps:} at the $N$ change points $\sigma_t$ may jump by any
+factor. This is the piecewise-slowly-varying picture the measured gradient scale fits
+($\sim\!30\%$ within-day drift, occasional $3\times$ overnight jumps; \cref{sec:experiments}).
+
+\paragraph{Tracker.} The envelope $s_t=\max\{c\,\widehat m_t,\,(1-\rho)s_{t-1}\}$, where
+$\widehat m_t=\mathrm{median}(\norm{g_{t-W}},\dots,\norm{g_{t-1}})$ is the predictable
+short-window median and $\rho\asymp1/L$ with $L=\min_r L_r$.
+
+\begin{proposition}[Bracket guarantee, informal]
+\label{prop:tracker}
+Under \cref{ass:moment}, the drift model above, and $\beta$-mixing of the within-regime
+$\norm{\gt}$ process (so a blocking argument yields window-median concentration---the iid
+order-statistic rate is otherwise only heuristic under the serial dependence documented in
+\cref{sec:experiments}), for a large enough constant $c$, with probability $\ge1-\delta$:
+\emph{(i, lower bracket)} $s_t\ge c_1\sigma_t$ for every $t$ outside at most $O(W)$
+rounds after each jump---an exceptional set of size $O(NW)$; and
+\emph{(ii, bounded variation)} $W_s=O(\sup_t\sigma_t+\rho\sum_t\sigma_t)=O(V_\sigma^+)$.
+Consequently \cref{thm:regret} holds with one added term $O(D\,N\,W\,\sup_t\sigma_t)$,
+dominated whenever $NW\ll T^{1/p}$ (macroscopic regimes).
+\end{proposition}
+
+\medskip\noindent\textit{Proof sketch (heuristic; the window-concentration step is the
+$\beta$-mixing assumption, not a discharged bound).}
+\emph{Window concentration.} On a window lying inside one regime, the population median
+of $\norm{\gt}$ is a constant multiple of $\sigma_t$---a regular-variation/scale-family
+assumption on the conditional law, \emph{beyond} the moment bound of \cref{ass:moment}. Under the
+within-regime $\beta$-mixing assumption a blocking argument gives empirical-median
+concentration around it---split the window into $\asymp W/\ell$ near-independent blocks of
+length $\ell\gtrsim$ the mixing time; the iid order-statistic bound is the $\ell{=}1$
+special case and is only heuristic under the serial dependence this paper documents. The
+slow drift shifts the constants by $O(\gamma W)=O(1)$. Hence
+$\widehat m_t\in[a\sigma_t,b\sigma_t]$ w.h.p., and $c\ge c_1/a$ gives
+$c\,\widehat m_t\ge c_1\sigma_t$, so the $\max$ meets the lower bracket whenever the
+window lies in one regime.
+\emph{Jumps.} After an upward jump the window still holds pre-jump norms for $\le W$
+rounds; during that lapse the median term may under-estimate, giving the $O(NW)$
+exceptional set. A downward jump only makes $s_t$ conservatively high (the release lets
+it fall at rate $\rho$), never violating the lower bracket.
+\emph{Variation.} Upward moves of $s_t$ come only from $c\,\widehat m_t$ rising; between
+jumps these telescope to $\sup_t s_t$, and the geometric release contributes the churn
+$\rho\sum_t s_t$, so $W_s\le\sup_t s_t+\rho\sum_t s_t$, which is $O(V_\sigma^+)$ for
+$\rho\asymp1/L$ (\cref{rmk:tracker}).
+\emph{Exceptional rounds.} On the $O(NW)$ lapse rounds the update is still bounded
+($\norm{\hat g_t}\le M$, \cref{thm:stability}) but the clipping bias (C) is uncontrolled;
+charging it trivially at $O(D\sup_t\sigma_t)$ per round gives the added
+$O(D\,N\,W\,\sup_t\sigma_t)$.\medskip
+
+The blocking argument is not free: each block must span several mixing times, so the window
+$W$ needed for concentration inflates with the mixing coefficient, and with it the $O(NW)$
+exceptional set. The proposition therefore says something only for regimes long enough that
+$NW\ll T^{1/p}$ \emph{survives} this inflation; for short or rapidly-mixing regimes the lapse
+term is no longer dominated, and the guarantee degrades to the empirical discharge of
+\cref{sec:tracker}. The residual---the post-jump lapse---is an additive term already of the form isolated in
+the Reductions above, and making $\rho$ adaptive to an unknown $L$ is exactly the
+strongly-adaptive wrapper of that subsection.
+
+\subsection{The deployed EMA vs.\ the analyzed envelope tracker}
+\label{app:tracker}
+
+The regret analysis discharges \cref{ass:track} with the two-timescale ``peak-hold''
+envelope of \cref{sec:tracker}, whereas the empirically strongest configuration uses a
+winsorized exponential moving average (EMA). Because a reviewer may reasonably ask
+whether the analyzed object and the deployed object are the same, we state precisely
+what does and does not depend on the choice of tracker.
+
+\paragraph{Stability is tracker-independent.} \cref{thm:stability} uses only
+$\norm{\hat g_t}\le M$, which the cap enforces for \emph{any} predictable $s_t>0$.
+Non-divergence therefore holds verbatim for the EMA, for the envelope, and for any
+other tracker; the gap discussed here is never about stability, only about the leading
+regret constant.
+
+\paragraph{Only the regret constant depends on the tracker.} For any predictable $s_t$
+meeting the essential lower bracket $s_t\ge c_1\sigma_t$, the rate is $T^{1/p}$
+(\cref{thm:regret}); trackers differ only through the leading factor $\sqrt{W_s}$. The
+envelope is the tracker for which we can \emph{prove} both the lower bracket and
+$W_s=O(V_\sigma^+)$ (\cref{prop:tracker})---reacting up
+on a short robust median and releasing down only geometrically keeps every upward move a
+genuine rise (\cref{tab:tracker}: $100\%$ lower bracket, $W_s=6.6\,V_\sigma^+$). A fast,
+\emph{unwinsorized} EMA can in principle churn on heavy-tailed $\norm{\gt}$ spikes
+(\cref{tab:tracker}: $W_s=60\,V_\sigma^+$); winsorizing the EMA at $k\cdot\mathrm{median}$
+caps each upward step and is what keeps the deployed default's $W_s$ finite in practice,
+though we do not give it a closed-form bound.
+
+\paragraph{Which tracker to deploy: a three-way gap, widest at the best point.} There are
+now three trackers in play and the accuracy/guarantee trade-off has three corners.
+\emph{(1) The envelope} $s_t=\max\{c\,\hat m_t,(1-\rho)s_{t-1}\}$ is the only one with a
+\emph{proven} bound: \cref{prop:tracker} gives it both the lower bracket and
+$W_s=O(V_\sigma^+)$. \emph{(2) The winsorized EMA} (deployed default) has no closed-form
+$W_s$ bound---\cref{prop:tracker} does not cover it, as its functional form is not the
+envelope's---only the empirical $W_s=60\,V_\sigma^+$ of \cref{tab:tracker}. \emph{(3) The
+block median} ($B{=}10^4\approx$ one day) is the most accurate \emph{per-row} on our stream
+(per-timestep the constant-$\tau$ clip edges it, $0.382$ vs.\ $0.351$; \cref{tab:jane}) yet
+the least analyzed: \cref{prop:tracker} does not cover it either, and we prove nothing about its
+$W_s$. So the best-performing tracker is the one with no guarantee; the gap between what we
+can \emph{prove} (envelope) and what we would \emph{deploy} (EMA, or block) is if anything
+wider than before. The ten-window replication (\cref{tab:replication}) makes this concrete:
+holding hyperparameters frozen from window~1, the block-median tracker cuts SN-OMD's per-row
+across-window $R^2$ standard deviation threefold ($0.11\!\to\!0.04$) and lifts its mean from
+$0.14$ to $0.31$---above every other bounded method and never negative---whereas the deployed
+winsorized-EMA is the variable one. This traces the $3\times$ block-bootstrap SE of
+\cref{tab:jane} to the tracker rather than the cap, and sharpens the deploy question: the
+tracker that is most accurate and most regime-robust is exactly the one we cannot yet bound.
+
+The accuracy gaps are easy to over-read, so we report block-bootstrap intervals on the
+aggregate gap, each method at its tuned rate (\cref{sec:tracker}). The
+block tracker \emph{does} beat the normalized-GD baseline per-row---$0.38$ vs.\ $0.197$,
+gap $+0.18$, $95\%$ CI $[+0.16,+0.21]$---but that edge is \emph{protocol-specific}: under
+the batched per-timestep protocol it vanishes ($0.351$ vs.\ $0.316$, gap $+0.035$, CI
+$[-0.05,+0.12]$). The mechanism is substitution,
+not coincidence: per-timestep batching averages the $\sim\!9$ correlated symbols in each
+$(\text{date},\text{time})$ group, and that averaging is itself the variance reduction the
+smooth block scale supplies per-row, so the two do not compound---when the protocol smooths
+the update, a smoother tracker adds nothing. The same averaging is what lifts
+normalized-GD ($0.197\to0.316$, it had no such smoothing per-row) while, uncapped, it
+\emph{enlarges} the untruncated step and halves scale-adaptive OGD ($0.162\to0.080$,
+\cref{sec:experiments}); the block tracker's edge sitting exactly where the protocol lacks
+the smoothing is the same story from the tracker side. Against the EMA \emph{default}
+its edge is \emph{not} significant on either protocol (per-row gap $+0.10$, CI
+$[-0.04,+0.23]$). So we do \emph{not} claim the block tracker is uniformly more accurate, and
+we keep the winsorized EMA as the reported default: it is the standard reactive choice, and
+the block tracker does not beat it significantly. Past the tuned range every tracker
+\emph{degrades in loss} without diverging in the sense of \cref{thm:stability}---at
+$\mathrm{lr}{=}10$ the peak rolling loss reaches $\approx30$ (block) or $\approx230$ (EMA)
+while the $O(\sqrt t)$ iterate bound still holds---so the earlier ``pick either without
+risking divergence'' was loose: the iterate never blows up, but usability does past tuning,
+the block tracker most gracefully.
+
+This may look in tension with \cref{sec:tracker}/\cref{fig:main}, where long windows are
+penalized for lagging regime onsets. The tension is only apparent, and it is exactly the
+distinction between the two uses of the scale. When the scale is a \emph{divisor}
+($\hat{g}_t=\gt/s_t$), a lagging $s_t$ merely mis-normalizes the step magnitude---the divisor
+cancels first-order and a slightly stale scale costs little, so a slow block median is
+tolerable and even helpful (it is smoother and higher-bracket). We measured this rather than
+asserting it: sweeping the tracker's block timescale over $B\in\{50,\dots,20{,}000\}$ (a
+$400\times$ window range) moves the divisor's best-tuned weighted $R^2$ only within
+$[0.363,0.386]$ (spread $0.022$), if anything \emph{rising} with the window---so a longer,
+laggier scale does not hurt the normalizer. When the scale is instead a \emph{threshold}
+(clipping $\norm{\gt}$ at $s_t$), the same sweep says something \emph{sharper} than ``long
+windows hurt thresholding.'' The threshold use never leaves $R^2\approx0.003$ at \emph{any}
+window: clipping $\norm{\gt}$ at a tracked scale is scale-\emph{dependent} OGD, stable only at
+a tiny step ($\mathrm{lr}\approx3\times10^{-4}$), so it is unusable no matter how the scale is
+tracked. Window choice is therefore moot on the threshold side---there is no usable operating
+point to tune toward---while the divisor is usable and window-insensitive across the whole
+$400\times$ range. This is the paper's central fragility finding (\cref{sec:experiments})
+arriving from the tracker-design direction: normalization decouples the step from the scale and
+thresholding does not, so the very lag that would wreck a threshold (it clips hardest exactly
+when the scale jumps up, discarding the informative post-onset gradients---the
+\cref{sec:tracker} clip-rate/dynamic-range tension) merely re-normalizes a divisor. The
+one-day block tracker is a normalizer, so no contradiction arises.
+
+\paragraph{Closing the gap.} Either run the envelope in deployment, accepting the small
+accuracy cost, or prove a $W_s$ bound for the winsorized EMA under a heavy-tailed scale
+process: the winsorization already supplies the per-step cap the envelope gets from its
+median, so what remains is to control the geometric-decay churn term $\rho\sum_t s_t$,
+exactly as in \cref{rmk:tracker}, with $\rho$ the EMA rate. The
+one residual modeling assumption---$\rho$ matched to an unknown regime length---is
+removed by the strongly-adaptive wrapper of the preceding subsection.
+
+\end{document}

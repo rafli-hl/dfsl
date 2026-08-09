@@ -17,6 +17,7 @@ from dfsl import (
     AdaptiveClip,
     OnlineGradientDescent,
     RobustOMD,
+    ScaleNormalizedOGD,
     SyntheticHeavyTailed,
     catoni_mean,
     get_estimator,
@@ -160,6 +161,85 @@ class TestGradientClipping:
         expected_tau_again = 3.0 * float(np.mean(norms + [100.0, 100.0]))
         assert expected_tau_again == pytest.approx(63.75)
         assert float(np.linalg.norm(clipped_again)) == pytest.approx(expected_tau_again)
+
+
+class TestScaleNormalizedOGD:
+    def test_effective_gradient_is_capped(self) -> None:
+        # The normalized gradient handed to the update step never exceeds the cap.
+        learner = ScaleNormalizedOGD(dim=4, cap=10.0)
+        rng = np.random.default_rng(0)
+        for _ in range(50):
+            g = rng.standard_normal(4) * rng.uniform(0.1, 1000.0)
+            ghat = learner._clip_gradient(g)
+            assert float(np.linalg.norm(ghat)) <= 10.0 + 1e-9
+
+    def test_normalized_gradient_is_scale_invariant(self) -> None:
+        # Scaling the whole gradient stream by c leaves clip(g/s, M) unchanged,
+        # because the tracked scale s also scales by c. This is the core property.
+        a = ScaleNormalizedOGD(dim=3, cap=10.0)
+        b = ScaleNormalizedOGD(dim=3, cap=10.0)
+        rng = np.random.default_rng(1)
+        c = 50.0
+        for _ in range(40):
+            g = rng.standard_normal(3)
+            np.testing.assert_allclose(a._clip_gradient(g), b._clip_gradient(c * g), rtol=1e-9)
+
+    def test_never_diverges_on_extreme_magnitudes(self) -> None:
+        # Deterministic non-divergence: extreme inputs cannot blow up the iterate,
+        # since ||ghat|| <= cap and the step is cap*lr/sqrt(t).
+        learner = ScaleNormalizedOGD(dim=3, learning_rate=1.0, cap=10.0)
+        x = np.full(3, 1e150)
+        for _ in range(20):
+            loss = learner.update(x, 1.0, 1.0)
+            assert isinstance(loss, float)
+            assert loss >= 0.0
+        assert np.isfinite(learner.weights).all()
+        # Every step moves the iterate by at most cap*lr/sqrt(t); after 20 steps
+        # ||w|| <= cap*lr*sum_{t<=20} 1/sqrt(t) < cap*lr*2*sqrt(20). No divergence.
+        assert float(np.linalg.norm(learner.weights)) < 10.0 * 1.0 * 2.0 * np.sqrt(20)
+
+    def test_stays_bounded_under_heavy_contamination(self) -> None:
+        # The point of SN-OGD is stability under heavy tails + contamination: the
+        # iterate stays bounded regardless of learning rate (Theorem 1), even where
+        # plain OGD would diverge. (Accuracy is a separate, lr-tuning question.)
+        dataset = SyntheticHeavyTailed(
+            n_steps=4000, dim=5, noise="student_t", df=2.1,
+            contamination=0.1, contamination_scale=100.0, seed=3,
+        )
+        learner = ScaleNormalizedOGD(dim=5, learning_rate=1.0)
+        result = learner.run(dataset)
+        assert np.isfinite(learner.weights).all()
+        assert np.all(np.isfinite(result.losses))
+        # Bounded by the summed capped steps cap*lr*sum 1/sqrt(t) <= cap*lr*2*sqrt(T).
+        assert float(np.linalg.norm(learner.weights)) < 10.0 * 1.0 * 2.0 * np.sqrt(4000)
+
+    def test_learns_on_easy_stream(self) -> None:
+        dataset = SyntheticHeavyTailed(
+            n_steps=8000, dim=5, noise="gaussian", noise_scale=0.1, seed=1
+        )
+        learner = ScaleNormalizedOGD(dim=5, learning_rate=1.0)
+        learner.run(dataset)
+        # Scale-normalized steps converge more slowly than tuned OGD; require a
+        # clear signal recovery rather than a tight tolerance.
+        d = float(np.linalg.norm(learner.weights - dataset.true_weights))
+        assert d < 0.5 * float(np.linalg.norm(dataset.true_weights))
+
+    def test_two_timescale_tracker_option_stays_bounded(self) -> None:
+        # The theory-analyzed peak-hold tracker is a drop-in option and must also
+        # keep the iterate bounded under heavy tails + contamination.
+        dataset = SyntheticHeavyTailed(
+            n_steps=4000, dim=5, noise="student_t", df=2.1,
+            contamination=0.1, contamination_scale=100.0, seed=3,
+        )
+        learner = ScaleNormalizedOGD(dim=5, learning_rate=1.0, scale_tracker="two_timescale")
+        result = learner.run(dataset)
+        assert np.isfinite(learner.weights).all()
+        assert np.all(np.isfinite(result.losses))
+        assert float(np.linalg.norm(learner.weights)) < 10.0 * 1.0 * 2.0 * np.sqrt(4000)
+
+    def test_invalid_scale_tracker_raises(self) -> None:
+        with pytest.raises(ValueError):
+            ScaleNormalizedOGD(dim=3, scale_tracker="not_a_tracker")
 
 
 class TestOnlineLearners:

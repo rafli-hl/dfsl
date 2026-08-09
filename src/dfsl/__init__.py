@@ -13,6 +13,7 @@ from .algorithms import (
     OnlineLearner,
     RobustOMD,
     RunResult,
+    ScaleNormalizedOGD,
 )
 from .datasets import JaneStreetDataset, SequentialDataset, SyntheticHeavyTailed
 from .estimators import (
@@ -30,6 +31,7 @@ __all__ = [
     "OnlineGradientDescent",
     "AdaptiveClip",
     "RobustOMD",
+    "ScaleNormalizedOGD",
     "RunResult",
     "SequentialDataset",
     "SyntheticHeavyTailed",

@@ -1,0 +1,9 @@
+feature,tail_index_alpha,finite_variance,finite_4th_moment
+feature_48,1.892,false,false
+feature_71,2.675,true,false
+feature_63,3.886,true,false
+feature_47,4.175,true,true
+feature_64,4.23,true,true
+feature_62,4.56,true,true
+feature_21,NaN,false,false
+feature_31,NaN,false,false

@@ -1,0 +1,28 @@
+============================================================================================
+SN-OMD TRACKER COMPARISON across 10 windows (frozen from window 1); rows<= 150000
+============================================================================================
+
+########## per-row ##########
+  [tune] SN-OMD (EMA         ) frozen lr=2  window1 R2=+0.2845
+  [tune] SN-OMD (block-median) frozen lr=2  window1 R2=+0.3795
+
+########## per-step ##########
+  [tune] SN-OMD (EMA         ) frozen lr=2  window1 R2=+0.3091
+  [tune] SN-OMD (block-median) frozen lr=2  window1 R2=+0.3511
+
+[saved results\research\windows_tracker.csv]
+
+============================================================================================
+ACROSS-WINDOW SN-OMD by tracker (mean +/- std; lower std = more regime-robust)
+============================================================================================
+
+per-row:
+  SN-OMD (EMA         ) mean=+0.1402  std=0.1090  [-0.1059,+0.2845]
+  SN-OMD (block-median) mean=+0.3104  std=0.0358  [+0.2672,+0.3795]
+
+per-step:
+  SN-OMD (EMA         ) mean=+0.1280  std=0.1436  [-0.1060,+0.3091]
+  SN-OMD (block-median) mean=+0.2012  std=0.1255  [+0.0069,+0.3511]
+
+READING: if block-median's std is markedly below EMA's, SN-OMD's across-window
+variability is a tracker artifact (supports the paper's SE-inflation suspicion).

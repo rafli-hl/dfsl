@@ -1,0 +1,10 @@
+control,method,r2,note
+real_prequential,SN-OMD,0.28447,lr=2
+shuffled_label,SN-OMD,-0.00359,OK (<= 0)
+shuffled_label,normalized-GD,-0.00146,OK (<= 0)
+shuffled_label,fixed-tau clip,-0.02176,OK (<= 0)
+offline_static_ridge,ridge,0.02298,lambda=0.0001
+offline_perday_oracle,ridge,0.17912,lambda=0.0001
+oracle_vs_online,SN-OMD,0.28447,online > per-day oracle: expected under intraday drift (per-row adaptation); see control 1
+frozen_forward,SN-OMD,-1.72769,frozen weights do NOT transfer: prequential metric may be flattering
+forward_prequential,SN-OMD,0.21786,""

@@ -11,7 +11,7 @@ from types import ModuleType
 import numpy as np
 import pytest
 
-from dfsl import RobustOMD, SyntheticHeavyTailed
+from dfsl import RobustOMD, ScaleNormalizedOGD, SyntheticHeavyTailed
 from dfsl.evaluation import mae, mse, summarize_run, weighted_r2
 from dfsl.factory import (
     apply_max_steps,
@@ -35,7 +35,7 @@ SUMMARY_KEYS = {
 }
 
 
-@pytest.mark.parametrize("name", ["default.yaml", "synthetic.yaml", "jane.yaml"])
+@pytest.mark.parametrize("name", ["default.yaml", "synthetic.yaml", "jane.yaml", "sn_ogd.yaml"])
 def test_experiment_configs_parse(name: str) -> None:
     config = load_experiment_config(CONFIG_DIR / name)
     assert isinstance(config, dict)
@@ -72,6 +72,19 @@ def test_factory_round_trip() -> None:
     assert int(metrics["n_steps"]) == 2000
     for key in SUMMARY_KEYS:
         assert math.isfinite(float(metrics[key]))
+
+
+def test_factory_builds_scale_normalized_ogd() -> None:
+    config = load_experiment_config(CONFIG_DIR / "sn_ogd.yaml")
+    dataset = build_dataset(apply_max_steps(config["dataset"], 2000))
+    learner = build_learner(config["algorithm"], dim=dataset.dim)
+    assert isinstance(learner, ScaleNormalizedOGD)
+    result = learner.run(dataset)
+    # SN-OGD must stay bounded on the contaminated heavy-tailed stream.
+    assert np.all(np.isfinite(result.losses))
+    assert np.isfinite(learner.weights).all()
+    metrics = summarize_run(result)
+    assert SUMMARY_KEYS <= set(metrics)
 
 
 def _load_train_module() -> ModuleType:

@@ -25,3 +25,19 @@ data/cache/**
 results/runs/
 results/benchmark/
 results/ablation/
+
+# LaTeX build intermediates (keep source + built PDF)
+paper/*.aux
+paper/*.log
+paper/*.blg
+paper/*.out
+paper/*.bbl
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+
+# torchvision MNIST download (second-domain experiment)
+data/mnist/
+
+# stray latex out dir
+out/
