@@ -1,0 +1,121 @@
+protocol,window,window_idx,method,setting,weighted_r2,diverged
+per-row,"[0,120)",1,OGD,lr=0.001,0.01844,false
+per-row,"[0,120)",1,Normalized-GD,lr=2,0.19698,false
+per-row,"[0,120)",1,Scale-adaptive OGD,lr=0.5,0.16195,false
+per-row,"[0,120)",1,SN-OMD (M=5),lr=2,0.28447,false
+per-row,"[0,120)",1,fixed-tau clip,"lr=0.2,tau=20",0.24634,false
+per-row,"[0,120)",1,AdaGrad-Norm,lr=3,0.32859,false
+per-row,"[150,270)",2,OGD,lr=0.001,0.02244,false
+per-row,"[150,270)",2,Normalized-GD,lr=2,0.17313,false
+per-row,"[150,270)",2,Scale-adaptive OGD,lr=0.5,-109.99021,true
+per-row,"[150,270)",2,SN-OMD (M=5),lr=2,0.20282,false
+per-row,"[150,270)",2,fixed-tau clip,"lr=0.2,tau=20",0.2298,false
+per-row,"[150,270)",2,AdaGrad-Norm,lr=3,0.2094,false
+per-row,"[300,420)",3,OGD,lr=0.001,0.01335,false
+per-row,"[300,420)",3,Normalized-GD,lr=2,0.15941,false
+per-row,"[300,420)",3,Scale-adaptive OGD,lr=0.5,-140301.42681,true
+per-row,"[300,420)",3,SN-OMD (M=5),lr=2,0.14226,false
+per-row,"[300,420)",3,fixed-tau clip,"lr=0.2,tau=20",0.19883,false
+per-row,"[300,420)",3,AdaGrad-Norm,lr=3,0.21382,false
+per-row,"[450,570)",4,OGD,lr=0.001,-0.01887,false
+per-row,"[450,570)",4,Normalized-GD,lr=2,0.18885,false
+per-row,"[450,570)",4,Scale-adaptive OGD,lr=0.5,-0.35504,false
+per-row,"[450,570)",4,SN-OMD (M=5),lr=2,0.1967,false
+per-row,"[450,570)",4,fixed-tau clip,"lr=0.2,tau=20",0.23583,false
+per-row,"[450,570)",4,AdaGrad-Norm,lr=3,0.22391,false
+per-row,"[600,720)",5,OGD,lr=0.001,-0.00952,false
+per-row,"[600,720)",5,Normalized-GD,lr=2,0.18186,false
+per-row,"[600,720)",5,Scale-adaptive OGD,lr=0.5,0.14917,false
+per-row,"[600,720)",5,SN-OMD (M=5),lr=2,0.14619,false
+per-row,"[600,720)",5,fixed-tau clip,"lr=0.2,tau=20",0.21169,false
+per-row,"[600,720)",5,AdaGrad-Norm,lr=3,0.19251,false
+per-row,"[750,870)",6,OGD,lr=0.001,0.02336,false
+per-row,"[750,870)",6,Normalized-GD,lr=2,0.18483,false
+per-row,"[750,870)",6,Scale-adaptive OGD,lr=0.5,-247.54579,true
+per-row,"[750,870)",6,SN-OMD (M=5),lr=2,0.10577,false
+per-row,"[750,870)",6,fixed-tau clip,"lr=0.2,tau=20",0.19245,false
+per-row,"[750,870)",6,AdaGrad-Norm,lr=3,0.23796,false
+per-row,"[900,1020)",7,OGD,lr=0.001,0.02547,false
+per-row,"[900,1020)",7,Normalized-GD,lr=2,0.19412,false
+per-row,"[900,1020)",7,Scale-adaptive OGD,lr=0.5,-921.89528,true
+per-row,"[900,1020)",7,SN-OMD (M=5),lr=2,-0.10588,false
+per-row,"[900,1020)",7,fixed-tau clip,"lr=0.2,tau=20",0.16386,false
+per-row,"[900,1020)",7,AdaGrad-Norm,lr=3,0.09984,false
+per-row,"[1050,1170)",8,OGD,lr=0.001,-0.11224,false
+per-row,"[1050,1170)",8,Normalized-GD,lr=2,0.18352,false
+per-row,"[1050,1170)",8,Scale-adaptive OGD,lr=0.5,-1.02107,true
+per-row,"[1050,1170)",8,SN-OMD (M=5),lr=2,0.04371,false
+per-row,"[1050,1170)",8,fixed-tau clip,"lr=0.2,tau=20",0.15674,false
+per-row,"[1050,1170)",8,AdaGrad-Norm,lr=3,0.07366,false
+per-row,"[1200,1320)",9,OGD,lr=0.001,0.04067,false
+per-row,"[1200,1320)",9,Normalized-GD,lr=2,0.20209,false
+per-row,"[1200,1320)",9,Scale-adaptive OGD,lr=0.5,-1228095.69071,true
+per-row,"[1200,1320)",9,SN-OMD (M=5),lr=2,0.22739,false
+per-row,"[1200,1320)",9,fixed-tau clip,"lr=0.2,tau=20",0.23715,false
+per-row,"[1200,1320)",9,AdaGrad-Norm,lr=3,0.1969,false
+per-row,"[1350,1470)",10,OGD,lr=0.001,0.00677,false
+per-row,"[1350,1470)",10,Normalized-GD,lr=2,0.16101,false
+per-row,"[1350,1470)",10,Scale-adaptive OGD,lr=0.5,0.20919,false
+per-row,"[1350,1470)",10,SN-OMD (M=5),lr=2,0.15902,false
+per-row,"[1350,1470)",10,fixed-tau clip,"lr=0.2,tau=20",0.19164,false
+per-row,"[1350,1470)",10,AdaGrad-Norm,lr=3,0.20356,false
+per-step,"[0,120)",1,OGD,lr=0.005,0.1392,false
+per-step,"[0,120)",1,Normalized-GD,lr=2,0.31604,false
+per-step,"[0,120)",1,Scale-adaptive OGD,lr=0.2,0.08009,false
+per-step,"[0,120)",1,SN-OMD (M=5),lr=2,0.30912,false
+per-step,"[0,120)",1,fixed-tau clip,"lr=0.2,tau=20",0.38208,false
+per-step,"[0,120)",1,AdaGrad-Norm,lr=1,0.2189,false
+per-step,"[150,270)",2,OGD,lr=0.005,-42.99569,true
+per-step,"[150,270)",2,Normalized-GD,lr=2,0.29683,false
+per-step,"[150,270)",2,Scale-adaptive OGD,lr=0.2,0.0749,false
+per-step,"[150,270)",2,SN-OMD (M=5),lr=2,0.29337,false
+per-step,"[150,270)",2,fixed-tau clip,"lr=0.2,tau=20",0.33876,false
+per-step,"[150,270)",2,AdaGrad-Norm,lr=1,0.20657,false
+per-step,"[300,420)",3,OGD,lr=0.005,-88.70656,true
+per-step,"[300,420)",3,Normalized-GD,lr=2,0.3165,false
+per-step,"[300,420)",3,Scale-adaptive OGD,lr=0.2,0.09416,false
+per-step,"[300,420)",3,SN-OMD (M=5),lr=2,0.16984,false
+per-step,"[300,420)",3,fixed-tau clip,"lr=0.2,tau=20",0.27886,false
+per-step,"[300,420)",3,AdaGrad-Norm,lr=1,0.22308,false
+per-step,"[450,570)",4,OGD,lr=0.005,-6.58175,true
+per-step,"[450,570)",4,Normalized-GD,lr=2,0.2994,false
+per-step,"[450,570)",4,Scale-adaptive OGD,lr=0.2,0.07673,false
+per-step,"[450,570)",4,SN-OMD (M=5),lr=2,0.28854,false
+per-step,"[450,570)",4,fixed-tau clip,"lr=0.2,tau=20",0.29225,false
+per-step,"[450,570)",4,AdaGrad-Norm,lr=1,0.16009,false
+per-step,"[600,720)",5,OGD,lr=0.005,-5192959601354.597,true
+per-step,"[600,720)",5,Normalized-GD,lr=2,0.27792,false
+per-step,"[600,720)",5,Scale-adaptive OGD,lr=0.2,0.08574,false
+per-step,"[600,720)",5,SN-OMD (M=5),lr=2,0.09185,false
+per-step,"[600,720)",5,fixed-tau clip,"lr=0.2,tau=20",0.19908,false
+per-step,"[600,720)",5,AdaGrad-Norm,lr=1,0.18906,false
+per-step,"[750,870)",6,OGD,lr=0.005,-5.685708601635929e+50,true
+per-step,"[750,870)",6,Normalized-GD,lr=2,0.27551,false
+per-step,"[750,870)",6,Scale-adaptive OGD,lr=0.2,0.11791,false
+per-step,"[750,870)",6,SN-OMD (M=5),lr=2,0.00812,false
+per-step,"[750,870)",6,fixed-tau clip,"lr=0.2,tau=20",0.13096,false
+per-step,"[750,870)",6,AdaGrad-Norm,lr=1,0.20082,false
+per-step,"[900,1020)",7,OGD,lr=0.005,-347663649333.6951,true
+per-step,"[900,1020)",7,Normalized-GD,lr=2,0.26456,false
+per-step,"[900,1020)",7,Scale-adaptive OGD,lr=0.2,0.12319,false
+per-step,"[900,1020)",7,SN-OMD (M=5),lr=2,-0.10595,false
+per-step,"[900,1020)",7,fixed-tau clip,"lr=0.2,tau=20",0.01966,false
+per-step,"[900,1020)",7,AdaGrad-Norm,lr=1,0.19356,false
+per-step,"[1050,1170)",8,OGD,lr=0.005,-4.580360563406833e+34,true
+per-step,"[1050,1170)",8,Normalized-GD,lr=2,0.26621,false
+per-step,"[1050,1170)",8,Scale-adaptive OGD,lr=0.2,0.11454,false
+per-step,"[1050,1170)",8,SN-OMD (M=5),lr=2,0.17644,false
+per-step,"[1050,1170)",8,fixed-tau clip,"lr=0.2,tau=20",0.02122,false
+per-step,"[1050,1170)",8,AdaGrad-Norm,lr=1,0.20009,false
+per-step,"[1200,1320)",9,OGD,lr=0.005,-3.549119004073727e+102,true
+per-step,"[1200,1320)",9,Normalized-GD,lr=2,0.29518,false
+per-step,"[1200,1320)",9,Scale-adaptive OGD,lr=0.2,0.08327,false
+per-step,"[1200,1320)",9,SN-OMD (M=5),lr=2,0.06777,false
+per-step,"[1200,1320)",9,fixed-tau clip,"lr=0.2,tau=20",0.26981,false
+per-step,"[1200,1320)",9,AdaGrad-Norm,lr=1,0.15572,false
+per-step,"[1350,1470)",10,OGD,lr=0.005,-1.4150063414488816e+30,true
+per-step,"[1350,1470)",10,Normalized-GD,lr=2,0.25471,false
+per-step,"[1350,1470)",10,Scale-adaptive OGD,lr=0.2,0.09709,false
+per-step,"[1350,1470)",10,SN-OMD (M=5),lr=2,-0.01862,false
+per-step,"[1350,1470)",10,fixed-tau clip,"lr=0.2,tau=20",0.08293,false
+per-step,"[1350,1470)",10,AdaGrad-Norm,lr=1,0.13421,false

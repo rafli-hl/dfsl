@@ -1,0 +1,27 @@
+================================================================================================
+LEAKAGE CONTROLS on Jane date(0, 120)  rows<= 150000
+================================================================================================
+  loaded n=150000, dim=79, days=20
+
+[real]  SN-OMD prequential  R2=+0.2845  (lr*=2)
+
+[control 1] shuffled-label (expect R2 ~ 0):
+  SN-OMD           best shuffled R2=-0.0036   OK (<= 0)
+  normalized-GD    best shuffled R2=-0.0015   OK (<= 0)
+  fixed-tau clip   best shuffled R2=-0.0218   OK (<= 0)
+
+[control 2] offline look-ahead ridge ceilings (causal online should not exceed the oracle):
+  (2a) global static ridge, full look-ahead   R2=+0.0230 (lambda*=0.0001)  [reference; an adaptive learner may beat this]
+  (2b) per-day look-ahead ridge (oracle)       R2=+0.1791 (lambda*=0.0001)  [the leakage ceiling]
+  online SN-OMD prequential R2=+0.2845   online > per-day oracle: expected under intraday drift (per-row adaptation); see control 1
+
+[control 3] frozen-w forward eval on disjoint date(300, 420) (no updating):
+  frozen w_T forward R2=-1.7277   (window's own prequential R2=+0.2179)
+  -> frozen weights do NOT transfer: prequential metric may be flattering
+
+[saved results\research\leakage_controls.csv]
+
+PASS if: shuffled R2 <= 0, online <= per-day look-ahead oracle (2b), and
+frozen-forward is not implausibly high. A negative frozen-forward R2 is consistent
+with the paper's nonstationarity thesis (a static w does not transfer across regimes),
+not with leakage. Any '!!' above is a leakage signal to chase before the paper stands.
