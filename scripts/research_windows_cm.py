@@ -39,9 +39,13 @@ from research_windows_replication import WINDOWS, _diverged, _load  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results" / "research"
 
-LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
-TAUS = [5.0, 20.0, 50.0]
-BETAS = [0.9, 0.99]
+# Grid widened after the round-4 tuning-curve diagnostic (research_cm_diag.py): the momentum
+# beta must be tuned down toward 0 (where CM degenerates to clip+normalize) --- heavy momentum
+# (beta>=0.9) collapses under batched gradients, so the earlier beta in {0.9, 0.99} grid missed
+# CM's operating regime and produced a misconfigured per-step cell.
+LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0]
+TAUS = [5.0, 20.0, 50.0, 100.0, 300.0]
+BETAS = [0.0, 0.5, 0.9, 0.99]
 
 
 def _run(X, y, wts, starts, protocol, tau, beta, lr):
@@ -58,8 +62,8 @@ def main() -> None:
     rows = 4000 if args.smoke else args.rows
     windows = WINDOWS[:3] if args.smoke else WINDOWS
     lrs = [0.1, 0.5, 2.0] if args.smoke else LRS
-    taus = [20.0] if args.smoke else TAUS
-    betas = [0.9] if args.smoke else BETAS
+    taus = [20.0, 300.0] if args.smoke else TAUS
+    betas = [0.0, 0.9] if args.smoke else BETAS
 
     print("=" * 92)
     print(f"CUTKOSKY-MEHTA (2021) across {len(windows)} frozen windows; rows<= {rows}")

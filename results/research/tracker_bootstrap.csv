@@ -1,13 +1,29 @@
-protocol,comparison,mean_diff,se,t95_lo,t95_hi,boot95_lo,boot95_hi,wins_of_10,significant_t95
-per-row,block - EMA (SN-OMD default),0.17012,0.02848,0.1057,0.23455,0.12456,0.2286,10,true
-per-row,block - Normalized-GD,0.12779,0.01147,0.10185,0.15373,0.10724,0.14982,10,true
-per-row,block - Fixed-tau clip,0.10394,0.00739,0.08722,0.12066,0.09078,0.11802,10,true
-per-row,block - AdaGrad-Norm,0.11235,0.01618,0.07576,0.14895,0.08298,0.14335,10,true
-per-row,block - OGD,0.30938,0.01402,0.27768,0.34109,0.28369,0.33543,10,true
-per-row,block - Scale-adaptive OGD,0.89384,0.1757,0.49641,1.29128,0.55088,1.19473,10,true
-per-step,block - EMA (SN-OMD default),0.07315,0.03253,-0.00044,0.14674,0.00722,0.12675,9,false
-per-step,block - Normalized-GD,-0.08509,0.03382,-0.16158,-0.0086,-0.15138,-0.02585,3,true
-per-step,block - Fixed-tau clip,-0.00036,0.0061,-0.01417,0.01345,-0.01197,0.01059,5,false
-per-step,block - AdaGrad-Norm,0.01299,0.0393,-0.0759,0.10188,-0.06402,0.08208,6,false
-per-step,block - OGD,1.08728,0.10372,0.85266,1.32189,0.86453,1.23705,10,true
-per-step,block - Scale-adaptive OGD,0.10644,0.04483,0.00502,0.20785,0.01995,0.18653,8,true
+protocol,window_set,comparison,mean_diff,se,t95_lo,t95_hi,boot95_lo,boot95_hi,n_windows,wins,significant_t95
+per-row,all 10 windows,block - EMA (SN-OMD default),0.17012,0.02848,0.1057,0.23455,0.12456,0.2286,10,10,true
+per-row,all 10 windows,block - Normalized-GD,0.12779,0.01147,0.10185,0.15373,0.10724,0.14982,10,10,true
+per-row,all 10 windows,block - Fixed-tau clip,0.10394,0.00739,0.08722,0.12066,0.09078,0.11802,10,10,true
+per-row,all 10 windows,block - AdaGrad-Norm,0.11235,0.01618,0.07576,0.14895,0.08298,0.14335,10,10,true
+per-row,all 10 windows,block - Cutkosky-Mehta,0.02174,0.00318,0.01455,0.02893,0.01606,0.02789,10,10,true
+per-row,all 10 windows,block - OGD,0.30938,0.01402,0.27768,0.34109,0.28429,0.33608,10,10,true
+per-row,all 10 windows,block - Scale-adaptive OGD,0.89384,0.1757,0.49641,1.29128,0.55117,1.19385,10,10,true
+per-row,drop window 1 (selection-free),block - EMA (SN-OMD default),0.17847,0.03045,0.10826,0.24867,0.13085,0.24186,9,9,true
+per-row,drop window 1 (selection-free),block - Normalized-GD,0.12171,0.01087,0.09665,0.14676,0.10281,0.14314,9,9,true
+per-row,drop window 1 (selection-free),block - Fixed-tau clip,0.10069,0.00742,0.08357,0.1178,0.08773,0.11487,9,9,true
+per-row,drop window 1 (selection-free),block - AdaGrad-Norm,0.11918,0.0164,0.08136,0.157,0.08986,0.15043,9,9,true
+per-row,drop window 1 (selection-free),block - Cutkosky-Mehta,0.02239,0.00348,0.01436,0.03041,0.01622,0.02903,9,9,true
+per-row,drop window 1 (selection-free),block - OGD,0.30364,0.01429,0.27068,0.3366,0.2786,0.33143,9,9,true
+per-row,drop window 1 (selection-free),block - Scale-adaptive OGD,0.96898,0.17757,0.55951,1.37846,0.61893,1.28905,9,9,true
+per-step,all 10 windows,block - EMA (SN-OMD default),0.07315,0.03253,-0.00044,0.14674,0.00684,0.12614,10,9,false
+per-step,all 10 windows,block - Normalized-GD,-0.08509,0.03382,-0.16158,-0.0086,-0.14993,-0.02429,10,3,true
+per-step,all 10 windows,block - Fixed-tau clip,-0.00036,0.0061,-0.01417,0.01345,-0.01196,0.01051,10,5,false
+per-step,all 10 windows,block - AdaGrad-Norm,0.01299,0.0393,-0.0759,0.10188,-0.0632,0.08165,10,6,false
+per-step,all 10 windows,block - Cutkosky-Mehta,0.10709,0.02704,0.04593,0.16825,0.05676,0.15587,10,8,true
+per-step,all 10 windows,block - OGD,1.08728,0.10372,0.85266,1.32189,0.87179,1.23798,10,10,true
+per-step,all 10 windows,block - Scale-adaptive OGD,0.10644,0.04483,0.00502,0.20785,0.02069,0.18697,10,8,true
+per-step,drop window 1 (selection-free),block - EMA (SN-OMD default),0.07661,0.03617,-0.00679,0.16002,0.00284,0.1347,9,8,false
+per-step,drop window 1 (selection-free),block - Normalized-GD,-0.09844,0.03473,-0.17854,-0.01834,-0.16499,-0.0382,9,2,true
+per-step,drop window 1 (selection-free),block - Fixed-tau clip,0.00304,0.00567,-0.01003,0.01611,-0.00756,0.01305,9,5,false
+per-step,drop window 1 (selection-free),block - AdaGrad-Norm,-0.00026,0.04136,-0.09564,0.09513,-0.08009,0.07203,9,5,false
+per-step,drop window 1 (selection-free),block - Cutkosky-Mehta,0.12122,0.02577,0.06178,0.18065,0.0731,0.16748,9,8,true
+per-step,drop window 1 (selection-free),block - OGD,1.18454,0.04028,1.09165,1.27743,1.10788,1.2564,9,9,true
+per-step,drop window 1 (selection-free),block - Scale-adaptive OGD,0.08815,0.04577,-0.01739,0.19369,0.00049,0.17014,9,7,false

@@ -479,11 +479,13 @@ of magnitude (fixed-$\tau$ to $\mathrm{lr}\!\approx\!0.2$, SN-OMD and normalized
 AdaGrad-Norm to $10$), so ``bounded scale-free'' is necessary for stability while the
 \emph{ceiling} depends on how the step behaves \emph{within} the bound.
 
-What singles out SN-OMD is therefore narrower than accuracy, and we state it as such.
-\emph{(i) Predictability:} its scale $s_t$ is a \emph{predictable} tracker, which is what
-makes the dynamic-regret bound (\cref{thm:regret}) go through---normalized-GD's
-instantaneous $1/\norm{\gt}$ is not predictable and discards magnitude every round; the
-payoff is the (per-regime) bound, not a measured accuracy edge. \emph{(ii) The cap:} a
+What singles out SN-OMD is therefore two things, not uniform accuracy, and we state them as
+such. \emph{(i) Predictability, and a measured per-row edge:} its scale $s_t$ is a
+\emph{predictable} tracker, which makes the dynamic-regret bound (\cref{thm:regret}) go
+through---normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and discards
+magnitude every round---and with the block-median scale that predictability also buys a
+\emph{paired-significant} per-row accuracy edge ($+0.13$ over normalized-GD, $+0.17$ over the
+EMA, $10/10$ windows; \cref{app:tracker}), though not on both protocols. \emph{(ii) The cap:} a
 finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
 distinctly buys is an interior accuracy optimum when the \emph{normalized} tail is genuinely
@@ -531,9 +533,10 @@ member dominates across both protocols}: SN-OMD with the block-median tracker le
 shown with two tracker variants; its block median was selected on window~1 as the most
 accurate tracker, so this per-row lead is a best-case tracker choice, whereas every baseline
 uses a single fixed configuration. The closest prior---the normalize-and-clip method of
-\citet{cutkoskymehta2021}---stays bounded ($0/10$) but is the \emph{most variable} member
-per-row and collapses per-timestep ($0.01$): a fixed clip and a fully normalized step do not
-track the drift.}
+\citet{cutkoskymehta2021}, tuned over its momentum coefficient---stays bounded ($0/10$) and is
+\emph{competitive} per-row ($0.29\!\pm\!.04$, second to SN-OMD$+$block, which still beats it by
+a paired $+0.02$; \cref{app:tracker}); its per-timestep window-1 optimum is regime-fragile
+($0.09\!\pm\!.21$).}
 \label{tab:replication}
 \centering
 \begin{small}
@@ -549,7 +552,7 @@ Scale-adaptive OGD ($M\!\to\!\infty$)  & --- & $6/10$ & $0.09\pm.02$ & $0/10$ \\
 Normalized-GD ($M\!\to\!0$)            & $0.18\pm.01$ & $0/10$ & $\mathbf{0.29}\pm.02$ & $0/10$ \\
 Fixed-$\tau$ clip                      & $\mathbf{0.21}\pm.03$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
 AdaGrad-Norm                           & $0.20\pm.07$ & $0/10$ & $0.19\pm.03$ & $0/10$ \\
-Cutkosky--Mehta (2021)                 & $0.16\pm.16$ & $0/10$ & $0.01\pm.01$ & $0/10$ \\
+Cutkosky--Mehta (2021)                 & $0.29\pm.04$ & $0/10$ & $0.09\pm.21$ & $0/10$ \\
 \textbf{SN-OMD ($M{=}5$, ours)}        & $0.14\pm.11$ & $0/10$ & $0.13\pm.14$ & $0/10$ \\
 \quad\emph{+ block-median tracker}     & $\mathbf{0.31}\pm.04$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
 \bottomrule
@@ -652,11 +655,14 @@ under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Closest 
 convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing by a
 \emph{predictable} tracked scale (not a fixed clip of the current gradient) and in targeting
 \emph{dynamic} regret under a \emph{drifting} scale rather than static convergence. Run
-head-to-head across the ten frozen windows (\cref{tab:replication}), their method stays
-bounded ($0/10$ divergences, so it too is scale-free) but does \emph{not} match the
-tracked-scale methods: it is the most variable member per-row ($0.16\!\pm\!.16$) and collapses
-per-timestep ($0.01$). This is direct evidence that the \emph{predictable tracked scale}, not
-clipping-plus-normalization per se, is what buys accuracy under drift.
+head-to-head across the ten frozen windows (\cref{tab:replication}; tuned over its momentum
+coefficient), their method stays bounded ($0/10$) and is \emph{competitive}---per-row
+$0.29\!\pm\!.04$, second only to the block-median SN-OMD, which still beats it by a paired
+$+0.02$ ($10/10$; \cref{app:tracker})---so it belongs squarely in the bounded scale-free
+family. A fixed clip plus full normalization is thus \emph{not} categorically worse than a
+tracked scale on this stream; what the \emph{predictable} tracked scale adds is the
+dynamic-regret guarantee and the (paired-significant, per-row) block-median edge, not a
+wholesale accuracy gap.
 
 \paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
@@ -699,8 +705,9 @@ normalizes and caps at a scale-free constant, so its iterates provably cannot di
 ($O(\sqrt t)$ for any rate) and attain $T^{1/p}$ \emph{per regime} (the drift is a genuine
 $\sqrt{W_s}\!\sim\!\sqrt T$ factor). Across ten disjoint windows the \emph{bounded scale-free}
 family stays bounded where OGD and scale-dependent clipping diverge, with no member dominating
-across protocols (\cref{tab:replication}); what distinguishes SN-OMD is a \emph{predictable}
-tracker---which the dynamic-regret guarantee requires---not an accuracy win.
+across both protocols (\cref{tab:replication}); what distinguishes SN-OMD is a \emph{predictable}
+tracker---which the dynamic-regret guarantee requires---and, with the block-median scale, a
+paired-significant per-row accuracy edge, not a \emph{uniform} accuracy win.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free (setting-dependent learning rate;
 untuned $M$, decay, winsorization; though its stable range far exceeds the baselines').
@@ -1410,10 +1417,14 @@ bootstrap the paired difference over the ten windows
 (\texttt{research\_tracker\_bootstrap.py}). Per-row this is decisive: the block tracker beats
 \emph{every} method with a paired $95\%$ CI clear of zero and $10/10$ window wins---the EMA
 default by $+0.17$ ($[+0.11,+0.24]$), normalized-GD by $+0.13$ ($[+0.10,+0.15]$), the
-fixed-$\tau$ clip by $+0.10$, and AdaGrad-Norm by $+0.11$. This is a \emph{measured} accuracy
+fixed-$\tau$ clip by $+0.10$, AdaGrad-Norm by $+0.11$, and even the (retuned, competitive)
+Cutkosky--Mehta by $+0.02$ ($[+0.015,+0.029]$). This is a \emph{measured} accuracy
 result, and it \emph{supersedes} the single-window block-bootstrap gap of $+0.10$ (CI
 $[-0.04,+0.23]$) we reported in earlier drafts: that instrument \emph{fixes} the regime, which
-is exactly the variable the effect lives in. The edge is \emph{protocol-specific}, though:
+is exactly the variable the effect lives in. Nor is it a tracker-\emph{selection} artifact:
+dropping window~1---on which the block median was chosen---leaves the per-row edge intact on
+the nine untouched windows ($+0.18$ over the EMA, $[+0.11,+0.25]$, $9/9$; $+0.12$ over
+normalized-GD, $[+0.10,+0.15]$, $9/9$). The edge is \emph{protocol-specific}, though:
 per-timestep the block tracker does \emph{not} lead---it is statistically tied with the EMA
 default (paired $+0.07$, $[-0.00,+0.15]$), the fixed-$\tau$ clip, and AdaGrad-Norm, while
 normalized-GD \emph{beats} it ($-0.09$, $[-0.16,-0.01]$). The mechanism is substitution:
