@@ -1,0 +1,37 @@
+protocol,window,window_idx,method,setting,weighted_r2,diverged
+per-row,"[0,120)",1,OGD,lr=0.002,-0.15152,false
+per-row,"[0,120)",1,Normalized-GD,lr=0.5,0.38873,false
+per-row,"[0,120)",1,Scale-adaptive OGD,lr=0.1,0.31141,false
+per-row,"[0,120)",1,SN-OMD (M=5),lr=0.1,0.30994,false
+per-row,"[0,120)",1,fixed-tau clip,"lr=0.1,tau=5",0.42317,false
+per-row,"[0,120)",1,AdaGrad-Norm,lr=0.3,0.32785,false
+per-row,"[150,270)",2,OGD,lr=0.002,0.06667,false
+per-row,"[150,270)",2,Normalized-GD,lr=0.5,0.20477,false
+per-row,"[150,270)",2,Scale-adaptive OGD,lr=0.1,0.17788,false
+per-row,"[150,270)",2,SN-OMD (M=5),lr=0.1,0.17109,false
+per-row,"[150,270)",2,fixed-tau clip,"lr=0.1,tau=5",0.21419,false
+per-row,"[150,270)",2,AdaGrad-Norm,lr=0.3,0.21663,false
+per-row,"[300,420)",3,OGD,lr=0.002,0.03821,false
+per-row,"[300,420)",3,Normalized-GD,lr=0.5,0.1234,false
+per-row,"[300,420)",3,Scale-adaptive OGD,lr=0.1,0.09929,false
+per-row,"[300,420)",3,SN-OMD (M=5),lr=0.1,0.13421,false
+per-row,"[300,420)",3,fixed-tau clip,"lr=0.1,tau=5",0.14185,false
+per-row,"[300,420)",3,AdaGrad-Norm,lr=0.3,0.16886,false
+per-step,"[0,120)",1,OGD,lr=0.002,0.11934,false
+per-step,"[0,120)",1,Normalized-GD,lr=0.5,0.50136,false
+per-step,"[0,120)",1,Scale-adaptive OGD,lr=0.5,0.42265,false
+per-step,"[0,120)",1,SN-OMD (M=5),lr=0.5,0.42265,false
+per-step,"[0,120)",1,fixed-tau clip,"lr=0.1,tau=5",0.50136,false
+per-step,"[0,120)",1,AdaGrad-Norm,lr=0.3,0.3895,false
+per-step,"[150,270)",2,OGD,lr=0.002,0.18742,false
+per-step,"[150,270)",2,Normalized-GD,lr=0.5,0.40462,false
+per-step,"[150,270)",2,Scale-adaptive OGD,lr=0.5,0.22948,false
+per-step,"[150,270)",2,SN-OMD (M=5),lr=0.5,0.22948,false
+per-step,"[150,270)",2,fixed-tau clip,"lr=0.1,tau=5",0.40462,false
+per-step,"[150,270)",2,AdaGrad-Norm,lr=0.3,0.25834,false
+per-step,"[300,420)",3,OGD,lr=0.002,0.13321,false
+per-step,"[300,420)",3,Normalized-GD,lr=0.5,0.30429,false
+per-step,"[300,420)",3,Scale-adaptive OGD,lr=0.5,0.19016,false
+per-step,"[300,420)",3,SN-OMD (M=5),lr=0.5,0.19016,false
+per-step,"[300,420)",3,fixed-tau clip,"lr=0.1,tau=5",0.30429,false
+per-step,"[300,420)",3,AdaGrad-Norm,lr=0.3,0.22483,false

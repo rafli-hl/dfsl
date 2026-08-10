@@ -1,0 +1,35 @@
+====================================================================================================
+GRID-ADEQUACY on window 1 date[0,120)  n=150000  rows<= 150000
+Is each Table-2 method's window-1 optimum INTERIOR to its tuning grid?
+====================================================================================================
+
+########## per-row ##########
+  OGD                  R2=+0.0184  lr=0.001[boundary: 0.001..0.02]   -> BOUNDARY!
+  Normalized-GD        R2=+0.2205  lr=3[interior: 0.02..8]   -> OK
+  Scale-adaptive OGD   R2=+0.1619  lr=0.5[interior: 0.02..8]   -> OK
+  SN-OMD (M=5)         R2=+0.2845  lr=2[interior: 0.02..8]   -> OK
+  SN-OMD + block       R2=+0.4067  lr=3[interior: 0.05..8]   -> OK
+  fixed-tau clip       R2=+0.2463  lr=0.2[interior: 0.02..8], tau=20[interior: 2..300]   -> OK
+  AdaGrad-Norm         R2=+0.3286  lr=3[interior: 0.003..5]   -> OK
+  Cutkosky-Mehta       R2=+0.3652  lr=2[interior: 0.02..8], tau=600[boundary: 5..600], beta=0.5[interior: 0..0.99]   -> BOUNDARY!
+
+########## per-step ##########
+  OGD                  R2=+0.1392  lr=0.005[interior: 0.001..0.02]   -> OK
+  Normalized-GD        R2=+0.3712  lr=5[interior: 0.02..8]   -> OK
+  Scale-adaptive OGD   R2=+0.0801  lr=0.2[interior: 0.02..8]   -> OK
+  SN-OMD (M=5)         R2=+0.3091  lr=2[interior: 0.02..8]   -> OK
+  SN-OMD + block       R2=+0.3511  lr=2[interior: 0.05..8]   -> OK
+  fixed-tau clip       R2=+0.3821  lr=0.2[interior: 0.02..8], tau=20[interior: 2..300]   -> OK
+  AdaGrad-Norm         R2=+0.2189  lr=1[interior: 0.003..5]   -> OK
+  Cutkosky-Mehta       R2=+0.3712  lr=5[interior: 0.02..8], tau=300[interior: 5..600], beta=0[boundary: 0..0.99]   -> BOUNDARY!
+
+########## SN-OMD cap-M robustness at the tuned lr (window 1) ##########
+  SN-OMD (M=5)       per-row  lr*=2  M-curve 2:+0.286 3:+0.311 5:+0.284 10:-0.076 20:-3.033   argmaxM=3[interior] spread=3.343
+  SN-OMD (M=5)       per-step lr*=2  M-curve 2:+0.341 3:+0.338 5:+0.309 10:+0.197 20:-0.123   argmaxM=2[boundary] spread=0.464
+  SN-OMD + block     per-row  lr*=3  M-curve 2:+0.313 3:+0.361 5:+0.407 10:+0.425 20:+0.379   argmaxM=10[interior] spread=0.112
+  SN-OMD + block     per-step lr*=2  M-curve 2:+0.373 3:+0.381 5:+0.351 10:+0.135 20:-0.617   argmaxM=3[interior] spread=0.998
+
+[saved results\research\grid_adequacy.csv]
+
+VERDICT: SOME axis optimum is on a BOUNDARY --- widen that grid before reporting
+(this is the next CM; fix it).

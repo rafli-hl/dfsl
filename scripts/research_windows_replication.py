@@ -69,9 +69,13 @@ WINDOWS = [
 
 # Per-method tuning grids (window 1 only). Scale-free methods tolerate order-1 rates;
 # OGD is fragile and tuned over a small-rate grid (it diverges above ~1e-2).
-LRS_SF = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+# lr ceiling raised to 8 after the round-5 grid-adequacy check (research_grid_adequacy.py):
+# the scale-free optima sat at the old lr=2 ceiling; the widened window-1 sweep
+# (research_lr_widen.py) shows they peak by lr=3--5 and decline past it, so 8 makes every
+# optimum interior. AdaGrad ceiling raised to 5 for the same reason (per-row peak was lr=3).
+LRS_SF = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
 LRS_OGD = [1e-3, 2e-3, 5e-3, 1e-2, 2e-2]
-LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 5.0]
 TAUS = [2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 300.0]
 
 DIVERGED_R2 = -1.0  # any r2 <= this (or non-finite) is treated as divergence

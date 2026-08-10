@@ -1,0 +1,7 @@
+protocol,window,window_idx,method,setting,weighted_r2,diverged
+per-row,"[0,120)",1,Cutkosky-Mehta,"tau=20,beta=0.9,lr=0.1",0.45562,false
+per-row,"[150,270)",2,Cutkosky-Mehta,"tau=20,beta=0.9,lr=0.1",0.3062,false
+per-row,"[300,420)",3,Cutkosky-Mehta,"tau=20,beta=0.9,lr=0.1",0.24276,false
+per-step,"[0,120)",1,Cutkosky-Mehta,"tau=20,beta=0,lr=0.5",0.50136,false
+per-step,"[150,270)",2,Cutkosky-Mehta,"tau=20,beta=0,lr=0.5",0.40462,false
+per-step,"[300,420)",3,Cutkosky-Mehta,"tau=20,beta=0,lr=0.5",0.30429,false

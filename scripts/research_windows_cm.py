@@ -43,8 +43,13 @@ RES = ROOT / "results" / "research"
 # beta must be tuned down toward 0 (where CM degenerates to clip+normalize) --- heavy momentum
 # (beta>=0.9) collapses under batched gradients, so the earlier beta in {0.9, 0.99} grid missed
 # CM's operating regime and produced a misconfigured per-step cell.
-LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0]
-TAUS = [5.0, 20.0, 50.0, 100.0, 300.0]
+# tau/lr ceilings raised after the round-5 grid-adequacy check (research_cm_widen.py): the
+# round-4 optima sat at tau=300 and lr=5 (both grid maxima). The widened window-1 sweep shows
+# CM's R^2 is FLAT in tau for tau>=100 (tau=300 was a benign plateau, not a cutoff) and peaks
+# at lr=5 per-step, declining by lr=8 --- so tau=600 and lr=8 make both optima interior and CM's
+# numbers are essentially unchanged (per-row 0.3636->0.3652, per-step 0.3712).
+LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 8.0]
+TAUS = [5.0, 20.0, 50.0, 100.0, 300.0, 600.0]
 BETAS = [0.0, 0.5, 0.9, 0.99]
 
 

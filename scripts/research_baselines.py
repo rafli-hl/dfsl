@@ -38,9 +38,13 @@ from dfsl import JaneStreetDataset  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results" / "research"
 
-LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+# lr ceiling raised to 8 (LRS) / 5 (AdaGrad) after the round-5 grid-adequacy check
+# (research_grid_adequacy.py), to match the ten-window replication grids and keep every
+# window-1 optimum interior. Only normalized-GD's optimum actually moves (lr 2->3 per-row,
+# 2->5 per-step); its higher window-1 R^2 then overfits and collapses across windows.
+LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
 TAUS = [2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 300.0]  # tau ~ intrinsic ||g|| (median~9, p99~126)
-LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 5.0]
 EPS = 1e-8
 
 

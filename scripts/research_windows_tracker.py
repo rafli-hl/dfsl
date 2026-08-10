@@ -45,7 +45,10 @@ from dfsl import JaneStreetDataset  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results" / "research"
-LRS = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+# lr ceiling raised to 8 after the round-5 grid-adequacy check: the block tracker's per-row
+# optimum sat at the old lr=2 ceiling and moves to lr=3 on the widened window-1 sweep
+# (research_lr_widen.py), peaking by lr=3 and declining past it.
+LRS = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
 
 
 def run_tracker(tracker, X, y, wts, starts, protocol, lr):
