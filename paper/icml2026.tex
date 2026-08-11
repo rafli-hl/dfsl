@@ -181,9 +181,9 @@ convergence) that needs no moment assumption.
   artifact). The heavy marginal is volatility clustering (rank-based
   $Q_{100}\!\approx\!7\!\times\!10^5$)---a bounded drift cannot produce it
   \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a GARCH
-  surrogate with light innovations reproduces both the tail and its removal. The effect
-  recurs, in weaker form, on image-model training gradients (\cref{app:mnist}). This is the
-  paper's central finding.
+  surrogate with light innovations reproduces both the tail and its removal. This is the
+  paper's central finding; our one non-market check shows only \emph{schedule-driven}
+  heaviness (\cref{app:mnist}).
   \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
   We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
   bounded on a bounded domain; \cref{thm:stability}),
