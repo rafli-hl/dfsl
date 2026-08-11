@@ -239,10 +239,12 @@ def main() -> None:
     print(f"  surrogate pooled alpha            = {a_sp.mean():.3f} +- {a_sp.std():.3f}")
     print(f"  surrogate / causal-EMA (FLOOR)    = {a_sc.mean():.3f} +- {a_sc.std():.3f}   "
           f"(estimation-cost floor: a zero-tail stream read causally)")
-    print(f"  surrogate / non-causal median     = {a_so.mean():.3f} +- {a_so.std():.3f}   (its oracle)")
+    print(f"  surrogate / non-causal median     = {a_so.mean():.3f} +- {a_so.std():.3f}   "
+          f"(non-causal estimator: causal->non-causal gap {a_so.mean()-a_sc.mean():+.3f} = causal cost is cheap)")
     print(f"  real causal-normalized = {a_ema:.3f} vs floor {a_sc.mean():.3f}: "
           f"{'real is HEAVIER than the zero-tail floor -> GENUINE residual tail' if a_ema < a_sc.mean() - a_sc.std() else 'real ~ floor -> estimation cost (as on Jane)'}")
-    print(f"  real oracle-vs-causal gap = {a_med - a_ema:+.3f} (Jane surrogate gap ~4.5 index pts)")
+    print(f"  [real, isolating causality] non-causal median {a_med:.3f} vs causal {a_ema:.3f} "
+          f"= {a_med - a_ema:+.3f} (real tail barely lightens non-causally either)")
 
     # ---- save ----
     np.save(RES / "gradnorm_crypto_btc.npy", gnorm)
