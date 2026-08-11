@@ -1276,9 +1276,17 @@ shuffle \emph{abolishes} the lightening (real $\Delta\hat\alpha={+}0.45$ vs shuf
 ${-}0.01\!\pm\!.02$ over five seeds), so removability is again a property of \emph{serial
 dependence}, not the marginal. The nonstationarity is stronger than Jane's: the daily gradient
 scale drifts $22\times$ (Jane $6\times$) and the rolling $90$-day Hill $\hat\alpha$ is below $2$
-on all $35$ windows. The honest difference is that the normalized tail stays \emph{heavier} than
-Jane's ($\approx2.3$ vs $2.9$--$3.7$)---crypto is a more extreme market, and scale-tracking
-removes the drift component but not all of the residual heaviness.
+on all $35$ windows. The honest difference from Jane is sharper, and we test it with the same
+tool. A light-innovation surrogate---crypto's own volatility path fed \emph{Gaussian} innovations,
+so \emph{zero} genuine tail by construction---normalizes causally to $\hat\alpha\approx3.8$, so
+causal estimation costs almost nothing here (the real oracle-vs-causal gap is only $+0.14$: $2.26$
+to $2.40$). Yet the real normalized tail stays at $2.26$, \emph{well below} that zero-tail floor.
+Unlike Jane---whose $3.73$ sits \emph{at} its surrogate floor, i.e.\ no genuine tail beyond
+estimation cost (\cref{tab:residual})---crypto's leftover is a \emph{genuine} heavy innovation
+tail (residual $\hat\alpha\approx2.68$) that scale-tracking does not remove. This is the honest
+scope of the second market: the drift-driven \emph{removability} replicates (the shuffle control),
+but crypto also carries genuine innovation heaviness Jane lacks---which is exactly the regime where
+the cap earns its keep, as the sharper stability dichotomy below confirms.
 
 \paragraph{Crypto: the stability dichotomy replicates.} Hourly returns are near-unpredictable
 (best-fixed-linear $R^2\approx0.002$), so no method has a meaningful accuracy edge---the

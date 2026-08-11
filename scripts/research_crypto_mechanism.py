@@ -216,6 +216,34 @@ def main() -> None:
     print(f"  rolling 90-day Hill alpha: min={roll_alpha.min():.2f} median={np.median(roll_alpha):.2f} "
           f"max={roll_alpha.max():.2f}  (<2 on {int((roll_alpha<2).sum())}/{roll_alpha.size} windows)")
 
+    # ---- (6) light-innovation surrogate: is the LEFTOVER tail (2.3) genuine or estimation cost? ----
+    # Jane's tab:residual answered this with a Gaussian-innovation GARCH surrogate: a stream built
+    # to have NO genuine residual tail still reads alpha~3.9-4.5 causally (pure causal-estimation
+    # cost), and Jane's real 3.73 sits just BELOW that floor -> no genuine tail. We run the crypto
+    # analogue: sigma_t = causal EMA of |return| is crypto's own (predictable) volatility path;
+    # feed it Gaussian innovations, r~ = sigma_t*z, and push g~ = 2|r~|*||x|| through the SAME
+    # pipeline. If a zero-tail process reads LIGHT causally while real crypto reads 2.26, the
+    # leftover is a GENUINE innovation tail (unlike Jane); if the surrogate is also ~2.3, it is
+    # estimation cost. (The exogenous ||x|| feature-norm factor is held fixed to the real data.)
+    sigma = causal_ema(np.abs(y))
+    a_sp, a_sc, a_so = [], [], []
+    for seed in range(5):
+        z = np.random.default_rng(100 + seed).standard_normal(n)
+        gtil = 2.0 * np.abs(sigma * z) * xnorm
+        ssur = causal_ema(gtil)
+        msur = pl.Series(gtil).rolling_median(window_size=201, center=True, min_samples=1).to_numpy()
+        a_sp.append(hill_alpha(gtil)); a_sc.append(hill_alpha(gtil[200:] / ssur[200:]))
+        a_so.append(hill_alpha(gtil / np.maximum(msur, 1e-12)))
+    a_sp, a_sc, a_so = np.array(a_sp), np.array(a_sc), np.array(a_so)
+    print("\n--- light-innovation surrogate (Gaussian innov.; zero genuine tail) ---")
+    print(f"  surrogate pooled alpha            = {a_sp.mean():.3f} +- {a_sp.std():.3f}")
+    print(f"  surrogate / causal-EMA (FLOOR)    = {a_sc.mean():.3f} +- {a_sc.std():.3f}   "
+          f"(estimation-cost floor: a zero-tail stream read causally)")
+    print(f"  surrogate / non-causal median     = {a_so.mean():.3f} +- {a_so.std():.3f}   (its oracle)")
+    print(f"  real causal-normalized = {a_ema:.3f} vs floor {a_sc.mean():.3f}: "
+          f"{'real is HEAVIER than the zero-tail floor -> GENUINE residual tail' if a_ema < a_sc.mean() - a_sc.std() else 'real ~ floor -> estimation cost (as on Jane)'}")
+    print(f"  real oracle-vs-causal gap = {a_med - a_ema:+.3f} (Jane surrogate gap ~4.5 index pts)")
+
     # ---- save ----
     np.save(RES / "gradnorm_crypto_btc.npy", gnorm)
     rows = [
@@ -225,6 +253,9 @@ def main() -> None:
         {"quantity": "||g||/causal-EMA SHUFFLED", "hill_alpha": round(float(a_shuf.mean()), 4)},
         {"quantity": "residual@w*", "hill_alpha": round(hill_alpha(resid), 4)},
         {"quantity": "feature||x||", "hill_alpha": round(hill_alpha(xnorm), 4)},
+        {"quantity": "surrogate pooled (Gaussian innov)", "hill_alpha": round(float(a_sp.mean()), 4)},
+        {"quantity": "surrogate/causal-EMA (est-cost floor)", "hill_alpha": round(float(a_sc.mean()), 4)},
+        {"quantity": "surrogate/noncausal-median", "hill_alpha": round(float(a_so.mean()), 4)},
     ]
     pl.DataFrame(rows).write_csv(RES / "crypto_mechanism.csv")
     print(f"\n[saved {(RES/'crypto_mechanism.csv').relative_to(ROOT)}, gradnorm_crypto_btc.npy]")
