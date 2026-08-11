@@ -1,0 +1,80 @@
+====================================================================================================
+TEN-WINDOW lr CURVES (per-row) across 10 frozen windows; rows<= 150000
+====================================================================================================
+
+########## Normalized-GD ##########
+  lr=0.5    window1=+0.0869   ten-window mean=+0.1100 +- 0.0238
+  lr=1      window1=+0.1408   ten-window mean=+0.1518 +- 0.0204
+  lr=2      window1=+0.1970   ten-window mean=+0.1826 +- 0.0136
+  lr=3      window1=+0.2205   ten-window mean=+0.1787 +- 0.0272
+  lr=5      window1=+0.2009   ten-window mean=+0.1057 +- 0.0812
+  lr=8      window1=+0.0865   ten-window mean=-0.1321 +- 0.2096
+
+########## SN-OMD EMA (M=5) ##########
+  lr=0.5    window1=+0.1688   ten-window mean=+0.1830 +- 0.0182
+  lr=1      window1=+0.2457   ten-window mean=+0.2152 +- 0.0167
+  lr=2      window1=+0.2845   ten-window mean=+0.1402 +- 0.1034
+  lr=3      window1=+0.2165   ten-window mean=-0.0758 +- 0.2398
+  lr=5      window1=-0.1012   ten-window mean=-0.8758 +- 0.6839
+  lr=8      window1=-1.0703   ten-window mean=-2.9204 +- 1.7421
+
+########## SN-OMD block (M=5) ##########
+  lr=0.5    window1=+0.2107   ten-window mean=+0.2181 +- 0.0192
+  lr=1      window1=+0.2988   ten-window mean=+0.2786 +- 0.0123
+  lr=2      window1=+0.3795   ten-window mean=+0.3104 +- 0.0340
+  lr=3      window1=+0.4067   ten-window mean=+0.2913 +- 0.0643
+  lr=5      window1=+0.3642   ten-window mean=+0.1658 +- 0.1363
+  lr=8      window1=+0.1434   ten-window mean=-0.1870 +- 0.2926
+
+########## Fixed-tau clip ##########
+  lr=0.05   window1=+0.1381   ten-window mean=+0.1589 +- 0.0200
+  lr=0.1    window1=+0.2009   ten-window mean=+0.2048 +- 0.0114
+  lr=0.2    window1=+0.2463   ten-window mean=+0.2064 +- 0.0295
+  lr=0.5    window1=+0.0599   ten-window mean=-0.1923 +- 0.2561
+  lr=1      window1=-1.0379   ten-window mean=-1.8883 +- 1.0779
+  lr=2      window1=-5.6083   ten-window mean=-9.0531 +- 4.4221
+
+########## AdaGrad-Norm ##########
+  lr=0.1    window1=+0.0554   ten-window mean=+0.0609 +- 0.0134
+  lr=0.3    window1=+0.1217   ten-window mean=+0.1244 +- 0.0191
+  lr=1      window1=+0.2469   ten-window mean=+0.2122 +- 0.0185
+  lr=3      window1=+0.3286   ten-window mean=+0.1980 +- 0.0670
+  lr=5      window1=+0.2877   ten-window mean=+0.0554 +- 0.1562
+
+########## Cutkosky-Mehta ##########
+  lr=0.5    window1=+0.2017   ten-window mean=+0.2138 +- 0.0190
+  lr=1      window1=+0.2907   ten-window mean=+0.2713 +- 0.0111
+  lr=2      window1=+0.3652   ten-window mean=+0.2871 +- 0.0406
+  lr=3      window1=+0.3656   ten-window mean=+0.2412 +- 0.0788
+  lr=5      window1=+0.2572   ten-window mean=+0.0346 +- 0.1845
+  lr=8      window1=-0.1588   ten-window mean=-0.5194 +- 0.4146
+
+====================================================================================================
+WINDOW-1-OPTIMAL (Table 2) vs TEN-WINDOW-OPTIMAL learning rate
+====================================================================================================
+  Normalized-GD        window1-opt lr=3     -> ten-win mean=+0.1787   |   ten-win-opt lr=2     -> mean=+0.1826   (reopt gain +0.0039)
+  SN-OMD EMA (M=5)     window1-opt lr=2     -> ten-win mean=+0.1402   |   ten-win-opt lr=1     -> mean=+0.2152   (reopt gain +0.0749)
+  SN-OMD block (M=5)   window1-opt lr=3     -> ten-win mean=+0.2913   |   ten-win-opt lr=2     -> mean=+0.3104   (reopt gain +0.0190)
+  Fixed-tau clip       window1-opt lr=0.2   -> ten-win mean=+0.2064   |   ten-win-opt lr=0.2   -> mean=+0.2064   (reopt gain +0.0000)
+  AdaGrad-Norm         window1-opt lr=3     -> ten-win mean=+0.1980   |   ten-win-opt lr=1     -> mean=+0.2122   (reopt gain +0.0141)
+  Cutkosky-Mehta       window1-opt lr=3     -> ten-win mean=+0.2412   |   ten-win-opt lr=2     -> mean=+0.2871   (reopt gain +0.0459)
+
+----------------------------------------------------------------------------------------------------
+RANKING (per-row ten-window mean R^2):
+  at window-1-optimal (Table 2) rates:
+     +0.291  SN-OMD block (M=5)
+     +0.241  Cutkosky-Mehta
+     +0.206  Fixed-tau clip
+     +0.198  AdaGrad-Norm
+     +0.179  Normalized-GD
+     +0.140  SN-OMD EMA (M=5)
+  at ten-window-optimal rates:
+     +0.310  SN-OMD block (M=5)
+     +0.287  Cutkosky-Mehta
+     +0.215  SN-OMD EMA (M=5)
+     +0.212  AdaGrad-Norm
+     +0.206  Fixed-tau clip
+     +0.183  Normalized-GD
+
+  ranking identical under both criteria? NO -> re-optimizing reshuffles; see which pairs cross
+[saved results\research\lr_curves_summary.csv]

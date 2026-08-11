@@ -1,0 +1,7 @@
+method,w1_lr,w1_frozen_mean,tenwin_opt_lr,tenwin_opt_mean,gain_from_reopt
+Normalized-GD,3.0,0.1787,2.0,0.1826,0.0039
+SN-OMD EMA (M=5),2.0,0.1402,1.0,0.2152,0.0749
+SN-OMD block (M=5),3.0,0.2913,2.0,0.3104,0.019
+Fixed-tau clip,0.2,0.2064,0.2,0.2064,0.0
+AdaGrad-Norm,3.0,0.198,1.0,0.2122,0.0141
+Cutkosky-Mehta,3.0,0.2412,2.0,0.2871,0.0459

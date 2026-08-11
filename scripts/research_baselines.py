@@ -38,9 +38,13 @@ from dfsl import JaneStreetDataset  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results" / "research"
 
-LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+# lr ceiling raised to 8 (LRS) / 5 (AdaGrad) after the round-5 grid-adequacy check
+# (research_grid_adequacy.py), to match the ten-window replication grids and keep every
+# window-1 optimum interior. Only normalized-GD's optimum actually moves (lr 2->3 per-row,
+# 2->5 per-step); its higher window-1 R^2 then overfits and collapses across windows.
+LRS = [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
 TAUS = [2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 300.0]  # tau ~ intrinsic ||g|| (median~9, p99~126)
-LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+LRS_ADAGRAD = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 5.0]
 EPS = 1e-8
 
 
@@ -173,6 +177,48 @@ def blockmed_batched(X, y, wts, starts, lr, Bg=818, cap=5.0):
             ghat = ghat * (cap / gnn)
         if np.isfinite(ghat).all():
             w = w - (lr / np.sqrt(k)) * ghat
+    return preds
+
+
+# --------------------------------------------------- Cutkosky & Mehta (2021), live baseline
+# Normalized SGD with momentum on CLIPPED gradients (their high-probability method under
+# E||g||^p < inf): clip each raw gradient at a fixed tau, EMA it into a momentum, and step
+# in the *normalized* momentum direction. Differs from SN-OMD, which divides by a *predictable
+# tracked scale* (not a fixed clip) and caps the normalized gradient rather than fully
+# normalizing the step. Tuned over (lr, tau, beta).
+def cm_perrow(X, y, wts, tau, beta, lr):
+    d = X.shape[1]; w = np.zeros(d); m = np.zeros(d); k = 0
+    preds = np.empty(len(y))
+    for i in range(len(y)):
+        with np.errstate(over="ignore", invalid="ignore"):
+            pred = float(w @ X[i]); preds[i] = pred; k += 1
+            g = 2.0 * wts[i] * (pred - y[i]) * X[i]
+        gn = float(np.linalg.norm(g))
+        if not np.isfinite(gn):
+            continue
+        ghat = g * min(1.0, tau / gn) if gn > 0 else g          # clip raw g at tau
+        m = beta * m + (1.0 - beta) * ghat                      # momentum on clipped grad
+        mn = float(np.linalg.norm(m))
+        if mn > 0 and np.isfinite(mn):
+            w = w - (lr / np.sqrt(k)) * (m / mn)                # normalized step
+    return preds
+
+
+def cm_batched(X, y, wts, starts, tau, beta, lr):
+    d = X.shape[1]; w = np.zeros(d); m = np.zeros(d)
+    ends = np.append(starts[1:], len(y)); preds = np.empty(len(y))
+    for k, (a, b) in enumerate(zip(starts, ends), start=1):
+        with np.errstate(over="ignore", invalid="ignore"):
+            p = X[a:b] @ w; preds[a:b] = p
+            g = 2.0 * (X[a:b] * (wts[a:b] * (p - y[a:b]))[:, None]).sum(axis=0)
+        gn = float(np.linalg.norm(g))
+        if not np.isfinite(gn):
+            continue
+        ghat = g * min(1.0, tau / gn) if gn > 0 else g
+        m = beta * m + (1.0 - beta) * ghat
+        mn = float(np.linalg.norm(m))
+        if mn > 0 and np.isfinite(mn):
+            w = w - (lr / np.sqrt(k)) * (m / mn)
     return preds
 
 

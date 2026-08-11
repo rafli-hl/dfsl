@@ -1,0 +1,41 @@
+D:\dfsl\.venv\Lib\site-packages\numpy\linalg\_linalg.py:2767: RuntimeWarning: overflow encountered in dot
+  sqnorm = x.dot(x)
+D:\dfsl\scripts\research_baselines.py:295: RuntimeWarning: overflow encountered in square
+  return rolling_max_loss(wts * (preds - y) ** 2)
+D:\dfsl\scripts\research_baselines.py:295: RuntimeWarning: overflow encountered in multiply
+  return rolling_max_loss(wts * (preds - y) ** 2)
+================================================================================================
+MISSING BASELINES on Jane  --  150000 rows, 16369 groups, 20 days, block~7500, 4000 resamples
+================================================================================================
+
+PER-ROW  (aggregate weighted R^2 at tuned setting; +-SE):
+  fixed-tau clip             tau*=20    lr*=0.2   R2=+0.2463 +-0.0461  [+0.1560, +0.3367]
+  AdaGrad-Norm               eta*=3             R2=+0.3286 +-0.0299  [+0.2699, +0.3872]
+  normalized-GD (anchor)     lr*=3             R2=+0.2205 +-0.0370  [+0.1480, +0.2931]
+  SN-OMD M=5 (anchor)        lr*=2             R2=+0.2845 +-0.0786  [+0.1304, +0.4385]
+
+PER-STEP  (aggregate weighted R^2 at tuned setting; +-SE):
+  fixed-tau clip             tau*=20    lr*=0.2   R2=+0.3821 +-0.0470  [+0.2900, +0.4742]
+  AdaGrad-Norm               eta*=1             R2=+0.2189 +-0.0135  [+0.1924, +0.2454]
+  normalized-GD (anchor)     lr*=5             R2=+0.3712 +-0.0768  [+0.2208, +0.5217]
+  SN-OMD M=5 (anchor)        lr*=2             R2=+0.3091 +-0.0557  [+0.1999, +0.4183]
+
+[saved results\research\baselines_jane.csv]
+
+------------------------------------------------------------------------------------------------
+STABILITY SWEEP (per-row peak rolling loss; does the method blow up at high lr?)
+      lr  fixed-tau(20)  AdaGrad-Norm  SN-OMD(M=5)   plain OGD
+    0.05            5.3           4.9          5.0    1.07e+30
+     0.2            4.9           4.6          4.9   4.72e+157
+     0.5           28.8           4.2          4.7      1e+300
+     1.0          121.5           3.7          4.3      1e+300
+     2.0          462.6           3.2          8.1      1e+300
+     5.0         2949.0           7.3         54.3      1e+300
+    10.0        12004.7          28.9        229.9      1e+300
+  [saved results\research\baselines_stability.csv]
+
+HONEST READING: fixed-tau clip and AdaGrad-Norm are BOUNDED-step methods, so they do
+NOT diverge like OGD/scale-dependent clipping -- they belong in Table 1's stable group,
+and are accuracy-competitive with (fixed-tau per-step: better than) SN-OMD. SN-OMD is
+thus one of SEVERAL scale-free bounded methods here; its edge is the predictable tracker
++ dynamic-regret analysis, not a Jane accuracy win. This supports the review's C2.

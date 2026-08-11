@@ -1,0 +1,41 @@
+============================================================================================
+CUTKOSKY-MEHTA (2021) across 10 frozen windows; rows<= 150000
+============================================================================================
+
+########## per-row ##########
+  [tune] Cutkosky-Mehta frozen tau=600 beta=0.5 lr=2  window1 R2=+0.3652
+  window 1 [0,120)  R2=+0.3652
+  window 2 [150,270)  R2=+0.3248
+  window 3 [300,420)  R2=+0.3089
+  window 4 [450,570)  R2=+0.3096
+  window 5 [600,720)  R2=+0.2784
+  window 6 [750,870)  R2=+0.2598
+  window 7 [900,1020)  R2=+0.2496
+  window 8 [1050,1170)  R2=+0.2310
+  window 9 [1200,1320)  R2=+0.3044
+  window 10 [1350,1470)  R2=+0.2394
+
+########## per-step ##########
+  [tune] Cutkosky-Mehta frozen tau=300 beta=0 lr=5  window1 R2=+0.3712
+  window 1 [0,120)  R2=+0.3712
+  window 2 [150,270)  R2=+0.3190
+  window 3 [300,420)  R2=+0.1995
+  window 4 [450,570)  R2=+0.2393
+  window 5 [600,720)  R2=+0.1037
+  window 6 [750,870)  R2=-0.0157
+  window 7 [900,1020)  R2=-0.2024
+  window 8 [1050,1170)  R2=-0.1928
+  window 9 [1200,1320)  R2=+0.2090
+  window 10 [1350,1470)  R2=-0.0898
+
+[saved results\research\windows_cm.csv]
+
+============================================================================================
+ACROSS-WINDOW SUMMARY (mean +/- std weighted R^2; divergences)
+============================================================================================
+  per-row   Cutkosky-Mehta  mean=+0.2871  std=0.0428  [+0.2310,+0.3652]  diverged=0/10
+  per-step  Cutkosky-Mehta  mean=+0.0941  std=0.2079  [-0.2024,+0.3712]  diverged=0/10
+
+READING: compare to Table 2's bounded scale-free pack. CM clips+normalizes but does
+not track a predictable scale; whether it matches SN-OMD/normalized-GD under frozen
+hyperparameters across regimes is the closest-prior question the audit flagged.

@@ -6,7 +6,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [tune] window date[0,120)  n=150000
   OGD                    frozen: lr=0.001             window1 R2=+0.0184
-  Normalized-GD          frozen: lr=2                 window1 R2=+0.1970
+  Normalized-GD          frozen: lr=3                 window1 R2=+0.2205
   Scale-adaptive OGD     frozen: lr=0.5               window1 R2=+0.1619
   SN-OMD (M=5)           frozen: lr=2                 window1 R2=+0.2845
   fixed-tau clip         frozen: lr=0.2,tau=20        window1 R2=+0.2463
@@ -14,7 +14,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 1 date[0,120)  n=150000
   OGD                    R2=+0.0184
-  Normalized-GD          R2=+0.1970
+  Normalized-GD          R2=+0.2205
   Scale-adaptive OGD     R2=+0.1619
   SN-OMD (M=5)           R2=+0.2845
   fixed-tau clip         R2=+0.2463
@@ -22,7 +22,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 2 date[150,270)  n=150000
   OGD                    R2=+0.0224
-  Normalized-GD          R2=+0.1731
+  Normalized-GD          R2=+0.1929
   Scale-adaptive OGD     R2=-109.9902  <-- DIVERGED
   SN-OMD (M=5)           R2=+0.2028
   fixed-tau clip         R2=+0.2298
@@ -30,7 +30,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 3 date[300,420)  n=150000
   OGD                    R2=+0.0134
-  Normalized-GD          R2=+0.1594
+  Normalized-GD          R2=+0.1634
   Scale-adaptive OGD     R2=-140301.4268  <-- DIVERGED
   SN-OMD (M=5)           R2=+0.1423
   fixed-tau clip         R2=+0.1988
@@ -38,7 +38,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 4 date[450,570)  n=150000
   OGD                    R2=-0.0189
-  Normalized-GD          R2=+0.1889
+  Normalized-GD          R2=+0.2032
   Scale-adaptive OGD     R2=-0.3550
   SN-OMD (M=5)           R2=+0.1967
   fixed-tau clip         R2=+0.2358
@@ -46,7 +46,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 5 date[600,720)  n=150000
   OGD                    R2=-0.0095
-  Normalized-GD          R2=+0.1819
+  Normalized-GD          R2=+0.1814
   Scale-adaptive OGD     R2=+0.1492
   SN-OMD (M=5)           R2=+0.1462
   fixed-tau clip         R2=+0.2117
@@ -54,7 +54,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 6 date[750,870)  n=150000
   OGD                    R2=+0.0234
-  Normalized-GD          R2=+0.1848
+  Normalized-GD          R2=+0.1726
   Scale-adaptive OGD     R2=-247.5458  <-- DIVERGED
   SN-OMD (M=5)           R2=+0.1058
   fixed-tau clip         R2=+0.1925
@@ -62,7 +62,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 7 date[900,1020)  n=150000
   OGD                    R2=+0.0255
-  Normalized-GD          R2=+0.1941
+  Normalized-GD          R2=+0.1517
   Scale-adaptive OGD     R2=-921.8953  <-- DIVERGED
   SN-OMD (M=5)           R2=-0.1059
   fixed-tau clip         R2=+0.1639
@@ -70,7 +70,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 8 date[1050,1170)  n=150000
   OGD                    R2=-0.1122
-  Normalized-GD          R2=+0.1835
+  Normalized-GD          R2=+0.1425
   Scale-adaptive OGD     R2=-1.0211  <-- DIVERGED
   SN-OMD (M=5)           R2=+0.0437
   fixed-tau clip         R2=+0.1567
@@ -78,7 +78,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 9 date[1200,1320)  n=150000
   OGD                    R2=+0.0407
-  Normalized-GD          R2=+0.2021
+  Normalized-GD          R2=+0.2149
   Scale-adaptive OGD     R2=-1228095.6907  <-- DIVERGED
   SN-OMD (M=5)           R2=+0.2274
   fixed-tau clip         R2=+0.2371
@@ -86,7 +86,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 10 date[1350,1470)  n=150000
   OGD                    R2=+0.0068
-  Normalized-GD          R2=+0.1610
+  Normalized-GD          R2=+0.1439
   Scale-adaptive OGD     R2=+0.2092
   SN-OMD (M=5)           R2=+0.1590
   fixed-tau clip         R2=+0.1916
@@ -96,7 +96,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [tune] window date[0,120)  n=150000
   OGD                    frozen: lr=0.005             window1 R2=+0.1392
-  Normalized-GD          frozen: lr=2                 window1 R2=+0.3160
+  Normalized-GD          frozen: lr=5                 window1 R2=+0.3712
   Scale-adaptive OGD     frozen: lr=0.2               window1 R2=+0.0801
   SN-OMD (M=5)           frozen: lr=2                 window1 R2=+0.3091
   fixed-tau clip         frozen: lr=0.2,tau=20        window1 R2=+0.3821
@@ -104,7 +104,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 1 date[0,120)  n=150000
   OGD                    R2=+0.1392
-  Normalized-GD          R2=+0.3160
+  Normalized-GD          R2=+0.3712
   Scale-adaptive OGD     R2=+0.0801
   SN-OMD (M=5)           R2=+0.3091
   fixed-tau clip         R2=+0.3821
@@ -112,7 +112,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 2 date[150,270)  n=150000
   OGD                    R2=-42.9957  <-- DIVERGED
-  Normalized-GD          R2=+0.2968
+  Normalized-GD          R2=+0.3190
   Scale-adaptive OGD     R2=+0.0749
   SN-OMD (M=5)           R2=+0.2934
   fixed-tau clip         R2=+0.3388
@@ -120,7 +120,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 3 date[300,420)  n=150000
   OGD                    R2=-88.7066  <-- DIVERGED
-  Normalized-GD          R2=+0.3165
+  Normalized-GD          R2=+0.1995
   Scale-adaptive OGD     R2=+0.0942
   SN-OMD (M=5)           R2=+0.1698
   fixed-tau clip         R2=+0.2789
@@ -128,7 +128,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 4 date[450,570)  n=150000
   OGD                    R2=-6.5818  <-- DIVERGED
-  Normalized-GD          R2=+0.2994
+  Normalized-GD          R2=+0.2393
   Scale-adaptive OGD     R2=+0.0767
   SN-OMD (M=5)           R2=+0.2885
   fixed-tau clip         R2=+0.2922
@@ -136,7 +136,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 5 date[600,720)  n=150000
   OGD                    R2=-5192959601354.5967  <-- DIVERGED
-  Normalized-GD          R2=+0.2779
+  Normalized-GD          R2=+0.1037
   Scale-adaptive OGD     R2=+0.0857
   SN-OMD (M=5)           R2=+0.0918
   fixed-tau clip         R2=+0.1991
@@ -144,7 +144,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 6 date[750,870)  n=150000
   OGD                    R2=-568570860163592917241531787607699549704788226605056.0000  <-- DIVERGED
-  Normalized-GD          R2=+0.2755
+  Normalized-GD          R2=-0.0157
   Scale-adaptive OGD     R2=+0.1179
   SN-OMD (M=5)           R2=+0.0081
   fixed-tau clip         R2=+0.1310
@@ -152,7 +152,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 7 date[900,1020)  n=150000
   OGD                    R2=-347663649333.6951  <-- DIVERGED
-  Normalized-GD          R2=+0.2646
+  Normalized-GD          R2=-0.2024
   Scale-adaptive OGD     R2=+0.1232
   SN-OMD (M=5)           R2=-0.1060
   fixed-tau clip         R2=+0.0197
@@ -160,7 +160,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 8 date[1050,1170)  n=150000
   OGD                    R2=-45803605634068326115778230575169536.0000  <-- DIVERGED
-  Normalized-GD          R2=+0.2662
+  Normalized-GD          R2=-0.1928
   Scale-adaptive OGD     R2=+0.1145
   SN-OMD (M=5)           R2=+0.1764
   fixed-tau clip         R2=+0.0212
@@ -168,7 +168,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 9 date[1200,1320)  n=150000
   OGD                    R2=-3549119004073727205497997210315015707263055699429955000591330872250903410141083331638753649003197366272.0000  <-- DIVERGED
-  Normalized-GD          R2=+0.2952
+  Normalized-GD          R2=+0.2090
   Scale-adaptive OGD     R2=+0.0833
   SN-OMD (M=5)           R2=+0.0678
   fixed-tau clip         R2=+0.2698
@@ -176,7 +176,7 @@ WINDOW REPLICATION  --  freeze hyperparameters from window (0, 120), apply to 10
 
 [eval] window 10 date[1350,1470)  n=150000
   OGD                    R2=-1415006341448881631103983550464.0000  <-- DIVERGED
-  Normalized-GD          R2=+0.2547
+  Normalized-GD          R2=-0.0898
   Scale-adaptive OGD     R2=+0.0971
   SN-OMD (M=5)           R2=-0.0186
   fixed-tau clip         R2=+0.0829
@@ -191,20 +191,20 @@ ACROSS-WINDOW SUMMARY (mean +/- std weighted R^2 at frozen settings)
 per-row:
   fixed-tau clip         mean=+0.2064  std=0.0311  [+0.1567,+0.2463]  diverged=0/10
   AdaGrad-Norm           mean=+0.1980  std=0.0706  [+0.0737,+0.3286]  diverged=0/10
-  Normalized-GD          mean=+0.1826  std=0.0144  [+0.1594,+0.2021]  diverged=0/10
+  Normalized-GD          mean=+0.1787  std=0.0286  [+0.1425,+0.2205]  diverged=0/10
   SN-OMD (M=5)           mean=+0.1402  std=0.1090  [-0.1059,+0.2845]  diverged=0/10
   OGD                    mean=+0.0010  std=0.0434  [-0.1122,+0.0407]  diverged=0/10
   Scale-adaptive OGD     mean=-136967.7405  std=385904.8271  [-1228095.6907,+0.2092]  diverged=6/10
-  per-window top-1 count: Normalized-GD:2, Scale-adaptive:1, fixed-tau:4, AdaGrad-Norm:3
+  per-window top-1 count: Scale-adaptive:1, fixed-tau:6, AdaGrad-Norm:3
 
 per-step:
-  Normalized-GD          mean=+0.2863  std=0.0217  [+0.2547,+0.3165]  diverged=0/10
   fixed-tau clip         mean=+0.2016  std=0.1312  [+0.0197,+0.3821]  diverged=0/10
   AdaGrad-Norm           mean=+0.1882  std=0.0290  [+0.1342,+0.2231]  diverged=0/10
   SN-OMD (M=5)           mean=+0.1280  std=0.1436  [-0.1060,+0.3091]  diverged=0/10
   Scale-adaptive OGD     mean=+0.0948  std=0.0179  [+0.0749,+0.1232]  diverged=0/10
+  Normalized-GD          mean=+0.0941  std=0.2079  [-0.2024,+0.3712]  diverged=0/10
   OGD                    mean=-354911900407372745415961541520833678495417977284037505081940627092476213037307177821850215526988513280.0000  std=1122329973986139529614565868185698806425608567214816224102454843714332400593632653594250926789283020800.0000  [-3549119004073727205497997210315015707263055699429955000591330872250903410141083331638753649003197366272.0000,+0.1392]  diverged=9/10
-  per-window top-1 count: Normalized-GD:8, fixed-tau:2
+  per-window top-1 count: fixed-tau:6, AdaGrad-Norm:4
 
 HONEST READING: the paper's 'none dominates / bounded scale-free is what matters'
 claim replicates iff the bounded scale-free methods stay in a tight pack with 0

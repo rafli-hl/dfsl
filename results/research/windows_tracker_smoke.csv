@@ -1,0 +1,13 @@
+protocol,tracker,window,window_idx,lr,weighted_r2
+per-row,EMA,"[0,120)",1,0.2,0.3466
+per-row,block-median,"[0,120)",1,0.2,0.3078
+per-row,EMA,"[150,270)",2,0.2,0.25765
+per-row,block-median,"[150,270)",2,0.2,0.10392
+per-row,EMA,"[300,420)",3,0.2,0.11346
+per-row,block-median,"[300,420)",3,0.2,0.09364
+per-step,EMA,"[0,120)",1,1.0,0.39198
+per-step,block-median,"[0,120)",1,0.2,0.38223
+per-step,EMA,"[150,270)",2,1.0,0.31363
+per-step,block-median,"[150,270)",2,0.2,0.22157
+per-step,EMA,"[300,420)",3,1.0,0.09238
+per-step,block-median,"[300,420)",3,0.2,0.20238

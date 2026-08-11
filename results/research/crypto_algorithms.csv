@@ -1,0 +1,9 @@
+method,lr,diverged,median_peak_loss,mean_r2_bounded
+OGD,2.0,10/10,4.18559507632601e+127,NaN
+Normalized-GD,2.0,0/10,1.624,-0.11787
+Scale-adaptive OGD,2.0,3/10,24.085,-35.15999
+SN-OMD (M=5),2.0,0/10,1.768,-0.22728
+SN-OMD + block,2.0,0/10,1.624,-0.11787
+fixed-tau clip,2.0,0/10,9.133,-5.45097
+AdaGrad-Norm,2.0,0/10,1.907,-0.22224
+Cutkosky-Mehta,2.0,0/10,1.73,-0.2753

@@ -1,0 +1,106 @@
+====================================================================================================
+CM vs normalized-GD equivalence / attribution across 10 frozen windows; rows<= 150000
+====================================================================================================
+
+[window 1] date[0,120)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1970
+    normgd@lr3(Table2)       (per-row ) R2=+0.2205
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1970
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.3652
+    normgd@lr5(Table2)       (per-step) R2=+0.3712
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.3712
+
+[window 2] date[150,270)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1731
+    normgd@lr3(Table2)       (per-row ) R2=+0.1929
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1731
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.3248
+    normgd@lr5(Table2)       (per-step) R2=+0.3190
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.3190
+
+[window 3] date[300,420)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1594
+    normgd@lr3(Table2)       (per-row ) R2=+0.1634
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1594
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.3089
+    normgd@lr5(Table2)       (per-step) R2=+0.1995
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.1995
+
+[window 4] date[450,570)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1889
+    normgd@lr3(Table2)       (per-row ) R2=+0.2032
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1889
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.3096
+    normgd@lr5(Table2)       (per-step) R2=+0.2393
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.2393
+
+[window 5] date[600,720)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1819
+    normgd@lr3(Table2)       (per-row ) R2=+0.1814
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1819
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.2784
+    normgd@lr5(Table2)       (per-step) R2=+0.1037
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.1037
+
+[window 6] date[750,870)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1848
+    normgd@lr3(Table2)       (per-row ) R2=+0.1726
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1848
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.2598
+    normgd@lr5(Table2)       (per-step) R2=-0.0157
+    CM(t300,b0,lr5)T2        (per-step) R2=-0.0157
+
+[window 7] date[900,1020)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1941
+    normgd@lr3(Table2)       (per-row ) R2=+0.1517
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1941
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.2496
+    normgd@lr5(Table2)       (per-step) R2=-0.2024
+    CM(t300,b0,lr5)T2        (per-step) R2=-0.2024
+
+[window 8] date[1050,1170)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1835
+    normgd@lr3(Table2)       (per-row ) R2=+0.1425
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1835
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.2310
+    normgd@lr5(Table2)       (per-step) R2=-0.1928
+    CM(t300,b0,lr5)T2        (per-step) R2=-0.1928
+
+[window 9] date[1200,1320)  n=150000
+    normgd@lr2               (per-row ) R2=+0.2021
+    normgd@lr3(Table2)       (per-row ) R2=+0.2149
+    CM(t600,b0,lr2)          (per-row ) R2=+0.2021
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.3044
+    normgd@lr5(Table2)       (per-step) R2=+0.2090
+    CM(t300,b0,lr5)T2        (per-step) R2=+0.2090
+
+[window 10] date[1350,1470)  n=150000
+    normgd@lr2               (per-row ) R2=+0.1610
+    normgd@lr3(Table2)       (per-row ) R2=+0.1439
+    CM(t600,b0,lr2)          (per-row ) R2=+0.1610
+    CM(t600,b0.5,lr2)T2      (per-row ) R2=+0.2394
+    normgd@lr5(Table2)       (per-step) R2=-0.0898
+    CM(t300,b0,lr5)T2        (per-step) R2=-0.0898
+
+====================================================================================================
+SUMMARY (mean +- std [min,max] over windows)
+====================================================================================================
+  normgd@lr2               +0.1826 +- 0.0136  [+0.1594,+0.2021]
+  normgd@lr3(Table2)       +0.1787 +- 0.0272  [+0.1425,+0.2205]
+  CM(t600,b0,lr2)          +0.1826 +- 0.0136  [+0.1594,+0.2021]
+  CM(t600,b0.5,lr2)T2      +0.2871 +- 0.0406  [+0.2310,+0.3652]
+  normgd@lr5(Table2)       +0.0941 +- 0.1972  [-0.2024,+0.3712]
+  CM(t300,b0,lr5)T2        +0.0941 +- 0.1972  [-0.2024,+0.3712]
+
+----------------------------------------------------------------------------------------------------
+IDENTITY CHECKS  (CM at beta=0 must equal normalized-GD at the same lr, per the algebra)
+  per-row : max|CM(b0,lr2) - normgd@lr2|   = 3.33e-16   (IDENTICAL -> clip is inert, CM(b0)==normgd)
+  per-step: max|CM(b0,lr5) - normgd@lr5|   = 7.33e-15   (IDENTICAL -> the two 0.09+-.21 cells are one trajectory)
+
+----------------------------------------------------------------------------------------------------
+ATTRIBUTION  (what buys CM's per-row co-lead over normalized-GD?)
+  normalized-GD row mis-tuned? mean@lr2=+0.1826 vs @lr3(Table2)=+0.1787  (delta from lr +0.0039)
+  momentum contribution: CM(beta0.5) - CM(beta0) at lr2 = +0.1045   <-- the per-row edge, bought by MOMENTUM not the (inert) clip
+  CM(beta0.5,lr2)=+0.2871  vs normalized-GD(Table2 lr3)=+0.1787  = headline ++0.1084
+
+[saved results\research\cm_normgd_equiv.csv]
