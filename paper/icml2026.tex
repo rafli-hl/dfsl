@@ -1287,10 +1287,23 @@ informative axis is divergence (\texttt{research\_crypto\_algorithms.py}). At a 
 ${\sim}10^{127}$) and the \emph{uncapped} $M\!\to\!\infty$ endpoint on $3/10$, while every
 \emph{bounded scale-free} method---SN-OMD ($M{=}5$) and its block variant, normalized-GD, the
 fixed-$\tau$ clip, AdaGrad-Norm, and Cutkosky--Mehta---stays bounded ($0/10$): exactly the Jane
-partition. Sweeping the rate, OGD's peak loss explodes above $\mathrm{lr}\!\approx\!0.05$ while
-the bounded methods stay single-digit to $\mathrm{lr}{=}8$, and the cap is decisive---at
-$\mathrm{lr}{=}8$ SN-OMD ($M{=}5$) holds a peak loss of $13$ where the uncapped endpoint reaches
-$3{\times}10^{17}$.
+partition. Sweeping the rate on the turbulent 2022 window (\cref{fig:crypto}), both
+scale-\emph{dependent} methods explode above $\mathrm{lr}\!\approx\!0.5$---OGD to ${\sim}10^{75}$
+and the uncapped $M\!\to\!\infty$ endpoint to $1.4{\times}10^{17}$---while every bounded method
+stays bounded to $\mathrm{lr}{=}8$; the cap is decisive, holding SN-OMD ($M{=}5$) at a peak loss
+of $6.5$ there.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\columnwidth]{fig7_crypto.png}
+\caption{\textbf{Second market (BTC/USDT 1h): mechanism and stability replicate.}
+(a) gradient-norm survival: the pooled tail ($\hat\alpha{=}1.81$) is lightened by the causal
+scale tracker ($2.26$), and a marginal-preserving order shuffle \emph{abolishes} the lightening
+($1.80$)---removability is serial dependence. (b) peak rolling loss vs.\ learning rate on the
+turbulent 2022 window: the scale-dependent methods (OGD, uncapped $M\!\to\!\infty$) explode while
+the bounded scale-free ones stay in the $<\!10^3$ band.}
+\label{fig:crypto}
+\end{figure}
 
 \paragraph{Image models: a boundary, not a replication.} On the per-step gradient norm of a small
 CNN on MNIST ($2{,}814$ steps) the pooled tail is heavy ($\hat\alpha\approx2.6$) and normalizing

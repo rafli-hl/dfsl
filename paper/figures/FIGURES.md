@@ -24,6 +24,12 @@ All PNG, 300 dpi, uniform ICML styling.
   one; (b) the induced lightening is $\approx0$ for the iid null and grows with how trackable
   the drift is (regime length). 12 seeds; source `research_review5_checks.py`.
 
+- **fig7_crypto.png** — second market (BTC/USDT 1h). (a) gradient-norm survival: pooled heavy
+  tail ($\hat\alpha\approx1.81$), lightened by the causal scale tracker ($2.26$), lightening
+  abolished by an order shuffle ($1.80$) — removability is serial dependence. (b) peak rolling
+  loss vs learning rate on the turbulent 2022 window: OGD and the uncapped $M\to\infty$ endpoint
+  explode while bounded scale-free methods stay $<10^3$. Source `research_crypto_*.py`.
+
 These figures are the definitive set used by `paper/icml2026.tex`. The old-story
 first-pass paper (`main.tex`, `appendix.tex`) and its figures (`fig_heavytails.pdf`,
 `fig_results.pdf`, `fig_ablation.pdf`) were removed 2026-07-30.
