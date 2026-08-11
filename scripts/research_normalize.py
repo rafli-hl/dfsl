@@ -165,7 +165,9 @@ def test_continuous():
     dim = X.shape[1]
     comp = linear_losses(X, y, best_fixed_linear(X, y, w), w)
     stream = list(zip(X, y, w))
-    lrs = [2e-3, 5e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0]
+    # lr ceiling raised 2->8 after the round-5/6 grid-adequacy work so fig:main's x-axis covers
+    # every scale-invariant method's optimum (normalized-GD peaks at lr=3-5, not the old lr=2).
+    lrs = [2e-3, 5e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0, 3.0, 5.0, 8.0]
     methods = ["ogd", "normgd", "scale_adaptive", "sn_ogd"]
     rows = []
     for name in methods:

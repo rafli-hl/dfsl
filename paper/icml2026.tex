@@ -101,7 +101,7 @@ scale-free} updates stays bounded and accurate where OGD and scale-dependent cli
 across ten disjoint windows with frozen hyperparameters every finite-cap member stays bounded
 ($0/10$ divergences) while the uncapped endpoint and OGD do not. No single member dominates
 across \emph{both} protocols---per-row SN-OMD's predictable block-median scale only \emph{ties}
-the best bounded baseline (a fixed clip plus normalization), both well clear of the rest, while
+the best bounded baseline (momentum-normalized SGD), both well clear of the rest, while
 per-step no member leads decisively---so what singles out SN-OMD is a \emph{predictable} scale,
 exactly what the dynamic-regret guarantee needs, not an accuracy win.
 \end{abstract}
@@ -486,13 +486,13 @@ through---normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and di
 magnitude every round. With the block-median scale that predictability also delivers
 \emph{co-leading} per-row accuracy: it beats the EMA default and every non-tying baseline
 ($+0.15$ over the EMA, $+0.11$ over normalized-GD, $10/10$ windows; \cref{app:tracker}) and
-\emph{ties} the fixed-clip-plus-normalization baseline at the top ($+0.004$, CI
+\emph{ties} the normalize-and-clip baseline at the top ($+0.004$, CI
 $[-0.014,+0.023]$)---and on this one protocol only. \emph{(ii) The cap:} a
 finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
-distinctly buys is an interior accuracy optimum when the \emph{normalized} tail is genuinely
-heavy (\cref{sec:msweep}); on Jane that tail is indistinguishable from causal-estimation cost,
-so the optimum is flat and the cap-family members are close. SN-OMD's block-bootstrap standard
+distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{sharp} when the
+normalized tail is heavy, \emph{broad} when it is mild, as on Jane: there a finite cap still
+beats full normalization by ${+}0.11$ per-row, though the mid-range caps sit within noise. SN-OMD's block-bootstrap standard
 errors ($\pm.079/.056$) run ${\approx}3\times$ normalized-GD's ($\pm.024/.021$), which the
 ten-window replication traces to the winsorized-EMA tracker rather than the cap: the
 block-median scale roughly halves it (per-row std $0.11\!\to\!0.07$;
@@ -541,8 +541,9 @@ normalize-and-clip method of \citet{cutkoskymehta2021} \emph{co-lead} in a stati
 \cref{app:tracker}), both clear of the rest; per-step no member leads decisively (fixed-$\tau$
 clip and block $0.20$, AdaGrad-Norm $0.19$). Rates are tuned on window~1 over a grid with all
 optima \emph{interior} (\cref{app:grid}); a narrower grid inflates some cells (e.g.\
-normalized-GD, whose window-1-optimal rate overfits to $0.09\!\pm\!.21$ per-step). SN-OMD is the
-only method with two tracker variants (block selected on window~1).}
+normalized-GD, whose window-1-optimal rate overfits to $0.09\!\pm\!.21$ per-step---bit-identical
+to CM's per-step cell, since CM at $\beta{=}0$ \emph{is} normalized-GD, not a duplicated row).
+SN-OMD is the only method with two tracker variants (block selected on window~1).}
 \label{tab:replication}
 \centering
 \begin{small}
@@ -600,11 +601,11 @@ uncapped \emph{scale-adaptive OGD}. Every \emph{finite}-$M$ member satisfies \cr
 that diverges. What a finite $M$ distinctly buys over the normalized-GD endpoint is that it
 \emph{preserves gradient magnitude within the bulk} while truncating only the tail, whereas
 normalized-GD discards magnitude every round. Sweeping $M$ turns the cap into a \emph{mechanism
-test} (\cref{app:sweep}): on a synthetic stream with an \emph{imposed} heavy normalized tail an
-interior optimum appears (the best cap beats both endpoints), while on Jane---where the
-normalized tail is indistinguishable from causal-estimation cost (\cref{tab:residual})---there
-is \emph{no} meaningful interior optimum and the three members are comparable. So the cap buys
-\emph{accuracy} only when the tail survives normalization, and \emph{stability unconditionally}.
+test} (\cref{app:sweep}): with an \emph{imposed} heavy normalized tail a \emph{sharp} interior
+optimum appears; on Jane---where the residual tail is milder (\cref{tab:residual})---the optimum
+is \emph{broad} (the best cap still beats full normalization by ${+}0.11$ per-row and the
+diverging uncapped end, but mid-range caps are within noise). So the cap buys \emph{accuracy} in
+proportion to residual heaviness, and \emph{stability unconditionally}.
 On synthetic streams with a \emph{known} Student-$t$ index, plain OGD's cumulative-regret
 exponent climbs past $1$ (divergent) as the tail heavies while SN-OMD stays sublinear
 (\cref{app:sweep}), so the tail is the mechanism, not a learning-rate artifact.
@@ -665,10 +666,12 @@ convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing 
 head-to-head across the ten frozen windows (\cref{tab:replication}; tuned over its momentum
 coefficient), their method stays bounded ($0/10$) and \emph{co-leads} per-row---$0.29\!\pm\!.04$,
 statistically tied with the block-median SN-OMD ($+0.004$, CI $[-0.014,+0.023]$, $6/10$;
-\cref{app:tracker})---so it belongs squarely in the bounded scale-free family. A fixed clip plus
-full normalization is thus \emph{not} categorically worse than a tracked scale on this stream:
-per-row the two tie and neither leads both protocols. What the \emph{predictable} tracked scale
-adds is therefore the dynamic-regret guarantee, not a measured accuracy edge.
+\cref{app:tracker})---so it belongs squarely in the bounded scale-free family. That co-lead is
+bought by \emph{momentum}, not the clip---at $\beta{=}0$ CM reduces exactly to normalized-GD,
+and its per-row edge over it is almost all the $\beta{=}0.5$ momentum term, the clip idle on its
+plateau (\cref{app:tracker,tab:grid}). So momentum-normalized SGD, not clip-plus-normalization,
+ties the tracked scale, and neither leads both protocols; what the \emph{predictable} scale adds
+is the dynamic-regret guarantee, not a measured accuracy edge.
 
 \paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
@@ -705,16 +708,14 @@ gradient at $M$.
 
 On real streams the difficulty is dominated by a strongly \emph{nonstationary} gradient
 scale, whose \emph{predictable} part is what the learner faces: the pooled gradient looks
-heavy-tailed (volatility clustering of a heavy-tailed conditional scale, not something the
-bounded drift can produce) while the causally normalized gradient is much lighter. SN-OMD
-normalizes and caps at a scale-free constant, so its iterates provably cannot diverge
-($O(\sqrt t)$ for any rate) and attain $T^{1/p}$ \emph{per regime} (the drift is a genuine
-$\sqrt{W_s}\!\sim\!\sqrt T$ factor). Across ten disjoint windows the \emph{bounded scale-free}
-family stays bounded where OGD and scale-dependent clipping diverge, with no member dominating
-across both protocols (\cref{tab:replication}); what distinguishes SN-OMD is a \emph{predictable}
-tracker---which the dynamic-regret guarantee requires---not an accuracy win: with the
-block-median scale it co-leads per-row (tied with a normalize-and-clip baseline), and no member
-leads both protocols.
+heavy-tailed (volatility clustering of a heavy-tailed conditional scale) while the causally
+normalized gradient is much lighter. SN-OMD normalizes and caps at a scale-free constant, so its
+iterates provably cannot diverge ($O(\sqrt t)$ for any rate) and attain $T^{1/p}$ \emph{per
+regime}. Across ten disjoint windows the \emph{bounded scale-free} family stays bounded where
+OGD and scale-dependent clipping diverge, with no member dominating both protocols; what
+distinguishes SN-OMD is a \emph{predictable} tracker---which the dynamic-regret guarantee
+requires---not an accuracy win: with the block-median scale it co-leads per-row, tied with a
+normalize-and-clip baseline.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free (setting-dependent learning rate;
 untuned $M$, decay, winsorization).
@@ -722,10 +723,10 @@ The $W_s=O(V_\sigma^+)$ guarantee
 covers only the two-timescale envelope (\cref{ass:track}), not the deployed EMA or block-median
 trackers (supported only empirically, \cref{sec:tracker}); RMSProp/Adam are argued to diverge
 but not run head-to-head (AdaGrad-Norm and a constant clip are); and validation beyond our two
-domains is warranted. Finally, the normalized residual tail here is dominated by
-\emph{causal-estimation cost}: a zero-residual GARCH surrogate reads $\hat\alpha\approx3.9$--$4.8$
-and the real $3.73$ sits just below it (\cref{tab:residual}), so with $p>2$ the $p\in(1,2]$
-tail machinery has little purchase here---the cap is for stability (\cref{thm:stability}).
+domains is warranted. Finally, the normalized residual tail is dominated by
+\emph{causal-estimation cost} ($\hat\alpha\approx3.73$, below a zero-residual GARCH
+surrogate's $3.9$--$4.8$; \cref{tab:residual}), so with $p>2$ the tail machinery has
+little purchase and the cap is for stability alone.
 
 \section*{Impact Statement}
 This paper presents work whose goal is to advance the field of machine learning. There
@@ -1242,18 +1243,21 @@ stochastic stationary instance is easier than the worst case, so this is consist
 not a tightening of, \cref{thm:regret}); against a drifting comparator its dynamic regret
 grows with path length at exponent $\approx0.43$, consistent with the $\sqrt{D P_T}$ term.
 
-\paragraph{The cap sweep (\cref{fig:msweep}).} Sweeping $M$ at each cap's own tuned step turns
-the cap into a \emph{mechanism test}: normalization already removes most of the tail
-($\hat\alpha\!:2.4\to2.9$--$3.7$), so a finite cap should earn its keep only when the
-\emph{normalized} gradient is still heavy. With an \emph{imposed} heavy normalized tail
-($p=1.5$) the finite-$M$ interior optimum beats the uncapped endpoint $\approx240\times$
-(heavy-tail instability) and the normalized-GD endpoint $\approx10\times$ (magnitude-blind
-oscillation), both outside the seed-noise band; on Jane, where the normalized tail is
-indistinguishable from causal-estimation cost (\cref{tab:residual}), the same sweep has no
-interior optimum and the three cap-family members are comparable (\cref{tab:jane}). Both
-predictions of the mechanism test are thus borne out. The cap therefore buys \emph{accuracy}
-only when the tail survives normalization, and \emph{stability unconditionally}: uncapped
-scale-adaptive OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
+\paragraph{The cap sweep (\cref{fig:msweep}).} Sweeping $M$ turns the cap into a
+\emph{mechanism test}: normalization lightens but does not erase the tail
+($\hat\alpha\!:2.4\to2.9$--$3.7$), so a finite cap should earn accuracy in proportion to the
+\emph{residual} normalized heaviness. With an \emph{imposed} heavy normalized tail ($p{=}1.5$)
+the finite-$M$ interior optimum is \emph{sharp}, beating the uncapped endpoint $\approx240\times$
+(heavy-tail instability) and the normalized-GD ($M\!\to\!0$) endpoint $\approx10\times$
+(magnitude-blind oscillation), both outside the seed-noise band. On Jane the same sweep, re-run
+across the ten frozen windows (\texttt{research\_cap\_sweep\_jane.py}), has a \emph{broad,
+shallow} interior optimum: a finite cap still beats full normalization ($M\!\to\!0$) by
+${+}0.07$ (winsorized-EMA tracker, optimum $M{\approx}2$) to ${+}0.11$ (block tracker, optimum
+$M{\approx}5$--$7$) and the uncapped endpoint diverges, but the mid-range caps are within seed
+noise---matching Jane's \emph{milder} residual tail. So the earlier ``no accuracy on Jane''
+reading was too strong: the cap buys accuracy on Jane too, modestly and broadly rather than in
+the synthetic stream's sharp peak, and \emph{stability unconditionally}: uncapped scale-adaptive
+OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
 
 \subsection{A second domain: image-model gradients}
 \label{app:mnist}
@@ -1435,7 +1439,14 @@ the CM tie unchanged ($+0.000$, $[-0.018,+0.018]$, $5/9$). The picture is
 statistically tied with the fixed-$\tau$ clip ($-0.000$), AdaGrad-Norm ($+0.01$), and the EMA
 default ($+0.07$)---but it no longer trails normalized-GD. That method's window-1-optimal
 per-step rate overfits (\cref{app:grid}) and collapses across regimes, so block now \emph{beats}
-it ($+0.11$, $[+0.05,+0.17]$, $8/10$), as it does the likewise-collapsed CM. Where block ties
+it ($+0.11$, $[+0.05,+0.17]$, $8/10$), as it does the likewise-collapsed CM---which per-step
+\emph{is} normalized-GD (clipping only rescales $\gt$, so at its no-momentum optimum $\beta{=}0$
+the two are bit-identical, $0.09\!\pm\!.21$; \texttt{research\_cm\_normgd\_equiv.py}). Per-row,
+CM's tie with the block tracker is almost all momentum: at $\beta{=}0$ it again reduces to
+normalized-GD ($0.18\!\pm\!.01$), and of the $+0.10$ lift to $0.29$ the $\beta{=}0.5$ momentum
+supplies ${+}0.09$ and the clip only ${+}0.01$ (removing it, $\tau\!\to\!\infty$, costs
+${<}0.03$ on any window; \texttt{research\_cap\_sweep\_jane.py}). What the block tracker matches
+with a \emph{predictable} scale, CM needs momentum to reach. Where block ties
 the clip per-step, the mechanism is substitution: per-timestep batching averages the $\sim\!9$
 correlated symbols per $(\text{date},\text{time})$ group, and that averaging is itself the
 variance reduction the smooth block scale supplies per-row, so the two do not compound---when
@@ -1515,10 +1526,28 @@ move is the stability partition---every finite-cap method stays bounded ($0/10$)
 optimum, and no higher frozen rate introduces a divergence---so raising the ceiling costs the
 accuracy \emph{rankings} but not the stability claim the paper turns on.
 
-The one axis we do \emph{not} tune is SN-OMD's cap $M$, fixed at $5$ a priori (Limitations).
-That choice is conservative, not favorable: sweeping $M$ at the tuned rate, the block tracker's
-per-row window-1 $R^2$ keeps \emph{rising} past $M{=}5$ (to $0.42$ at $M{=}10$), so the reported
-number understates what a tuned cap would give.
+The one axis we do \emph{not} tune is SN-OMD's cap $M$, fixed at $5$ a priori (Limitations). On
+window~1 the block tracker's per-row $R^2$ keeps rising past $M{=}5$ (to $0.42$ at $M{=}10$),
+which would read as $M{=}5$ being conservative---but that is a window-1 overfit of exactly the
+kind above. Across the ten frozen windows the block cap optimum is a \emph{broad plateau} at
+$M{=}5$--$7$ ($0.29$) and $M{=}10$ falls back to $0.28$
+(\texttt{research\_cap\_sweep\_jane.py}), so the fixed $M{=}5$ sits at the \emph{replicated}
+optimum---neither conservative nor tuned. That same ten-window sweep re-derives the cap's
+mechanism test on Jane (\cref{app:sweep}).
+
+\paragraph{Ranking robustness to the tuning criterion.} Because \cref{tab:replication} freezes
+each method at its window-1 optimum, a skeptic could read its rankings as artifacts of that one
+window. We therefore re-sweep the per-row learning rate across all ten windows
+(\texttt{research\_lr\_curves\_windows.py}) and compare each method's \emph{tune-once} (frozen)
+score to the one at its \emph{ten-window}-optimal rate. The \emph{top} is stable: the
+block-median SN-OMD leads under both criteria ($0.29$ frozen, $0.31$ re-optimized) and
+Cutkosky--Mehta is second ($0.29$, $0.29$), both clear of the rest, while normalized-GD is last
+under both ($0.18$). The \emph{middle} reshuffles within a ${\approx}0.02$ band---the fixed-$\tau$
+clip, AdaGrad-Norm, and the winsorized-EMA SN-OMD trade places ($0.21$--$0.22$ re-optimized)---%
+driven by the same window-1 overfit, largest for the spiky EMA tracker, whose ten-window-optimal
+$\mathrm{lr}{=}1$ lifts it from $0.14$ to $0.22$. So the ranking claims \cref{tab:replication}
+supports are exactly the two it turns on---block co-leads, and no single member dominates the
+middle---not any finer ordering.
 
 \begin{table}[t]
 \caption{\textbf{Grid adequacy} (window~1; \texttt{research\_grid\_adequacy.py}). Window-1
@@ -1548,8 +1577,10 @@ Cutkosky--Mehta        & $[0.02,8]$   & $2^\ddagger$ & $5^\ddagger$ \\
 {\footnotesize $\dagger$~OGD's per-row optimum is the smallest rate---it has no usable larger
 rate (it diverges), the ``no robust rate'' finding, not a truncated optimum. $\ddagger$~CM's
 clip threshold $\tau$ sits on a flat plateau ($R^2$ varies ${<}0.006$ for $\tau\in[100,3000]$;
-\texttt{research\_cm\_widen.py}) and its momentum $\beta{=}0$ is the natural no-momentum floor;
-its learning rate is interior on both protocols.}
+\texttt{research\_cm\_widen.py}), so the clip is inert. Its \emph{per-row} momentum optimum
+$\beta{=}0.5$ is interior---and buys CM's entire per-row edge over normalized-GD
+(\cref{app:tracker})---while \emph{per-step} $\beta{=}0$ is the no-momentum floor at which CM
+coincides with normalized-GD. Learning rate is interior on both protocols.}
 \end{table}
 
 \end{document}
