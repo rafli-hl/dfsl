@@ -182,8 +182,8 @@ convergence) that needs no moment assumption.
   $Q_{100}\!\approx\!7\!\times\!10^5$)---a bounded drift cannot produce it
   \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a GARCH
   surrogate with light innovations reproduces both the tail and its removal. This is the
-  paper's central finding; our one non-market check shows only \emph{schedule-driven}
-  heaviness (\cref{app:mnist}).
+  paper's central finding, and it replicates on a \emph{second} independent market
+  (crypto; \cref{app:mnist}).
   \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
   We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
   bounded on a bounded domain; \cref{thm:stability}),
@@ -722,8 +722,8 @@ untuned $M$, decay, winsorization).
 The $W_s=O(V_\sigma^+)$ guarantee
 covers only the two-timescale envelope (\cref{ass:track}), not the deployed EMA or block-median
 trackers (supported only empirically, \cref{sec:tracker}); RMSProp/Adam are argued to diverge
-but not run head-to-head (AdaGrad-Norm and a constant clip are); and validation beyond our two
-domains is warranted. Finally, the normalized residual tail is dominated by
+but not run head-to-head (AdaGrad-Norm and a constant clip are); and validation beyond financial
+markets is warranted. Finally, the normalized residual tail is dominated by
 \emph{causal-estimation cost} ($\hat\alpha\approx3.73$, below a zero-residual GARCH
 surrogate's $3.9$--$4.8$; \cref{tab:residual}), so with $p>2$ the tail machinery has
 little purchase and the cap is for stability alone.
@@ -1259,14 +1259,45 @@ reading was too strong: the cap buys accuracy on Jane too, modestly and broadly 
 the synthetic stream's sharp peak, and \emph{stability unconditionally}: uncapped scale-adaptive
 OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
 
-\subsection{A second domain: image-model gradients}
+\subsection{A second market (crypto), and an image-model boundary}
 \label{app:mnist}
-On the per-step gradient norm of a small CNN on MNIST ($2{,}814$ steps) the pooled tail is
-heavy ($\hat\alpha\approx2.6$) and normalizing lightens it, but this is \emph{schedule-driven}:
-within a constant-learning-rate window the tail is already light ($\hat\alpha\approx6$--$9$),
-so the heaviness is scale decay, not within-phase drift. The within-regime effect---confirmed
-by the shuffle/iid-null controls and the feature--residual interaction---we establish only on
-the market data.
+\paragraph{Crypto: the mechanism replicates on an independent market.} We repeat the whole
+analysis on Binance BTC/USDT hourly bars ($76{,}888$ bars, 2017--2025, spanning the 2018 bear,
+the 2020 COVID crash, the 2021 bull run, and the 2022 crash), predicting the next-hour log return
+from causal features (lagged returns, rolling volatility, volume, intraday seasonality) with the
+\emph{same} linear weighted-squared-loss task, gradient at the best fixed predictor, and
+estimators (Hill $k{=}2000$; winsorized-EMA tracker, decay $0.99$) as on Jane
+(\texttt{research\_crypto\_mechanism.py}). The mechanism replicates, and more sharply: the pooled
+gradient tail is \emph{heavier} than Jane's ($\hat\alpha\approx1.81$ vs $2.4$; below $2$, i.e.\
+infinite variance) and heavier than its own factors (residual $2.68$, feature $3.94$---the same
+interaction effect); the causal scale tracker lightens it to $\hat\alpha\approx2.26$ ($+0.45$)
+and a non-causal median to $2.40$; and---the decisive control---a marginal-preserving order
+shuffle \emph{abolishes} the lightening (real $\Delta\hat\alpha={+}0.45$ vs shuffled
+${-}0.01\!\pm\!.02$ over five seeds), so removability is again a property of \emph{serial
+dependence}, not the marginal. The nonstationarity is stronger than Jane's: the daily gradient
+scale drifts $22\times$ (Jane $6\times$) and the rolling $90$-day Hill $\hat\alpha$ is below $2$
+on all $35$ windows. The honest difference is that the normalized tail stays \emph{heavier} than
+Jane's ($\approx2.3$ vs $2.9$--$3.7$)---crypto is a more extreme market, and scale-tracking
+removes the drift component but not all of the residual heaviness.
+
+\paragraph{Crypto: the stability dichotomy replicates.} Hourly returns are near-unpredictable
+(best-fixed-linear $R^2\approx0.002$), so no method has a meaningful accuracy edge---the
+informative axis is divergence (\texttt{research\_crypto\_algorithms.py}). At a competitive rate
+($\mathrm{lr}{=}2$) across ten disjoint windows, plain OGD diverges on $10/10$ (peak loss
+${\sim}10^{127}$) and the \emph{uncapped} $M\!\to\!\infty$ endpoint on $3/10$, while every
+\emph{bounded scale-free} method---SN-OMD ($M{=}5$) and its block variant, normalized-GD, the
+fixed-$\tau$ clip, AdaGrad-Norm, and Cutkosky--Mehta---stays bounded ($0/10$): exactly the Jane
+partition. Sweeping the rate, OGD's peak loss explodes above $\mathrm{lr}\!\approx\!0.05$ while
+the bounded methods stay single-digit to $\mathrm{lr}{=}8$, and the cap is decisive---at
+$\mathrm{lr}{=}8$ SN-OMD ($M{=}5$) holds a peak loss of $13$ where the uncapped endpoint reaches
+$3{\times}10^{17}$.
+
+\paragraph{Image models: a boundary, not a replication.} On the per-step gradient norm of a small
+CNN on MNIST ($2{,}814$ steps) the pooled tail is heavy ($\hat\alpha\approx2.6$) and normalizing
+lightens it, but this is \emph{schedule-driven}: within a constant-learning-rate window the tail
+is already light ($\hat\alpha\approx6$--$9$), so the heaviness is scale decay, not within-phase
+drift. This is a genuine boundary---training gradients need not carry the within-regime effect,
+which we establish on the two \emph{market} streams.
 
 \begin{figure}[t]
 \centering
