@@ -73,6 +73,15 @@ def causal_ema(g: np.ndarray, decay: float = DECAY, winsor: float = WINSOR) -> n
     return np.maximum(s, 1e-12)
 
 
+def noncausal_ema(g: np.ndarray, decay: float = DECAY, winsor: float = WINSOR) -> np.ndarray:
+    """Centered (non-causal) twin of the SAME winsorized-EMA estimator: geometric mean of the
+    forward and backward passes. Isolates CAUSALITY (same estimator, uses the future) exactly as
+    Jane's Table 1 'centered EMA (non-causal twin)' row does."""
+    fwd = causal_ema(g, decay, winsor)
+    bwd = causal_ema(g[::-1], decay, winsor)[::-1]
+    return np.maximum(np.sqrt(fwd * bwd), 1e-12)
+
+
 def _causal_z(a: np.ndarray, warmup: int = 500) -> np.ndarray:
     """Causal z-score: standardize each point by the running mean/std of the strict past."""
     a = np.asarray(a, dtype=np.float64)
@@ -180,11 +189,13 @@ def main() -> None:
     med = pl.Series(gnorm).rolling_median(window_size=201, center=True, min_samples=1).to_numpy()
     a_pool = hill_alpha(gnorm)
     a_ema = hill_alpha(gnorm[200:] / s_ema[200:])
+    a_ema_nc = hill_alpha(gnorm[200:] / noncausal_ema(gnorm)[200:])  # same-estimator non-causal twin
     a_med = hill_alpha(gnorm / np.maximum(med, 1e-12))
     print("\n--- tail index (Hill alpha, k=2000; higher = lighter) ---")
     print(f"  pooled ||g|| @ w*                 alpha = {a_pool:.3f}")
     print(f"  ||g|| / causal-EMA tracker        alpha = {a_ema:.3f}   (removability claim)")
-    print(f"  ||g|| / non-causal median         alpha = {a_med:.3f}   (ground-truth tracker)")
+    print(f"  ||g|| / non-causal-EMA twin       alpha = {a_ema_nc:.3f}   (same-estimator; isolates causality, gap {a_ema_nc-a_ema:+.3f})")
+    print(f"  ||g|| / non-causal median         alpha = {a_med:.3f}   (different estimator)")
     print(f"  [context] residual @ w* alpha={hill_alpha(resid):.2f}  feature||x|| alpha={hill_alpha(xnorm):.2f}"
           f"  pooled ||g||@0 alpha={hill_alpha(gnorm0):.2f}")
 
@@ -226,38 +237,38 @@ def main() -> None:
     # leftover is a GENUINE innovation tail (unlike Jane); if the surrogate is also ~2.3, it is
     # estimation cost. (The exogenous ||x|| feature-norm factor is held fixed to the real data.)
     sigma = causal_ema(np.abs(y))
-    a_sp, a_sc, a_so = [], [], []
+    a_sp, a_sc, a_snc = [], [], []
     for seed in range(5):
         z = np.random.default_rng(100 + seed).standard_normal(n)
         gtil = 2.0 * np.abs(sigma * z) * xnorm
-        ssur = causal_ema(gtil)
-        msur = pl.Series(gtil).rolling_median(window_size=201, center=True, min_samples=1).to_numpy()
-        a_sp.append(hill_alpha(gtil)); a_sc.append(hill_alpha(gtil[200:] / ssur[200:]))
-        a_so.append(hill_alpha(gtil / np.maximum(msur, 1e-12)))
-    a_sp, a_sc, a_so = np.array(a_sp), np.array(a_sc), np.array(a_so)
+        a_sp.append(hill_alpha(gtil))
+        a_sc.append(hill_alpha(gtil[200:] / causal_ema(gtil)[200:]))
+        a_snc.append(hill_alpha(gtil[200:] / noncausal_ema(gtil)[200:]))  # same-estimator twin
+    a_sp, a_sc, a_snc = np.array(a_sp), np.array(a_sc), np.array(a_snc)
     print("\n--- light-innovation surrogate (Gaussian innov.; zero genuine tail) ---")
     print(f"  surrogate pooled alpha            = {a_sp.mean():.3f} +- {a_sp.std():.3f}")
     print(f"  surrogate / causal-EMA (FLOOR)    = {a_sc.mean():.3f} +- {a_sc.std():.3f}   "
           f"(estimation-cost floor: a zero-tail stream read causally)")
-    print(f"  surrogate / non-causal median     = {a_so.mean():.3f} +- {a_so.std():.3f}   "
-          f"(non-causal estimator: causal->non-causal gap {a_so.mean()-a_sc.mean():+.3f} = causal cost is cheap)")
+    print(f"  surrogate / non-causal-EMA twin   = {a_snc.mean():.3f} +- {a_snc.std():.3f}   "
+          f"(SAME estimator; causal->non-causal gap {a_snc.mean()-a_sc.mean():+.3f} = causal cost is cheap)")
     print(f"  real causal-normalized = {a_ema:.3f} vs floor {a_sc.mean():.3f}: "
           f"{'real is HEAVIER than the zero-tail floor -> GENUINE residual tail' if a_ema < a_sc.mean() - a_sc.std() else 'real ~ floor -> estimation cost (as on Jane)'}")
-    print(f"  [real, isolating causality] non-causal median {a_med:.3f} vs causal {a_ema:.3f} "
-          f"= {a_med - a_ema:+.3f} (real tail barely lightens non-causally either)")
+    print(f"  same-estimator causal->non-causal gaps: surrogate {a_snc.mean()-a_sc.mean():+.3f}, "
+          f"real {a_ema_nc-a_ema:+.3f}  (Jane's real gaps +0.14..+0.38, tab:residual)")
 
     # ---- save ----
     np.save(RES / "gradnorm_crypto_btc.npy", gnorm)
     rows = [
         {"quantity": "pooled||g||@w*", "hill_alpha": round(a_pool, 4)},
         {"quantity": "||g||/causal-EMA", "hill_alpha": round(a_ema, 4)},
+        {"quantity": "||g||/noncausal-EMA-twin", "hill_alpha": round(a_ema_nc, 4)},
         {"quantity": "||g||/noncausal-median", "hill_alpha": round(a_med, 4)},
         {"quantity": "||g||/causal-EMA SHUFFLED", "hill_alpha": round(float(a_shuf.mean()), 4)},
         {"quantity": "residual@w*", "hill_alpha": round(hill_alpha(resid), 4)},
         {"quantity": "feature||x||", "hill_alpha": round(hill_alpha(xnorm), 4)},
         {"quantity": "surrogate pooled (Gaussian innov)", "hill_alpha": round(float(a_sp.mean()), 4)},
         {"quantity": "surrogate/causal-EMA (est-cost floor)", "hill_alpha": round(float(a_sc.mean()), 4)},
-        {"quantity": "surrogate/noncausal-median", "hill_alpha": round(float(a_so.mean()), 4)},
+        {"quantity": "surrogate/noncausal-EMA-twin", "hill_alpha": round(float(a_snc.mean()), 4)},
     ]
     pl.DataFrame(rows).write_csv(RES / "crypto_mechanism.csv")
     print(f"\n[saved {(RES/'crypto_mechanism.csv').relative_to(ROOT)}, gradnorm_crypto_btc.npy]")

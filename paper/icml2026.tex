@@ -1280,19 +1280,17 @@ on all $35$ windows. The honest difference from Jane is sharper, and we test it 
 tool. A light-innovation surrogate---crypto's own volatility path and features fed \emph{Gaussian}
 residual innovations, so \emph{zero} genuine tail by construction---run through the identical
 pipeline normalizes causally to a \emph{light} $\hat\alpha\approx3.77$ (a failing tracker would
-leave it heavy), and a \emph{non-causal} tracker of the same surrogate reaches only $4.25$: the
-causal-to-non-causal gap is just ${\approx}0.5$, so $3.77$ is a genuine zero-tail floor, not a
-causal-estimation artifact. Yet the real normalized tail sits at $2.26$, \emph{well below} that
-floor (and its own non-causal tracker lifts it by only $+0.14$, to $2.40$). Unlike Jane---whose
-real $3.73$ sits \emph{at} its surrogate floor, i.e.\ no genuine tail beyond estimation cost
-(\cref{tab:residual})---crypto's leftover is a \emph{genuine} heavy innovation tail (residual
-$\hat\alpha\approx2.68$) that scale-tracking does not remove. (This ${\approx}0.5$ surrogate
-estimation gap is far below Jane's ${\approx}4.5$; \cref{tab:residual} shows such gaps shrink with
-the surrogate's volatility persistence, so the difference is calibration---our EMA path is smoother
-than a GARCH(1,1)---not the tracker behaving differently.) This is the honest scope of the second
-market: the drift-driven \emph{removability} replicates (the shuffle control), but crypto also
-carries genuine innovation heaviness Jane lacks---exactly the regime where the cap earns its keep,
-as the sharper stability dichotomy below confirms.
+leave it heavy); a non-causal twin of the \emph{same} EMA lifts it only to $4.37$, so $3.77$ is a
+genuine zero-tail floor, not a causal-estimation artifact. Yet the real normalized tail sits at
+$2.26$, \emph{well below} that floor---and causality is not what limits it: the real stream's own
+same-estimator causal-to-non-causal gap is only $+0.26$ ($2.26$ to $2.52$), squarely in the range
+of Jane's ($+0.14$--$+0.38$ across thresholds and estimators; \cref{tab:residual}). Unlike
+Jane---whose real $3.73$ sits \emph{at} its surrogate floor, i.e.\ no genuine tail beyond
+estimation cost (\cref{tab:residual})---crypto's leftover is a \emph{genuine} heavy innovation
+tail (residual $\hat\alpha\approx2.68$) that scale-tracking does not remove. This is the honest
+scope of the second market: the drift-driven \emph{removability} replicates (the shuffle control),
+but crypto also carries genuine innovation heaviness Jane lacks---exactly the regime where the cap
+earns its keep, as the sharper stability dichotomy below confirms.
 
 \paragraph{Crypto: the stability dichotomy replicates.} Hourly returns are near-unpredictable
 (best-fixed-linear $R^2\approx0.002$), so no method has a meaningful accuracy edge---the
