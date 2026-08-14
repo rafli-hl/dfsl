@@ -1,7 +1,11 @@
 quantity,hill_alpha
 pooled||g||@w*,1.8072
 ||g||/causal-EMA,2.2554
+||g||/noncausal-EMA-twin,2.5161
 ||g||/noncausal-median,2.3977
 ||g||/causal-EMA SHUFFLED,1.7999
 residual@w*,2.6848
 feature||x||,3.9387
+surrogate pooled (Gaussian innov),1.9871
+surrogate/causal-EMA (est-cost floor),3.7693
+surrogate/noncausal-EMA-twin,4.3659

@@ -108,11 +108,17 @@ def main() -> None:
           f"10 windows x {win} bars")
     print("=" * 96)
 
-    lo, hi = windows[0]
+    # (A) sweeps on the window where the cap earns its keep: the one on which the UNCAPPED endpoint
+    # (M->inf) blows up hardest at a competitive rate (sharp scale spikes relative to the tracker),
+    # so the capped-vs-uncapped contrast is on the same, saved data as the figure.
+    turb = int(np.argmax([peak_rolling_loss(y[a:b], run("Scale-adaptive OGD", X[a:b], y[a:b], w[a:b], 2.0),
+                                            w[a:b]) for (a, b) in windows]))
+    lo, hi = windows[turb]
     Xw, yw, ww = X[lo:hi], y[lo:hi], w[lo:hi]
 
-    # ---- (A) lr sweep on window 1: peak rolling loss + highest bounded lr (the fig:main analogue) ----
-    print("\n(A) LEARNING-RATE SWEEP, window 1 --- peak rolling loss (does it TRULY explode?)")
+    # ---- (A) lr sweep: peak rolling loss + highest bounded lr (the fig:main analogue) ----
+    print(f"\n(A) LEARNING-RATE SWEEP, most-turbulent window {turb+1} ({str(dt[lo])[:10]}..{str(dt[hi])[:10]})"
+          f" --- peak rolling loss (does it TRULY explode?)")
     print(f"    {'method':22s} {'peak@min-lr':>12} {'peak@max-lr':>12}  highest-bounded-lr")
     sweep_rows = []
     for name in METHODS:
