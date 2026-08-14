@@ -183,7 +183,7 @@ convergence) that needs no moment assumption.
   \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a GARCH
   surrogate with light innovations reproduces both the tail and its removal. This is the
   paper's central finding, and it replicates on a \emph{second} independent market
-  (crypto; \cref{app:mnist}).
+  (crypto; \cref{app:secondmarket}).
   \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
   We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
   bounded on a bounded domain; \cref{thm:stability}),
@@ -743,9 +743,10 @@ specifically highlighted here.
 \section*{Software and Data}
 The accompanying anonymized code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
 (winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
-reproduce every figure and number (including \cref{tab:residual} and the GARCH surrogate).
+reproduce every figure and number, including \cref{tab:residual}'s real-data rows and the
+GARCH-surrogate control.
 Data: the public Jane Street Real-Time Market Data Forecasting competition, Binance BTC/USDT
-hourly bars, and MNIST-CNN gradient norms (the latter two in \cref{app:mnist}).
+hourly bars, and MNIST-CNN gradient norms (the latter two in \cref{app:secondmarket}).
 
 \section{Additional experimental tables and figures}
 \label{app:tables}
@@ -1260,7 +1261,7 @@ the synthetic stream's sharp peak, and \emph{stability unconditionally}: uncappe
 OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
 
 \subsection{A second market (crypto), and an image-model boundary}
-\label{app:mnist}
+\label{app:secondmarket}
 \paragraph{Crypto: the mechanism replicates on an independent market.} We repeat the whole
 analysis on Binance BTC/USDT hourly bars ($76{,}888$ bars, 2017--2025, spanning the 2018 bear,
 the 2020 COVID crash, the 2021 bull run, and the 2022 crash), predicting the next-hour log return
