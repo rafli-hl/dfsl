@@ -743,8 +743,9 @@ specifically highlighted here.
 \section*{Software and Data}
 The accompanying anonymized code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
 (winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
-reproduce every figure and number, including \cref{tab:residual}'s real-data rows and the
-GARCH-surrogate control.
+reproduce every figure and number, including \cref{tab:residual}'s real-data rows
+(\texttt{research\_review2\_checks.py}) and its GARCH-surrogate rows
+(\texttt{research\_residual\_surrogate.py}, fully synthetic---runnable without any market data).
 Data: the public Jane Street Real-Time Market Data Forecasting competition, Binance BTC/USDT
 hourly bars, and MNIST-CNN gradient norms (the latter two in \cref{app:secondmarket}).
 

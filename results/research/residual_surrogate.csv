@@ -1,0 +1,13 @@
+row,k,alpha_hat,a,b,N,seeds
+raw pooled (none),0.005,2.5518,0.22,0.77,200000,20
+raw pooled (none),0.01,2.4936,0.22,0.77,200000,20
+raw pooled (none),0.02,2.4407,0.22,0.77,200000,20
+causal winsorized-EMA (deployed),0.005,4.8268,0.22,0.77,200000,20
+causal winsorized-EMA (deployed),0.01,4.4841,0.22,0.77,200000,20
+causal winsorized-EMA (deployed),0.02,4.0952,0.22,0.77,200000,20
+centered winsorized-EMA (non-causal twin),0.005,5.4172,0.22,0.77,200000,20
+centered winsorized-EMA (non-causal twin),0.01,4.9428,0.22,0.77,200000,20
+centered winsorized-EMA (non-causal twin),0.02,4.4954,0.22,0.77,200000,20
+true-sigma_t oracle (= |z|),0.005,10.2984,0.22,0.77,200000,20
+true-sigma_t oracle (= |z|),0.01,9.043,0.22,0.77,200000,20
+true-sigma_t oracle (= |z|),0.02,7.7349,0.22,0.77,200000,20
