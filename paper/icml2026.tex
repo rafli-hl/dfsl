@@ -492,10 +492,10 @@ finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to 
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
 distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{sharp} when the
 normalized tail is heavy, \emph{broad} when it is mild, as on Jane: there a finite cap still
-beats full normalization by ${+}0.11$ per-row, though the mid-range caps sit within noise. SN-OMD's block-bootstrap standard
-errors ($\pm.079/.056$) run ${\approx}3\times$ normalized-GD's ($\pm.024/.021$), which the
-ten-window replication traces to the winsorized-EMA tracker rather than the cap: the
-block-median scale roughly halves it (per-row std $0.11\!\to\!0.07$;
+beats full normalization by ${+}0.11$ per-row, though the mid-range caps sit within noise. SN-OMD's per-row block-bootstrap standard
+error ($\pm.079$) runs about twice normalized-GD's ($\pm.037$; \cref{tab:jane}, and it is no
+wider per-step), which the ten-window replication traces to the winsorized-EMA tracker rather
+than the cap: the block-median scale roughly halves it (per-row std $0.11\!\to\!0.07$;
 \cref{tab:replication,sec:tracker}).
 
 \paragraph{Replication across ten disjoint windows.} A single contiguous window cannot
