@@ -37,7 +37,10 @@ EXCLUDE_EXACT = {
     # author's identity tokens, so exporting it would re-introduce exactly what it strips.
     "scripts/make_anon_release.py",
 }
-EXCLUDE_GLOBS = ("__pycache__/", ".pyc")  # committed bytecode -> junk, never in a release
+EXCLUDE_GLOBS = (
+    "__pycache__/", ".pyc",  # committed bytecode -> junk, never in a release
+    "audit/",                # internal reviewer-audit notes (name identity + reviewer dialogue)
+)
 
 # Identity tokens that must not appear anywhere in the export tree (case-insensitive).
 IDENTITY_TOKENS = ("rafli", "pyhron", "putra pratama", "quantiumintelligence")
