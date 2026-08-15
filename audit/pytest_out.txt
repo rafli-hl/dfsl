@@ -1,0 +1,105 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- D:\dfsl\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\dfsl
+configfile: pyproject.toml
+plugins: anyio-4.14.2
+collecting ... collected 77 items
+
+tests/test_algorithm.py::TestTrimmedMean::test_exact_hand_computed_values PASSED [  1%]
+tests/test_algorithm.py::TestTrimmedMean::test_order_invariance PASSED   [  2%]
+tests/test_algorithm.py::TestTrimmedMean::test_empty_input_raises PASSED [  3%]
+tests/test_algorithm.py::TestTrimmedMean::test_invalid_trim_fraction_raises[0.5] PASSED [  5%]
+tests/test_algorithm.py::TestTrimmedMean::test_invalid_trim_fraction_raises[0.6] PASSED [  6%]
+tests/test_algorithm.py::TestTrimmedMean::test_invalid_trim_fraction_raises[-0.1] PASSED [  7%]
+tests/test_algorithm.py::TestRobustLocation::test_outlier_resistance PASSED [  9%]
+tests/test_algorithm.py::TestRobustLocation::test_catoni_constant_array PASSED [ 10%]
+tests/test_algorithm.py::TestRobustLocation::test_median_of_means_default_rng_is_deterministic PASSED [ 11%]
+tests/test_algorithm.py::TestRobustLocation::test_empty_input_raises[catoni_mean] PASSED [ 12%]
+tests/test_algorithm.py::TestRobustLocation::test_empty_input_raises[median_of_means] PASSED [ 14%]
+tests/test_algorithm.py::TestEstimatorRegistry::test_registry_contents PASSED [ 15%]
+tests/test_algorithm.py::TestEstimatorRegistry::test_get_estimator_returns_expected_callables PASSED [ 16%]
+tests/test_algorithm.py::TestEstimatorRegistry::test_unknown_name_lists_options PASSED [ 18%]
+tests/test_algorithm.py::TestGradientClipping::test_adaptive_clip_gradient_matches_rolling_quantile PASSED [ 19%]
+tests/test_algorithm.py::TestGradientClipping::test_adaptive_clip_warm_up_needs_ten_norms PASSED [ 20%]
+tests/test_algorithm.py::TestGradientClipping::test_robust_omd_clip_gradient_uses_estimator_threshold PASSED [ 22%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_effective_gradient_is_capped PASSED [ 23%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_normalized_gradient_is_scale_invariant PASSED [ 24%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_never_diverges_on_extreme_magnitudes PASSED [ 25%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_stays_bounded_under_heavy_contamination PASSED [ 27%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_learns_on_easy_stream PASSED [ 28%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_two_timescale_tracker_option_stays_bounded PASSED [ 29%]
+tests/test_algorithm.py::TestScaleNormalizedOGD::test_invalid_scale_tracker_raises PASSED [ 31%]
+tests/test_algorithm.py::TestOnlineLearners::test_ogd_converges_on_easy_stream PASSED [ 32%]
+tests/test_algorithm.py::TestOnlineLearners::test_robust_learners_beat_ogd_under_contamination PASSED [ 33%]
+tests/test_algorithm.py::TestOnlineLearners::test_update_returns_finite_nonnegative_float PASSED [ 35%]
+tests/test_algorithm.py::TestOnlineLearners::test_update_survives_extreme_magnitudes PASSED [ 36%]
+tests/test_algorithm.py::TestOnlineLearners::test_seeded_runs_are_deterministic PASSED [ 37%]
+tests/test_artifacts_fresh.py::test_committed_csv_matches_generator[research_tracker] PASSED [ 38%]
+tests/test_artifacts_fresh.py::test_input_artifact_hash_pinned[gradnorm_at_wstar.npy] PASSED [ 40%]
+tests/test_dataset.py::TestSyntheticHeavyTailed::test_shapes_and_sizes PASSED [ 41%]
+tests/test_dataset.py::TestSyntheticHeavyTailed::test_iteration_matches_arrays PASSED [ 42%]
+tests/test_dataset.py::TestSyntheticHeavyTailed::test_seed_reproducibility PASSED [ 44%]
+tests/test_dataset.py::TestSyntheticHeavyTailed::test_contamination_mask_count PASSED [ 45%]
+tests/test_dataset.py::TestSyntheticHeavyTailed::test_unknown_noise_raises PASSED [ 46%]
+tests/test_dataset.py::TestCausalStandardize::test_shape_and_finiteness PASSED [ 48%]
+tests/test_dataset.py::TestCausalStandardize::test_strictly_causal PASSED [ 49%]
+tests/test_dataset.py::TestCausalStandardize::test_row_zero_uncentered PASSED [ 50%]
+tests/test_dataset.py::TestJaneStreetDataset::test_feature_dimension PASSED [ 51%]
+tests/test_dataset.py::TestJaneStreetDataset::test_row_budget PASSED     [ 53%]
+tests/test_dataset.py::TestJaneStreetDataset::test_features_finite_after_fill PASSED [ 54%]
+tests/test_dataset.py::TestJaneStreetDataset::test_targets_within_clip_range PASSED [ 55%]
+tests/test_dataset.py::TestJaneStreetDataset::test_weights_positive PASSED [ 57%]
+tests/test_dataset.py::TestJaneStreetDataset::test_meta_has_id_columns PASSED [ 58%]
+tests/test_dataset.py::TestJaneStreetDataset::test_rows_sorted_by_date_then_time PASSED [ 59%]
+tests/test_dataset.py::TestJaneStreetDataset::test_standardize_full_zscores_features PASSED [ 61%]
+tests/test_dataset.py::TestJaneStreetDataset::test_standardize_causal_default PASSED [ 62%]
+tests/test_pipeline.py::test_experiment_configs_parse[default.yaml] PASSED [ 63%]
+tests/test_pipeline.py::test_experiment_configs_parse[synthetic.yaml] PASSED [ 64%]
+tests/test_pipeline.py::test_experiment_configs_parse[jane.yaml] PASSED  [ 66%]
+tests/test_pipeline.py::test_experiment_configs_parse[sn_ogd.yaml] PASSED [ 67%]
+tests/test_pipeline.py::test_ablation_config_has_sweep PASSED            [ 68%]
+tests/test_pipeline.py::test_factory_round_trip PASSED                   [ 70%]
+tests/test_pipeline.py::test_factory_builds_scale_normalized_ogd PASSED  [ 71%]
+tests/test_pipeline.py::test_train_main_smoke PASSED                     [ 72%]
+tests/test_pipeline.py::test_weighted_r2_sanity PASSED                   [ 74%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_initializes_to_first_norm PASSED [ 75%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_step_is_predictable PASSED [ 76%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_winsorization_bounds_spike_influence PASSED [ 77%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_scale_invariance PASSED [ 79%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_eps_before_data_and_invalid_norm_ignored PASSED [ 80%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_invalid_decay_raises[-0.1] PASSED [ 81%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_invalid_decay_raises[1.0] PASSED [ 83%]
+tests/test_preprocessing.py::TestOnlineScaleTracker::test_invalid_decay_raises[1.5] PASSED [ 84%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_predictable_and_initializes_to_first_norm PASSED [ 85%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_peak_hold_decays_slowly PASSED [ 87%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_reacts_up_fast_to_a_rise PASSED [ 88%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_scale_invariance PASSED [ 89%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_invalid_params_raise[kwargs0] PASSED [ 90%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_invalid_params_raise[kwargs1] PASSED [ 92%]
+tests/test_preprocessing.py::TestTwoTimescaleScaleTracker::test_invalid_params_raise[kwargs2] PASSED [ 93%]
+tests/test_preprocessing.py::TestOnlineStandardizer::test_welford_matches_batch_moments PASSED [ 94%]
+tests/test_preprocessing.py::TestOnlineStandardizer::test_transform_recovers_standardization PASSED [ 96%]
+tests/test_preprocessing.py::TestOnlineStandardizer::test_before_two_observations_only_centers PASSED [ 97%]
+tests/test_preprocessing.py::TestOnlineStandardizer::test_variance_zeros_before_any_data PASSED [ 98%]
+tests/test_preprocessing.py::TestOnlineStandardizer::test_fit_transform_step_equals_partial_fit_then_transform PASSED [100%]
+
+============================== warnings summary ===============================
+tests/test_algorithm.py::TestOnlineLearners::test_update_survives_extreme_magnitudes
+  D:\dfsl\src\dfsl\algorithms\base.py:115: RuntimeWarning: overflow encountered in matmul
+    return float(self.weights @ x)
+
+tests/test_algorithm.py::TestOnlineLearners::test_update_survives_extreme_magnitudes
+  D:\dfsl\.venv\Lib\site-packages\numpy\linalg\_linalg.py:2767: RuntimeWarning: overflow encountered in dot
+    sqnorm = x.dot(x)
+
+tests/test_dataset.py::TestJaneStreetDataset::test_feature_dimension
+  D:\dfsl\.venv\Lib\site-packages\_pytest\fixtures.py:1313: PytestRemovedIn10Warning: Class-scoped fixture defined as instance method is deprecated.
+  Instance attributes set in this fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use @classmethod decorator and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 77 passed, 3 warnings in 18.06s =======================
