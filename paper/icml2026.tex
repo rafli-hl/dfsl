@@ -144,7 +144,7 @@ for the loss \emph{gradients} of an online learner---as a feature$\times$residua
 interaction---and that it has an exploitable algorithmic consequence, developed below. This regime---a drifting scale against a moving
 comparator---is exactly where existing distribution-free online learning results, which
 are either in expectation, on bounded domains, or against a static comparator
-\citep{zhang2026oco,zhangcutkosky2022}, do not reach.
+\citep{liu2026oco,zhangcutkosky2022}, do not reach.
 
 The consequences are sharp. Plain OGD has \emph{no robust} learning rate on such a
 stream: rates small enough to stay bounded underfit, while any rate large enough to be
@@ -673,7 +673,7 @@ plateau (\cref{app:tracker,tab:grid}). So momentum-normalized SGD, not clip-plus
 ties the tracked scale, and neither leads both protocols; what the \emph{predictable} scale adds
 is the dynamic-regret guarantee, not a measured accuracy edge.
 
-\paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
+\paragraph{Heavy-tailed online learning.} \citet{liu2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
 \emph{high-probability} static regret $\tilde O(\norm u T^{1/p})$ over unbounded domains,
 whose central obstacle---exponentially large iterates---our cap sidesteps. Both are static;
@@ -833,7 +833,7 @@ estimation: under a finite $p$-th moment the best estimator of a mean from $n$ s
 has error $\Theta(\sigma\,n^{-(1-1/p)})$ \citep{devroye2016,lugosi2019}, which
 interpolates the sub-Gaussian rate ($p=2$) and no concentration ($p\to1$). Aggregated
 online this yields, and is matched by, a regret of order $T^{1/p}$
-\citep{zhang2026oco}:
+\citep{liu2026oco}:
 \begin{equation}
 \label{eq:tp}
 R_T \;\asymp\; \sigma\cdot T^{1/p},\qquad
@@ -858,7 +858,7 @@ comparator sequence---which is trivially $\Omega(T)$ in any case. The interestin
 is regret at a given path length $P_T$, which \eqref{eq:budgets} does not constrain.
 Second, it separates drift from the static case only qualitatively: prior heavy-tailed
 results fix a \emph{single} $p$, a stationary scale, and a \emph{static} comparator, and
-recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{zhang2026oco,zhangcutkosky2022,bubeck2013},
+recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{liu2026oco,zhangcutkosky2022,bubeck2013},
 whereas here the per-regime costs \emph{add} across a drifting exponent, and the static
 budget (a $\max$, not a sum) does not see this. Third---and this is why we keep
 \eqref{eq:budgets} \emph{qualitative}---the sum is dominated by regimes with $p_r<2$,
@@ -1164,7 +1164,7 @@ $\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
 \subsection{Reductions}
 \emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using
 that the bound is unimodal in $\log M$ with a flat optimum, removes this at a
-$\mathrm{polylog}(T)$ cost \citep{zhang2026oco}. \emph{Unknown $\norm u$ / unbounded
+$\mathrm{polylog}(T)$ cost \citep{liu2026oco}. \emph{Unknown $\norm u$ / unbounded
 domain:} \cref{thm:stability} gives bounded feedback $\norm{\hat g_t}\le M$, exactly
 the input required by the parameter-free potential of \citet{zhangcutkosky2022};
 substituting our $\hat g_t$ yields the unbounded-domain analogue with $D$ replaced by

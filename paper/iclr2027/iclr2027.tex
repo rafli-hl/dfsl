@@ -135,7 +135,7 @@ for the loss \emph{gradients} of an online learner---as a feature$\times$residua
 interaction---and that it has an exploitable algorithmic consequence, developed below. This regime---a drifting scale against a moving
 comparator---is exactly where existing distribution-free online learning results, which
 are either in expectation, on bounded domains, or against a static comparator
-\citep{zhang2026oco,zhangcutkosky2022}, do not reach.
+\citep{liu2026oco,zhangcutkosky2022}, do not reach.
 
 The consequences are sharp. Plain OGD has \emph{no robust} learning rate on such a
 stream: rates small enough to stay bounded underfit, while any rate large enough to be
@@ -297,7 +297,10 @@ property, not special to SN-OMD---any update whose step is capped by a scale-fre
 constant satisfies it, including normalized-GD, a constant-threshold clip, and
 AdaGrad-Norm (\cref{tab:jane}). So \cref{thm:stability} separates the bounded scale-free
 family from the scale-dependent methods; what singles out SN-OMD \emph{within} that
-family is taken up in \cref{sec:experiments}.
+family is taken up in \cref{sec:experiments}. Because the features are bounded, the
+loss-based divergence reported there moves in lockstep with $\norm{w_t}$; \cref{app:iternorm}
+logs $\norm{w_t}$ directly and finds it never leaves the $\norm{w_1}+2M\eta\sqrt{t}$
+envelope, whereas the uncapped ($M\!\to\!\infty$) endpoint and OGD breach it by many orders.
 
 \paragraph{Dynamic regret (deferred to the appendix).} Beyond stability, SN-OMD admits a
 high-probability \emph{dynamic}-regret analysis (\cref{app:regret}): under a scale-tracking
@@ -328,7 +331,10 @@ information). \textbf{This is not the competition's protocol} (batched timesteps
 day-lagged responders, held-out future window), so our $R^2$ is not comparable to
 leaderboard scores; we report it for cross-method comparison and the stability contrast.
 Tail measurements are learner-independent (gradients at $w^\star$): the pooled index from
-${\sim}200{,}000$ gradients, the daily-drift index from the full record.
+${\sim}200{,}000$ gradients, the daily-drift index from the full record. We characterize the tail at the fixed
+$w^\star$ so it is a property of the data, not of any learner; we do not separately track
+it along the online trajectory $\{w_t\}$, whose norm the stability guarantee
+(\cref{thm:stability}), not a tail assumption, governs.
 
 \paragraph{Leakage controls for the $R^2$ magnitude.} Because our prequential
 $R^2\approx0.28$ sits well above the competition's held-out leaderboard scores, we run a
@@ -584,7 +590,7 @@ plateau (\cref{app:tracker,tab:grid}). So momentum-normalized SGD, not clip-plus
 ties the tracked scale, and neither leads both protocols; what the \emph{predictable} scale adds
 is the dynamic-regret guarantee, not a measured accuracy edge.
 
-\paragraph{Heavy-tailed online learning.} \citet{zhang2026oco} show plain OGD is optimal
+\paragraph{Heavy-tailed online learning.} \citet{liu2026oco} show plain OGD is optimal
 \emph{in expectation} on a bounded domain, and \citet{zhangcutkosky2022} give parameter-free
 \emph{high-probability} static regret $\tilde O(\norm u T^{1/p})$ over unbounded domains,
 whose central obstacle---exponentially large iterates---our cap sidesteps. Both are static;
@@ -847,7 +853,7 @@ estimation: under a finite $p$-th moment the best estimator of a mean from $n$ s
 has error $\Theta(\sigma\,n^{-(1-1/p)})$ \citep{devroye2016,lugosi2019}, which
 interpolates the sub-Gaussian rate ($p=2$) and no concentration ($p\to1$). Aggregated
 online this yields, and is matched by, a regret of order $T^{1/p}$
-\citep{zhang2026oco}:
+\citep{liu2026oco}:
 \begin{equation}
 \label{eq:tp}
 R_T \;\asymp\; \sigma\cdot T^{1/p},\qquad
@@ -872,7 +878,7 @@ comparator sequence---which is trivially $\Omega(T)$ in any case. The interestin
 is regret at a given path length $P_T$, which \eqref{eq:budgets} does not constrain.
 Second, it separates drift from the static case only qualitatively: prior heavy-tailed
 results fix a \emph{single} $p$, a stationary scale, and a \emph{static} comparator, and
-recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{zhang2026oco,zhangcutkosky2022,bubeck2013},
+recover the $T^{1/p}$ rate \eqref{eq:tp} \citep{liu2026oco,zhangcutkosky2022,bubeck2013},
 whereas here the per-regime costs \emph{add} across a drifting exponent, and the static
 budget (a $\max$, not a sum) does not see this. Third---and this is why we keep
 \eqref{eq:budgets} \emph{qualitative}---the sum is dominated by regimes with $p_r<2$,
@@ -989,6 +995,32 @@ realization. On a bounded domain $\Pi_{\mathcal W}$ keeps $\norm{w_t}\le D$. On 
 $\norm{w_{t+1}-w_t}\le(\eta/\sqrt t)M$, so
 $\norm{w_t}\le\norm{w_1}+M\eta\sum_{k<t}k^{-1/2}\le\norm{w_1}+2M\eta\sqrt t$. No moment
 assumption is used. \qed
+
+\subsection{The iterate norm obeys the stability bound (measured)}
+\label{app:iternorm}
+\cref{thm:stability} controls the iterate norm $\norm{w_t}$, whereas the stability
+experiments of \cref{sec:experiments} report a \emph{loss} (divergence counts, peak
+rolling loss). For the bounded-feature linear task the two coincide---a prediction
+$\langle w_t,x_t\rangle$ with bounded $\norm{x_t}$ diverges iff $\norm{w_t}$ does---but we
+also measure $\norm{w_t}$ head-on. Streaming the window $\mathrm{date}[0,120)$
+($150{,}000$ rows) through the reference learners (\texttt{dfsl.algorithms}) at a shared
+competitive rate $\eta=8$, SN-OMD ($M=5$) keeps $\norm{w_t}=O(1)$ (peak $40.6$, final
+$1.8$) and \emph{never} breaches the envelope $\norm{w_1}+2M\eta\sqrt t$ ($0/150{,}000$
+steps), with a log--log growth exponent $-0.31$ (sub-$\sqrt t$). At the same rate the
+uncapped endpoint ($M\!\to\!\infty$) grows to $\norm{w_t}\approx1.4\times10^6$ and plain
+OGD to $>10^{150}$ (\cref{fig:iternorm})---the loss divergence of \cref{sec:experiments},
+now visible in the object the theorem bounds. Generated by \texttt{research\_iterate\_norm.py}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\linewidth]{fig8_iterate_norm.png}
+\caption{\textbf{The bounded scale-free cap holds the iterate norm under the stability
+envelope.} Iterate norm $\norm{w_t}$ (log--log) on $\mathrm{date}[0,120)$ at a shared rate
+$\eta=8$. SN-OMD ($M=5$) stays below the theorem bound $2M\eta\sqrt t$ (dashed) at every
+step; the uncapped endpoint ($M\!\to\!\infty$) and OGD blow through it (OGD exits the top).
+This measures directly the $\norm{w_t}$ that \cref{thm:stability} bounds.}
+\label{fig:iternorm}
+\end{figure}
 
 \subsection{Clipped moment and bias}
 \begin{lemma}
@@ -1178,7 +1210,7 @@ $\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
 \subsection{Reductions}
 \emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using
 that the bound is unimodal in $\log M$ with a flat optimum, removes this at a
-$\mathrm{polylog}(T)$ cost \citep{zhang2026oco}. \emph{Unknown $\norm u$ / unbounded
+$\mathrm{polylog}(T)$ cost \citep{liu2026oco}. \emph{Unknown $\norm u$ / unbounded
 domain:} \cref{thm:stability} gives bounded feedback $\norm{\hat g_t}\le M$, exactly
 the input required by the parameter-free potential of \citet{zhangcutkosky2022};
 substituting our $\hat g_t$ yields the unbounded-domain analogue with $D$ replaced by
