@@ -118,8 +118,8 @@ heavy tail---is what breaks existing methods. Measuring the gradient of an onlin
 predictor on the Jane Street market dataset, we find (i) the gradient \emph{scale}
 drifts roughly $6\times$ across two months with overnight jumps; (ii) the \emph{pooled}
 gradient-norm tail is genuinely heavy ($\hat\alpha\approx2.4$) but \emph{conditionally
-removable}---the \emph{causally scale-normalized} gradient $\norm{\gt}/s_t$, which is what
-a learner actually acts on, is much lighter ($\hat\alpha\approx2.9$--$3.7$), and the
+removable}---the \emph{causally scale-normalized} gradient $\norm{\gt}/s_t$, the object a learner's update
+acts on (characterized at the fixed optimum $w^\star$), is much lighter ($\hat\alpha\approx2.9$--$3.7$), and the
 lightening is a property of \emph{serial dependence}, not of the marginal; and (iii) the
 \emph{gradient} tail is heavier than either its feature or residual factor alone, an
 \emph{interaction} effect from their co-movement. What the learner faces is thus the
@@ -602,7 +602,7 @@ a Hedge meta-algorithm and no clipping; we differ in targeting a \emph{drifting 
 through a predictable tracker and a hard cap, and in a \emph{high-probability} (not
 in-expectation) guarantee. A concurrent line sharpens the normalization-versus-clipping question for \emph{offline
 non-convex} SGD, proving normalization---with or without clipping---suffices for convergence
-under only a bounded $p$-th moment \citep{hubler2025clipping,sun2024normalization}; we instead
+under only a bounded $p$-th moment \citep{liuzhou2025nonconvex,hubler2025clipping,sun2024normalization}; we instead
 target \emph{online dynamic regret} under a \emph{drifting} scale, and add the measurement that
 the gradient tail is itself a predictable-scale artifact.
 
