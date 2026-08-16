@@ -596,7 +596,11 @@ is the dynamic-regret guarantee, not a measured accuracy edge.
 whose central obstacle---exponentially large iterates---our cap sidesteps. Both are static;
 the dynamic, nonstationary regime we target sits outside them, and our budget heuristic
 (\cref{sec:lower}) suggests why it is harder (a proper $P_T$-constrained lower bound remains
-open). A concurrent line sharpens the normalization-versus-clipping question for \emph{offline
+open). Concurrently, \citet{aggarwal2026dynamic} attain parameter-free \emph{universal
+dynamic} regret under heavy tails \emph{in expectation}, via restarted-AdaGrad experts with
+a Hedge meta-algorithm and no clipping; we differ in targeting a \emph{drifting scale}
+through a predictable tracker and a hard cap, and in a \emph{high-probability} (not
+in-expectation) guarantee. A concurrent line sharpens the normalization-versus-clipping question for \emph{offline
 non-convex} SGD, proving normalization---with or without clipping---suffices for convergence
 under only a bounded $p$-th moment \citep{hubler2025clipping,sun2024normalization}; we instead
 target \emph{online dynamic regret} under a \emph{drifting} scale, and add the measurement that
