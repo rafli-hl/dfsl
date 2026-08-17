@@ -659,14 +659,21 @@ proved in \cref{app:regret,app:proofs}. The code supplement (\S Software and Dat
 learner, scale trackers, configs, and a script for every figure and number; the synthetic and
 tail-index results are runnable without any market data, and a deterministic test suite plus a
 SHA-pinned headline input guard against drift. The Jane Street and crypto numbers require the
-public competition data (Kaggle-gated), as disclosed in \cref{sec:experiments}.
+public competition data (Kaggle-gated), as disclosed in \cref{sec:experiments}. The headline
+market numbers are deterministic---a single streaming pass over the pinned input, with no
+seed averaging---so their reported uncertainty comes only from the seeded block bootstrap
+(\cref{tab:jane}, \cref{sec:tracker}) and, for the synthetic experiments, the stated seed
+counts (e.g.\ the $400$-seed and five-seed runs). All experiments run on a single commodity
+CPU with no accelerator required: the only neural component (MNIST-CNN gradient norms,
+\cref{app:secondmarket}) trains a small network that runs on CPU and is cached, so the full
+figure-and-table suite reproduces without a GPU.
 
 \section*{Use of Large Language Models}
 Large language models were used as assistive tools during this project: for prose editing and
 LaTeX formatting; for code refactoring and documentation; for related-work search and
-cross-checking; and for an independent audit pass over the manuscript that re-derived the
-theorems, checked paper--code consistency, and assisted the preparation of the submission in the
-ICLR format. LLMs were \emph{not} used to generate experimental data and did not originate the
+cross-checking; for feedback on experimental methodology and analysis; and for an independent
+audit pass over the manuscript that re-derived the theorems, checked paper--code consistency,
+and assisted the preparation of the submission in the ICLR format. LLMs were \emph{not} used to generate experimental data and did not originate the
 core research question, the theoretical results, or the empirical findings; every theorem,
 proof, experimental design, and reported number was verified by the authors, who take full
 responsibility for the content. This statement does not count toward the page limit.
@@ -1530,7 +1537,11 @@ The accuracy gaps are easy to over-read, so we test them across regimes: the ten
 windows (\cref{tab:replication}) are the instrument that varies the hypothesized variable, so
 we pair the block median against the EMA default and each baseline \emph{by window} and
 bootstrap the paired difference over the ten windows
-(\texttt{research\_tracker\_bootstrap.py}). Per-row the block tracker beats every method
+(\texttt{research\_tracker\_bootstrap.py}). Resampling at the \emph{window} granularity
+absorbs the within-window serial dependence (volatility clustering); the only residual
+assumption is that the ten paired differences are exchangeable across windows, which the
+pairing de-risks by cancelling any regime effect common to both methods. Per-row the block
+tracker beats every method
 \emph{except one}, with a paired $95\%$ CI clear of zero and $10/10$ window wins---the EMA
 default by $+0.15$ ($[+0.10,+0.20]$), normalized-GD by $+0.11$ ($[+0.08,+0.15]$), the
 fixed-$\tau$ clip by $+0.085$, AdaGrad-Norm by $+0.093$---but only \emph{ties} the
