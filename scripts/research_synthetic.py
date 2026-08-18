@@ -1,5 +1,6 @@
 """Synthetic streams with KNOWN, controlled (sigma_t, p_t): does regret scale as
-T^{1/p}, as Theorem 3.3 predicts, and how does it depend on the path length P_T?
+T^{1/p}, as Theorem 3.2 (Theorem D.2 in the appendix) predicts, and how does it
+depend on the path length P_T?
 
 This is the experiment that directly tests the theorem (the Jane Street runs measure
 R^2 and stability, not regret scaling). It is fully self-contained -- no external data.

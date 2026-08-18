@@ -4,7 +4,8 @@ CHECK A (theory fork). Is W_s ~ T^beta with beta~1 a fact about the drift, or an
 artifact of a tracker that moves every round? Measure beta for a BLOCK tracker: s_t held
 piecewise-constant over blocks of length B (predictable: block i uses the robust median
 of block i-1), swept over B. W_s then sums over T/B block boundaries. If beta drops as B
-grows we can rescue Theorem 3.3 at the tracker that achieves it (and confirm Remark 3.5);
+grows we can rescue Theorem D.2 at the tracker that achieves it (and confirm the
+tracker-design remark);
 if beta stays ~1 for every accurate-enough tracker, the total-variation parameterization
 is wrong and the bound should be demoted / re-derived via the switching (N-regime) form.
 We also report the lower-bracket quality vs B (the accuracy side of the frontier).
@@ -80,11 +81,15 @@ def check_b_stationary_control():
     print("\n" + "=" * 72)
     print("CHECK B -- stationary negative control (sigma const, p=2, static u*)")
     print("=" * 72)
-    rng = np.random.default_rng(0)
     S, d, T = 400, 5, 20000
-    u = rng.standard_normal(d); u /= np.linalg.norm(u)
+    u = np.random.default_rng(0).standard_normal(d); u /= np.linalg.norm(u)
 
     def run(kind, eta, cap=5.0, decay=0.99, winsor=8.0):
+        # Common random numbers: every (kind, eta) sees the SAME stream, so the tuned
+        # comparison is paired rather than each arm drawing a fresh one. (The comparator u
+        # is drawn from the same seed, so it coincides with the first x draw -- immaterial
+        # at T=20000 x S=400, and kept so the reported numbers are unchanged.)
+        rng = np.random.default_rng(0)
         W = np.zeros((S, d)); s = np.ones(S); acc = np.zeros(S); cnt = 0
         for t in range(T):
             x = rng.standard_normal((S, d))
@@ -109,8 +114,10 @@ def check_b_stationary_control():
         vals = [(run(kind, eta)[0], eta) for eta in grid]
         return min(vals)  # (excess_loss, eta)
 
+    # Grids widened past the audit's grid-edge check: SN-OMD's optimum previously sat at the
+    # old floor eta=0.05, leaving open that a smaller rate rescued it. It does not.
     ogd = best("ogd", [0.002, 0.005, 0.01, 0.02, 0.05])
-    sn = best("snomd", [0.05, 0.1, 0.2, 0.5, 1.0])
+    sn = best("snomd", [0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.5, 1.0])
     print(f"  tuned OGD    : steady excess loss = {ogd[0]:.5f}  @eta={ogd[1]}")
     print(f"  tuned SN-OMD : steady excess loss = {sn[0]:.5f}  @eta={sn[1]}")
     print(f"  ratio SN/OGD = {sn[0]/ogd[0]:.2f}  "
