@@ -102,3 +102,199 @@ RMSProp. The fourfold gap is the schedule. Recorded in §E.13.
 |---|---|---|
 | 8 | Wall-clock runtime figure for the Reproducibility Statement | needs a timed full-suite run over the 12 GB Jane parquet |
 | — | Positive non-finance demonstration (MUST-FIX #3 of the previous pass) | needs new data; Limitations now states the scope limit explicitly instead |
+
+---
+
+## Pass IV — predictability correction (2026-08-21)
+
+Input: a verify-first challenge to Pass III's §E.13 claim that the `0.247` vs `0.285` SN-OMD
+discrepancy was a tuning-grid artifact. Verifying it found a real defect in the *code*, and
+measuring the defect showed it was **not** what produced the discrepancy.
+
+### The finding
+
+`alg:snomd` specifies a **predictable** scale: `s_t <- S.scale` (uses `g_t'` for `t'<t`), then
+`ghat_t = clip(g_t/s_t, M)`, then the step, then `S.update(||g_t||)`. The `F_{t-1}`-measurability
+is not decoration — Freedman (`lem:freedman`) and `ass:track` require it, and §1 sells it as what
+distinguishes SN-OMD from normalized-GD's non-predictable `1/||g_t||`.
+
+Three research-script implementations folded `||g_t||` into `s_t` **before** normalizing, making
+the deployed tracker `F_t`-measurable:
+
+| site | feeds |
+|---|---|
+| `research_batched_check.py::_step` | `tab:jane`, `tab:replication`, cap sweep, grid adequacy, crypto, lr-curves, `windows_tracker` |
+| `research_leakage_controls.py::snomd_run_returnw` | the leakage battery |
+| `research_normalize.py::ScaleNormalizedOGD` | `jane_msweep.csv`, `research_audit_checks.py` |
+
+The split was clean and unlucky: the **library** (`dfsl.preprocessing.OnlineScaleTracker`, pinned
+by `tests/test_preprocessing.py::test_step_is_predictable`) and every theory-validation script
+(`research_synthetic`, `research_review2/3_checks`, `research_crypto_mechanism`,
+`research_second_domain`, `make_paper_figures`, and `research_iterate_norm` via the library) were
+always correct. The **research scripts behind the tables** were not. This is not a leakage bug —
+predictions at round `t` are formed from `w_t` before `g_t` exists — but a theory/experiment
+mismatch: the tables did not measure Algorithm 1.
+
+An exhaustive re-sweep on `winsor` (which every winsorized EMA must reference) returns 15 sites:
+3 offenders, 10 already correct, 2 intentional (both arms of the new decomposition script). An
+earlier sweep on `decay * s` missed `research_normalize.py`, which writes `self.beta * self.s`.
+
+### FIXED — the decomposition (new script)
+
+**`scripts/research_predictability_check.py`** crosses {post-update, predictable} x the full
+`research_baselines.LRS` grid on the reported window, with a *paired* circular block bootstrap on
+each contrast (marginal SEs are ~.08, far too wide to resolve a ~.04 gap between two runs on the
+same rows). Both published numbers reproduce to four decimals, validating the harness:
+
+```
+code path @ lr=2   +0.0001 +-0.0009  [-0.0017, +0.0018]  inconclusive
+code path @ lr=1   +0.0009 +-0.0001  [+0.0007, +0.0012]  significant
+grid @ predictable +0.0379 +-0.0630
+TOTAL gap          +0.0378 +-0.0621
+reproduction: post-update @ lr=2 = +0.2845 (Table 1 reports +0.2845)
+reproduction: predictable @ lr=1 = +0.2467 (sweep reports  +0.2467)
+```
+
+**The grid explains +0.0379 of the +0.0378 total; measurability explains 0.3% of it.** §E.13's
+*original* sentence was substantively right; Pass III's "correction" of it attached a real defect
+to a number it does not explain. Mechanism: on capped rounds (`||g||/s > M=5`) the scale cancels
+exactly, and elsewhere `s_t/s_{t-1}` lies in `[0.99, 1.07]`.
+
+### FIXED — the correction and full regeneration
+
+All three sites now capture the pre-update scale. Twelve artifacts regenerated. Every method that
+never touches the tracker (OGD, normalized-GD, fixed-tau, AdaGrad-Norm, Cutkosky-Mehta,
+block-median) came back **bit-identical including bootstrap SEs** — a validity check on each
+re-run.
+
+| artifact | outcome |
+|---|---|
+| `baselines_jane.csv` | SN-OMD per-row `0.2845 -> 0.2846`, per-step `0.3091 -> 0.3066` |
+| `table1_errorbars.csv` | scale-adaptive per-row `0.1619 -> 0.1593`; SN-OMD agrees with baselines to 4 d.p. |
+| `cap_sweep_jane.csv` | both arg-maxima hold (EMA M=2, block M=5); across-window means unchanged to 4 d.p. |
+| `jane_msweep.csv` | M=5 optimum holds; finite-cap-beats-uncapped margin *widens* `+0.0069 -> +0.0103` |
+| `grid_adequacy.csv` | every tuned optimum and all four boundary flags unchanged |
+| `leakage_controls.csv` | every quoted value unchanged at reported precision |
+| `crypto_algorithms.csv` | divergence partition `10/10 . 3/10 . 0/10` unchanged |
+| `crypto_lr_sweep.csv` | two quoted lr=8 peaks moved (below) |
+| `lr_curves_*.csv` | all quoted figures survive at reported precision |
+| `windows_tracker.csv` | `0.14+-0.11`, `0.29`, the `0.11 -> 0.07` halving all unchanged |
+| `windows_replication*.csv` | two substantive changes (below) |
+| `rmsprop_adam_*.csv` | `rmsprop_adam_jane` and `schedule_control_jane` **bit-identical** |
+
+`windows_cm.csv`, `cm_normgd_equiv.csv` and the synthetic suite need no re-run — they exercise no
+tracker path.
+
+### Manuscript edits (12 numbers + 3 corrections)
+
+| site | old | new | source |
+|---|---|---|---|
+| `tab:jane` scale-adaptive per-row | `0.162+-.022` | `0.159+-.024` | `table1_errorbars.csv` |
+| `tab:jane` SN-OMD per-row SE | `0.285+-.079` | `0.285+-.080` | `baselines_jane.csv` |
+| `tab:jane` SN-OMD per-step | `0.309+-.056` | `0.307+-.059` | `baselines_jane.csv` |
+| §4 batching sentence | `0.285 -> 0.309` | `0.285 -> 0.307` | as above |
+| §4 halving sentence | `0.162 -> 0.080` | `0.159 -> 0.080` | as above |
+| `app:secondmarket` uncapped peak | `1.4e17` | `5.0e17` | `crypto_lr_sweep.csv` |
+| `app:secondmarket` SN-OMD peak | `6.5` | `6.6` | `crypto_lr_sweep.csv` |
+| `tab:replication` uncapped div | `6/10` | `7/10` | `windows_replication_summary.csv` |
+| §4 stability-partition sentence | `6/10` | `7/10` | as above |
+| `tab:replication` SN-OMD per-step | `0.13+-.14` | `0.12+-.15` | as above |
+| §E.10 multiple comparisons | "exactly one verdict" | "two verdicts" | `tracker_bootstrap.csv` |
+| §E.10 closing | "the one borderline result" | "the two borderline results" | as above |
+
+**The one changed conclusion.** Bonferroni at `alpha/14` (`t_9`=3.909) now flips *two* verdicts,
+not one. The scale-adaptive per-step gap still flips (`+0.106`, `[+0.005,+0.208]` ->
+`[-0.069,+0.281]`), and the per-step block-vs-EMA gap newly joins it: pre-fix it was `+0.0732`
+with uncorrected CI `[-0.000,+0.147]` — never significant, so it had no verdict to flip; post-fix
+it is `+0.0787`, `[+0.004,+0.154]`, significant uncorrected and inconclusive corrected. Verified
+against the pre-fix CSV recovered from `git show HEAD:`. Neither is load-bearing — the tracker
+claim the paper makes is the per-row one, where every gap survives correction unchanged (`+0.151`,
+`+0.113`, `+0.085`, `+0.093`, `+0.290`, and the CM tie `+0.004 [-0.028,+0.036]`).
+
+### FIXED — two Pass-III regressions in §E.13
+
+| # | Finding | Change |
+|---|---|---|
+| 13 | §E.13's head claimed the run used the "same window, protocols, **grids** and circular block bootstrap as `tab:jane`" — false, and self-contradicted 40 lines later. `LRS_ADAPTIVE=[1e-4..1]` and the sweep's `[1e-4..3]` are neither of them `tab:jane`'s `[0.02..8]`. | Now "same window, protocols and circular block bootstrap ...; learning-rate grids as noted below". |
+| 14 | The Pass-III caveat asserted the `0.247`/`0.285` gap was partly a code-path difference, without measuring it. | Now cites the measurement: grid effect `+0.038` against a total gap of `+0.038`. |
+
+Also repaired: a non-raw Python replacement string turned `\texttt` into a literal TAB, so the new
+citation rendered as `exttt{...}`. LaTeX compiled it silently — 0 errors, 0 undefined refs. Caught
+on re-read, not by the build. The file now contains zero tab characters.
+
+### Not disclosed in the paper, deliberately
+
+The correction needs no reproducibility note: the code now implements `alg:snomd` as written, so
+there is no gap between description and implementation left to declare.
+
+**Build after all edits: 8.878pp main text (unchanged), 28pp total, 0 undefined refs, 0 overfull
+>10pt, 77 tests pass.**
+
+### Pass IV addendum --- post-pass verification sweep
+
+Prompted by a challenge that matching a stored CSV proves internal consistency, not correctness.
+Every count and interval the manuscript states from a tracker-touching artifact was re-checked
+against the *regenerated* CSV, not against its predecessor.
+
+**Divergence counts.** All 18 `x/10` sites enumerated. The corrected `7/10` reaches both places
+it is stated --- `tab:replication` (`:523`) and the running prose of the ten-window paragraph in
+sec:experiments (`:479`). The crypto partition's `3/10` (`:404`, `:1394`) is a different dataset
+and unchanged (`crypto_algorithms.csv` bit-identical). OGD's `9/10` and the `0/10` rows are
+tracker-free and bit-identical.
+
+**The `6/10` coincidence.** `:487` and `:1586` state `6/10` for the block-median-vs-Cutkosky-Mehta
+paired win count --- same digits as the old divergence count, different quantity. It is *not*
+inert: the block-median arm is SN-OMD, so it routes through the corrected code. Re-checked
+against the regenerated `tracker_bootstrap.csv`: `+0.00422`, `t95 [-0.01417,+0.02262]`, `6/10`
+wins --- matches `$+0.004$, CI $[-0.014,+0.023]$, $6/10$` exactly. It survives because
+`blockmed_perrow` (`research_baselines.py:136`) was already predictable: it captures the
+*previous* block's median (`sc = blk`) before appending `||g_t||` to the buffer. Same reason every
+`block - X` row with a tracker-free `X` came back bit-identical.
+
+**Correction to the "2 intentional" label.** The Pass-IV sweep reported "2 intentional (both arms
+of the new decomposition script)". That was miscounted in both directions and is restated here:
+
+* Exactly **one** site normalizes by a post-update scale on purpose:
+  `research_predictability_check.py:76`, the `else` arm of the 2x2 --- the defect under
+  measurement. Its sibling at `:74` is not an exemption, it is simply correct.
+* A separate family of **three** estimators is deliberately *non-causal*, which is a stronger
+  violation than post-update and an entirely different thing: `crypto_mechanism.noncausal_ema`,
+  `review2_checks.centered_ema`, and `residual_surrogate`'s twin. All three are forward+backward
+  geometric means whose only purpose is to see the future; they are the paper's own "centered EMA
+  (non-causal twin)" control row (app:causality) and are labelled as such in every docstring.
+
+Every other winsorized-EMA site is predictable by construction, in one of two idioms: `s[i] = cur`
+recorded before `cur` is advanced (`make_paper_figures._ema`, `crypto_mechanism.causal_ema`,
+`review2_checks.causal_ema`, `second_domain.causal_ema`), or step-then-update in the vectorized
+scripts (`research_synthetic` both branches, `research_review3_checks:107`). No site claims an
+exemption from predictability while purporting to implement `alg:snomd`.
+
+`research_rmsprop_adam.py:161` is a fourth full winsorized-EMA implementation that was already
+correct at `2c817aa`; that is why `rmsprop_adam_jane.csv` and `schedule_control_jane.csv` are
+bit-identical while `rmsprop_adam_stability.csv`'s `snomd_peak` moved --- the latter calls
+`anchor_perrow`, which routes through the corrected `_step`.
+
+**Stale negative controls (SHOULD-FIX item 5, now closed).** `5.6e-4` and `18\%` appear nowhere in
+the document. `6.4 / 5.5\times10^{-4} / 16\%` appear in both sites that state them --- `:539`
+(sec:experiments) and `:1712` (the widened-grid appendix, the site that had not been confirmed
+checked). The five `6.6` hits are the unrelated two-timescale envelope constant
+`W_s\approx6.6 V_\sigma^+` (`:565`, `:870`, `:1308`, `:1547`) plus the crypto peak corrected in
+this pass (`:1401`). The control was never at risk regardless: `research_review3_checks.py`'s
+SN-OMD branch was already predictable.
+
+### FIXED --- one pre-existing rounding error found by the sweep
+
+| # | Finding | Change |
+|---|---|---|
+| 15 | app:tracker's closing paragraph gave the block median's margin over the remaining bounded baselines as `$+0.09$ to $+0.15$`. The floor is the fixed-tau gap, `+0.08489`, which rounds to `+0.08` --- and the same subsection states it as `$+0.085$` fourteen lines earlier, so the paragraph contradicted itself. Pre-existing, not a Pass-IV regression: the fixed-tau comparison is tracker-free and bit-identical across the correction. | `$+0.08$ to $+0.15$` |
+
+Every other figure in the Bonferroni paragraph re-derived from the regenerated CSV and confirmed:
+both flipped intervals, all six surviving per-row gaps, the per-step normalized-GD/CM margin, and
+the CM tie under correction.
+
+**Build after the addendum edit: 8.878pp main text (unchanged), 28pp total, 0 undefined refs,
+0 overfull >10pt.**
+
+| 16 | app:adaptive's closing sentence gave SN-OMD's deployed-schedule score as `$0.28$` (`tab:jane`'s lr=2 number) four lines below a table of the same quantity reading `$0.247$` from the common sweep, and rmk:scope already quotes `$0.25$` from that same sweep. Three statements of one quantity, one of them from a different grid. | `$0.25$`, matching both the table above it and rmk:scope |
+
+**Build after item 16: 8.878pp main text, 28pp total, 0 undefined refs, 0 overfull >10pt.**

@@ -48,10 +48,14 @@ def _step(mode, cap, w, g, s, k, lr, decay=0.99, winsor=8.0):
         return w - (lr / np.sqrt(k)) * g, s
     if mode == "normgd":
         return w - (lr / np.sqrt(k)) * (g / gn), s
-    # snomd / scale-adaptive (cap=inf recovers uncapped)
+    # snomd / scale-adaptive (cap=inf recovers uncapped). Algorithm 1 normalizes by the
+    # PREDICTABLE scale s_{t-1} -- F_{t-1}-measurable, i.e. built only from g_1..g_{t-1} --
+    # and folds ||g_t|| in only afterwards. The high-probability analysis needs exactly that
+    # measurability (Freedman), so the pre-update capture below is part of the algorithm,
+    # not an implementation detail. Matches OnlineScaleTracker.step in dfsl.preprocessing.
+    sc = max(s if s is not None else gn, 1e-8)
     s = gn if s is None else decay * s + (1 - decay) * min(gn, winsor * s)
-    s = max(s, 1e-8)
-    ghat = g / s
+    ghat = g / sc
     gnn = float(np.linalg.norm(ghat))
     if gnn > cap:
         ghat = ghat * (cap / gnn)

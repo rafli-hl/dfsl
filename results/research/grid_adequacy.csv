@@ -1,8 +1,8 @@
 protocol,method,axis,argmax,grid_lo,grid_hi,n_points,status,window1_r2
 per-row,OGD,lr,0.001,0.001,0.02,5,boundary,0.01844
 per-row,Normalized-GD,lr,3.0,0.02,8.0,10,interior,0.2205
-per-row,Scale-adaptive OGD,lr,0.5,0.02,8.0,10,interior,0.16195
-per-row,SN-OMD (M=5),lr,2.0,0.02,8.0,10,interior,0.28447
+per-row,Scale-adaptive OGD,lr,0.5,0.02,8.0,10,interior,0.15934
+per-row,SN-OMD (M=5),lr,2.0,0.02,8.0,10,interior,0.28456
 per-row,SN-OMD + block,lr,3.0,0.05,8.0,9,interior,0.40667
 per-row,fixed-tau clip,lr,0.2,0.02,8.0,10,interior,0.24634
 per-row,fixed-tau clip,tau,20.0,2.0,300.0,7,interior,0.24634
@@ -12,8 +12,8 @@ per-row,Cutkosky-Mehta,tau,600.0,5.0,600.0,6,boundary,0.36522
 per-row,Cutkosky-Mehta,beta,0.5,0.0,0.99,4,interior,0.36522
 per-step,OGD,lr,0.005,0.001,0.02,5,interior,0.1392
 per-step,Normalized-GD,lr,5.0,0.02,8.0,10,interior,0.3712
-per-step,Scale-adaptive OGD,lr,0.2,0.02,8.0,10,interior,0.08009
-per-step,SN-OMD (M=5),lr,2.0,0.02,8.0,10,interior,0.30912
+per-step,Scale-adaptive OGD,lr,0.2,0.02,8.0,10,interior,0.08042
+per-step,SN-OMD (M=5),lr,2.0,0.02,8.0,10,interior,0.30656
 per-step,SN-OMD + block,lr,2.0,0.05,8.0,9,interior,0.35112
 per-step,fixed-tau clip,lr,0.2,0.02,8.0,10,interior,0.38208
 per-step,fixed-tau clip,tau,20.0,2.0,300.0,7,interior,0.38208
@@ -21,16 +21,16 @@ per-step,AdaGrad-Norm,lr,1.0,0.003,5.0,8,interior,0.2189
 per-step,Cutkosky-Mehta,lr,5.0,0.02,8.0,9,interior,0.3712
 per-step,Cutkosky-Mehta,tau,300.0,5.0,600.0,6,interior,0.3712
 per-step,Cutkosky-Mehta,beta,0.0,0.0,0.99,4,boundary,0.3712
-per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.28581
-per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.31055
-per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.28447
-per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,-0.07606
-per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,-3.03292
-per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.34078
-per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.3379
-per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.30912
-per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.19691
-per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,-0.12285
+per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.2859
+per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.31076
+per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,0.28456
+per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,-0.08694
+per-row,SN-OMD (M=5) (M-sweep),M,3.0,2.0,20.0,5,interior,-3.04909
+per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.34035
+per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.33782
+per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.30656
+per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,0.18408
+per-step,SN-OMD (M=5) (M-sweep),M,2.0,2.0,20.0,5,boundary,-0.17445
 per-row,SN-OMD + block (M-sweep),M,10.0,2.0,20.0,5,interior,0.31319
 per-row,SN-OMD + block (M-sweep),M,10.0,2.0,20.0,5,interior,0.36136
 per-row,SN-OMD + block (M-sweep),M,10.0,2.0,20.0,5,interior,0.40667
