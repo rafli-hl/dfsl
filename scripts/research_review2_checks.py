@@ -1,6 +1,6 @@
 """Second-round reviewer checks (run off saved artifacts).
 
-Item 2  Does W_s / V_sigma^+ grow with the horizon? Theorem 3.3's simplification
+Item 2  Does W_s / V_sigma^+ grow with the horizon? Theorem D.2's simplification
         W_s = O(sup sigma) -> "drift enters as a constant, not a rate" is only true if
         the upward scale variation does not accumulate with T. Fit the growth exponent.
 

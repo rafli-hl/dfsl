@@ -1,9 +1,9 @@
 protocol,method,lr_star,r2,se,ci_lo,ci_hi
 per-row,OGD,0.002,0.018,0.0059,0.0065,0.0295
 per-row,Normalized-GD (M->0),2.0,0.197,0.0241,0.1497,0.2443
-per-row,Scale-adaptive OGD (M->inf),0.5,0.1619,0.0215,0.1199,0.204
-per-row,"SN-OMD (M=5, ours)",2.0,0.2845,0.0786,0.1304,0.4385
+per-row,Scale-adaptive OGD (M->inf),0.5,0.1593,0.0241,0.1121,0.2065
+per-row,"SN-OMD (M=5, ours)",2.0,0.2846,0.0795,0.1288,0.4403
 per-step,OGD,0.005,0.1392,0.012,0.1157,0.1627
 per-step,Normalized-GD (M->0),2.0,0.316,0.0206,0.2757,0.3563
-per-step,Scale-adaptive OGD (M->inf),0.2,0.0801,0.0129,0.0549,0.1053
-per-step,"SN-OMD (M=5, ours)",2.0,0.3091,0.0557,0.1999,0.4183
+per-step,Scale-adaptive OGD (M->inf),0.2,0.0804,0.0129,0.0551,0.1057
+per-step,"SN-OMD (M=5, ours)",2.0,0.3066,0.0585,0.1918,0.4213

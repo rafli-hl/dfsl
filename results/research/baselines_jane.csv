@@ -2,8 +2,8 @@ protocol,method,tune,r2,se,ci_lo,ci_hi
 per-row,fixed-tau clip,"tau=20.0,lr=0.2",0.2463,0.0461,0.156,0.3367
 per-row,AdaGrad-Norm,eta=3.0,0.3286,0.0299,0.2699,0.3872
 per-row,normalized-GD (anchor),lr=3.0,0.2205,0.037,0.148,0.2931
-per-row,SN-OMD M=5 (anchor),lr=2.0,0.2845,0.0786,0.1304,0.4385
+per-row,SN-OMD M=5 (anchor),lr=2.0,0.2846,0.0795,0.1288,0.4403
 per-step,fixed-tau clip,"tau=20.0,lr=0.2",0.3821,0.047,0.29,0.4742
 per-step,AdaGrad-Norm,eta=1.0,0.2189,0.0135,0.1924,0.2454
 per-step,normalized-GD (anchor),lr=5.0,0.3712,0.0768,0.2208,0.5217
-per-step,SN-OMD M=5 (anchor),lr=2.0,0.3091,0.0557,0.1999,0.4183
+per-step,SN-OMD M=5 (anchor),lr=2.0,0.3066,0.0585,0.1918,0.4213

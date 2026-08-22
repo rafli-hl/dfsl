@@ -1,0 +1,5 @@
+protocol,method,tune,r2,se,ci_lo,ci_hi,grid
+per-row,RMSProp,lr=0.01,0.444,0.0167,0.4113,0.4767,interior
+per-row,Adam,lr=0.003,0.509,0.0129,0.4838,0.5342,interior
+per-step,RMSProp,lr=0.01,0.4901,0.0175,0.4558,0.5244,interior
+per-step,Adam,lr=0.0001,0.009,0.0039,0.0013,0.0166,boundary

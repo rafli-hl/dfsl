@@ -66,9 +66,9 @@ def snomd_run_returnw(X, y, wts, lr, cap=5.0, decay=0.99, winsor=8.0):
         gn = float(np.linalg.norm(g))
         if not np.isfinite(gn) or gn == 0:
             continue
+        sc = max(s if s is not None else gn, 1e-8)   # predictable s_{t-1} (Alg. 1)
         s = gn if s is None else decay * s + (1 - decay) * min(gn, winsor * s)
-        s = max(s, 1e-8)
-        ghat = g / s
+        ghat = g / sc
         gnn = float(np.linalg.norm(ghat))
         if gnn > cap:
             ghat = ghat * (cap / gnn)

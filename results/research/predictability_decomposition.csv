@@ -1,0 +1,8 @@
+tracker,lr_star,r2,se,ci_lo,ci_hi,grid
+post-update,2,0.2845,0.0797,0.1283,0.4406,interior
+predictable,2,0.2846,0.0805,0.1267,0.4424,interior
+contrast,code path @ lr=2   (predictable - post-update),0.0001,0.0009,-0.0017,0.0018,inconclusive
+contrast,code path @ lr=1   (predictable - post-update),0.0009,0.0001,0.0007,0.0012,significant
+contrast,grid @ predictable (lr=2 - lr=1),0.0379,0.063,-0.0855,0.1613,inconclusive
+contrast,grid @ post-update (lr=2 - lr=1),0.0388,0.0621,-0.083,0.1605,inconclusive
+contrast,TOTAL reported gap (Table 1 - sweep),0.0378,0.0621,-0.0838,0.1594,inconclusive

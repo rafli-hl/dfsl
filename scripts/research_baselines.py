@@ -2,7 +2,7 @@
 SAME real stream and protocols with the SAME block-bootstrap error bars.
 
 fixed-tau clip  clip(g, tau) = g * min(1, tau/||g||), a CONSTANT scale-free threshold
-                (the paper's synthetic 'fixedclip', TAU=20). It satisfies Theorem 3.1
+                (the paper's synthetic 'fixedclip', TAU=20). It satisfies Proposition 3.1
                 (||ghat|| <= tau), so it should NOT diverge -- the honest question is
                 whether a single global tau can fit a ~6x-drifting gradient scale as well
                 as SN-OMD's tracked s_t. Tuned over (lr, tau).

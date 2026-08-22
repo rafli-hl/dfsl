@@ -84,11 +84,13 @@ class ScaleNormalizedOGD:
         gn = float(np.linalg.norm(g))
         if not np.isfinite(gn):
             return loss
+        # Algorithm 1: normalize by the PREDICTABLE s_{t-1}, fold ||g_t|| in afterwards.
         if self.s is None:
             self.s = max(gn, 1e-8)
+            s = self.s
         else:
+            s = max(self.s, 1e-8)
             self.s = self.beta * self.s + (1.0 - self.beta) * min(gn, self.winsor * self.s)
-        s = max(self.s, 1e-8)
         ghat = g / s
         gnn = float(np.linalg.norm(ghat))
         if gnn > self.cap:
