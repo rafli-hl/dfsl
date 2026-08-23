@@ -255,6 +255,69 @@ void from a second direction, independently of the criterion problem.
 
 ---
 
+## C-12 — Predictability's measured performance effect is a null, and is not in the manuscript
+
+**Status: SUPPORTED (committed artifact), NOT REPORTED in the paper.**
+
+`research_predictability_check.py` computes a predictable-vs-post-update contrast on the same
+rows with a paired circular block bootstrap:
+
+| contrast | value | 95% CI |
+|---|---|---|
+| code path @ lr=2 (predictable − post-update) | **+0.0001** | [−0.0017, +0.0018] |
+| code path @ lr=1 | +0.0009 | [+0.0007, +0.0012] |
+| grid @ predictable (lr=2 − lr=1) | +0.0379 | [−0.0855, +0.1613] |
+| TOTAL reported gap | +0.0378 | — |
+
+The manuscript cites this script **once** (§E.13, line 1832) and only for the grid effect:
+*"puts the grid effect at +0.038 against a total gap of +0.038."* A grep of `iclr2027.tex` for
+`predictability_check`, `measurability`, `post-update` and `code path` returns that line and
+nothing else.
+
+So measurability — the property distinguishing SN-OMD from normalized-GD, and the one the
+Freedman analysis exists to license — has a measured performance effect of **+0.0001 with a CI
+spanning zero**. §3 line 305 claims *"predictability of `s_t` buys a high-probability
+dynamic-regret guarantee"*, which is a theory claim and stands. The empirical companion — that
+it buys nothing measurable — is computed, committed, and absent. Under the charter a null on
+the paper's own distinguishing property is evidence to report, not omit.
+
+## C-13 — The variation-adaptive bound already exists; the open object is a switching bound
+
+**Status: SUPPORTED (D1/T1, `theory_notes.md`). The derivation attempt FAILED by its
+registered criteria and is recorded as such.**
+
+`thm:regret` already carries the tracker's upward variation `W_s = s_1 + Σ(s_t − s_{t−1})_+`
+and the scale-weighted path `P_T^s` as explicit inputs, and `W_s ≈ 6.6·V_σ⁺` is measured. So
+there is no `V_σ⁺`-adaptive bound left to derive — the problem is that `W_s` is measured to be
+`Θ(T)`. The paper says it: *"The drift is a genuine rate; the tracker controls only its
+constant."*
+
+The genuinely open object is the one `Remark D.3` names: a switching bound in the regime count.
+Target rate derived and both limits verified: `R_T = Õ(N^{1−1/p}·T^{1/p})`, recovering `T^{1/p}`
+at `N=1` and the vacuous `T` at `N=T`.
+
+**Obstruction, located and marked GAP:** naive segmentation fails because `η_t = η/√t` is global
+and never re-expands, so each regime pays the full horizon initialization `D²√T/(2η)`, giving
+`O(N√T)` — reintroducing the very `√T` the remark wants to escape. A strongly-adaptive wrapper
+would resolve it, with three identified sub-problems. **No theorem is asserted.**
+
+## C-14 — The `p ≤ 2` cap in `ass:moment` is the sharper framing of the theory tension
+
+**Status: SUPPORTED.**
+
+`ass:moment` requires `p_t ∈ (1,2]`. Measured Hill `α̂` is **2.43** raw and **≈3.73** causally
+normalized. A finite `α`-th moment implies the assumption at any `p ≤ α`, so the assumption is
+satisfiable — but only by taking `p = 2`, its ceiling, which is exactly where `Remark D.3`'s
+global `T^{1/p+1/2}` becomes the vacuous `T`.
+
+The measurement does not merely fail to help the theorem; **it pins it to its own worst case**,
+because the theory's parameter cannot exceed 2 while the data's index does. This is stronger
+and more precise than "the measurement empties the theorem", which overstates: at the measured
+indices the global exponent is `T^{0.91}` (raw) or `T^{0.77}` (normalized) — sublinear, not
+vacuous. Exponent arithmetic verified for `p ∈ {1.2, 1.5, 2.0, 2.43, 3.73}`.
+
+---
+
 ## Untouched this phase
 
 `UNTOUCHED` — not examined, status unchanged:

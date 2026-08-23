@@ -234,6 +234,35 @@ replacement I built contributes nothing.
 V1/V2/V3/V5 (C10C), V6 (C10C2) and V8 (here) were blind when run; V6 is a marginal pass on
 Jane (0.967 vs the inherited 1.000); amendment A1's 40000-row Jane cap applies throughout.
 
+## Session 9 — direction D1/T1, variation-adaptive dynamic regret (FAILED, registered)
+
+**Outcome: FAILURE against the registered success criteria** -- criterion (a), a complete
+written proof, is not met. Recorded in `theory_notes.md` with the obstruction located, and the
+theory contribution demoted rather than defended, per the registered failure path.
+
+**Two findings worth more than the attempt.**
+
+1. *The registered objective was already met.* `thm:regret` already carries `W_s` (tracker
+   upward variation, ~6.6 V_sigma+) and `P_T^s` as explicit inputs. There is no
+   variation-adaptive bound left to derive; the problem is that `W_s` is measured to be
+   `Theta(T)`. The open object is the switching bound `Remark D.3` names.
+2. *The `p <= 2` cap in `ass:moment` is the sharper framing.* Measured Hill alpha is 2.43 raw
+   and ~3.73 normalized, so the assumption is satisfiable only at `p = 2`, its ceiling -- which
+   is exactly the vacuous corner. The measurement pins the theorem to its worst case rather
+   than merely failing to help it. Ledger C-14.
+
+**Derived and verified:** target switching rate `N^(1-1/p) T^(1/p)`, both limits correct
+(`N=1` gives `T^(1/p)`, `N=T` gives the vacuous `T`), Holder tightness checked over 20000
+random splits. **Obstruction:** `eta_t = eta/sqrt(t)` is global and never re-expands, so each
+regime pays the full horizon initialization and naive segmentation gives `O(N sqrt(T))` --
+reintroducing the `sqrt(T)` the remark wants to escape. Needs a strongly-adaptive wrapper;
+three sub-problems identified; marked GAP; no theorem asserted.
+
+**Also settled this session:** the brief's D2 is CLOSED by ledger C-1 (the constant-scale
+advantage is a tuning artifact and reverses at matched budget), D3 is partly undercut by C10S,
+and D4 is not actionable. The section 2.3 check found a null on predictability that is absent
+from the manuscript -- ledger C-12.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak
