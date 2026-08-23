@@ -31,6 +31,7 @@ Two guard styles.
 from __future__ import annotations
 
 import hashlib
+import re
 import runpy
 import sys
 from pathlib import Path
@@ -145,6 +146,132 @@ def test_input_artifact_hash_pinned(path: Path, expected_sha: str, depends: str)
         f"{path.name} CHANGED (sha256 {actual} != pinned {expected_sha}). It feeds: {depends}. "
         f"Re-derive those numbers from the new file, then update the pinned hash in "
         f"INPUT_HASHES to bless the change."
+    )
+
+
+# ---------------------------------------------------------------------------
+# (3) Paper-claim cross-check: a number PRINTED IN THE PAPER must match the CSV
+#     it is sourced from.
+#
+# Why this guard exists, and why it is separate from the two above. The
+# regeneration guard catches "the CSV no longer matches its generator". It does
+# NOT catch "the paper quotes a number the CSV never said" -- which is the
+# failure the independent audit logged as Finding 3 (a bootstrap-SE sentence
+# sourced to a superseded run while the displayed table came from another), and
+# whose recommended remedy was exactly this test. It also does not catch a CSV
+# and its generator drifting *together*: when the predictable-scale defect was
+# fixed, generator and artifact moved in lockstep, so a regeneration diff would
+# have stayed green while twelve paper numbers went stale. Both failures are
+# caught here, because this compares the two things that must agree for the
+# paper to be true: the printed claim and the measurement behind it.
+#
+# It reads committed bytes only -- no Jane data, no regeneration -- so unlike
+# ARTIFACTS it is a real check in a data-less CI checkout.
+#
+# Each entry: (label, regex over the .tex, csv name, row selector, checks) where
+# every check is (regex group index, csv column, decimal places to compare at).
+# Regexes must be specific enough to match exactly once; the test asserts that.
+PAPER_TEX = PROJECT_ROOT / "paper" / "iclr2027" / "iclr2027.tex"
+
+_SE = r"\{\\scriptscriptstyle\\pm(\.\d+)\}"
+
+PAPER_CLAIMS = [
+    (
+        "tab:jane SN-OMD (both protocols)",
+        r"\\textbf\{SN-OMD \(\$M\{=\}5\$, ours\)\}\s*&\s*\$([\d.]+)" + _SE
+        + r"\$\s*&\s*\$([\d.]+)" + _SE + r"\$",
+        "baselines_jane.csv", {"method": "SN-OMD M=5 (anchor)"},
+        [(1, "per-row", "r2", 3), (2, "per-row", "se", 3),
+         (3, "per-step", "r2", 3), (4, "per-step", "se", 3)],
+    ),
+    (
+        "tab:jane normalized-GD (both protocols)",
+        r"Normalized-GD \(\$M\\!\\to\\!0\$\)\s*&\s*\$([\d.]+)" + _SE
+        + r"\$\s*&\s*\$([\d.]+)" + _SE + r"\$",
+        "baselines_jane.csv", {"method": "normalized-GD (anchor)"},
+        [(1, "per-row", "r2", 3), (2, "per-row", "se", 3),
+         (3, "per-step", "r2", 3), (4, "per-step", "se", 3)],
+    ),
+    (
+        "tab:jane scale-adaptive OGD (both protocols)",
+        r"Scale-adaptive OGD \(\$M\\!\\to\\!\\infty\$\)&\s*\$([\d.]+)" + _SE
+        + r"\$\s*&\s*\$([\d.]+)" + _SE + r"\$",
+        "table1_errorbars.csv", {"method": "Scale-adaptive OGD (M->inf)"},
+        [(1, "per-row", "r2", 3), (2, "per-row", "se", 3),
+         (3, "per-step", "r2", 3), (4, "per-step", "se", 3)],
+    ),
+    (
+        "tab:replication uncapped-endpoint divergence count",
+        r"Scale-adaptive OGD \(\$M\\!\\to\\!\\infty\$\)\s*&\s*---\s*&\s*\$(\d+)/10\$",
+        "windows_replication_summary.csv", {"method": "Scale-adaptive OGD"},
+        [(1, "per-row", "n_diverged", 0)],
+    ),
+    (
+        "sec:experiments prose: uncapped endpoint diverges N/10 per-row",
+        r"diverges on \$(\d+)/10\$ \(per-row\)",
+        "windows_replication_summary.csv", {"method": "Scale-adaptive OGD"},
+        [(1, "per-row", "n_diverged", 0)],
+    ),
+    (
+        "sec:experiments prose: plain OGD diverges N/10 per-step",
+        r"plain OGD's frozen rate diverges on \$(\d+)/10\$ \(per-step\)",
+        "windows_replication_summary.csv", {"method": "OGD"},
+        [(1, "per-step", "n_diverged", 0)],
+    ),
+    (
+        "app:tracker Bonferroni: per-step block-vs-EMA gap and uncorrected CI",
+        r"the gap over the EMA default,\s*\$\+([\d.]+)\$ \(\$\[\+([\d.]+),\+([\d.]+)\]\$",
+        "tracker_bootstrap.csv",
+        {"comparison": "block - EMA (SN-OMD default)", "window_set": "all 10 windows"},
+        [(1, "per-step", "mean_diff", 3), (2, "per-step", "t95_lo", 3),
+         (3, "per-step", "t95_hi", 3)],
+    ),
+]
+
+
+@pytest.mark.parametrize("label,pattern,csv_name,where,checks", PAPER_CLAIMS,
+                         ids=[c[0] for c in PAPER_CLAIMS])
+def test_paper_number_matches_its_csv(
+    label: str, pattern: str, csv_name: str, where: dict, checks: list,
+) -> None:
+    """A number printed in the paper must equal the CSV cell it is sourced from."""
+    assert PAPER_TEX.exists(), f"paper source missing: {PAPER_TEX}"
+    tex = PAPER_TEX.read_text(encoding="utf-8")
+
+    found = re.findall(pattern, tex)
+    assert len(found) == 1, (
+        f"{label}: expected the claim to appear exactly once in {PAPER_TEX.name}, "
+        f"found {len(found)}. The paper was reworded -- update the pattern in "
+        f"PAPER_CLAIMS so this guard keeps checking the real sentence."
+    )
+    groups = found[0] if isinstance(found[0], tuple) else (found[0],)
+
+    df = pl.read_csv(PROJECT_ROOT / "results" / "research" / csv_name)
+    mismatches = []
+    for gi, protocol, col, decimals in checks:
+        sel = df.filter(pl.col("protocol") == protocol)
+        for k, v in where.items():
+            sel = sel.filter(pl.col(k) == v)
+        assert sel.height == 1, (
+            f"{label}: selector {where} + protocol={protocol!r} matched {sel.height} "
+            f"rows in {csv_name}, expected 1"
+        )
+        printed = float(groups[gi - 1])
+        measured = float(sel[col][0])
+        # The printed figure must be A correct rounding of the measurement to the
+        # precision it is printed at. Half-way values (0.2205 at 3 d.p.) have two
+        # valid renderings, so the tolerance is inclusive of the tie -- this guard
+        # is for numbers that drifted, not for a house rounding style.
+        if abs(printed - measured) > 0.5 * 10 ** (-decimals) + 1e-9:
+            mismatches.append(
+                f"    {protocol} {col}: paper says {printed}, {csv_name} says "
+                f"{measured:.6g} (rounds to {round(measured, decimals)})"
+            )
+
+    assert not mismatches, (
+        f"{label}: the paper no longer matches its source CSV. Either the artifact was "
+        f"regenerated without updating the manuscript, or the manuscript was edited away "
+        f"from its measurement:\n" + "\n".join(mismatches)
     )
 
 

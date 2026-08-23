@@ -252,7 +252,8 @@ of the gradient-norm scale (an $\mathcal F_{t-1}$-measurable function of past gr
 norms) and takes a scale-invariant, constant-capped step
 (\cref{alg:snomd}). Writing $v_t=\gt/s_t$ and
 $\clip(v,M)=v\cdot\min\{1,M/\norm v\}$, the update is
-$w_{t+1}=\Pi_{\mathcal W}(w_t-\tfrac{\eta}{\sqrt t}\,\clip(v_t,M))$. The scale $s_t$
+$w_{t+1}=\Pi_{\mathcal W}(w_t-\tfrac{\eta}{\sqrt t}\,\clip(v_t,M))$---under the Euclidean
+regularizer used throughout, the mirror step is exactly this projected gradient step. The scale $s_t$
 can be any predictable robust tracker; we report three---a winsorized exponential moving
 average of $\norm{\gt}$ (a cheap reactive default), a two-timescale ``peak-hold'' envelope
 (the variant with a proven $W_s$ bound, analyzed below), and a block median (co-leading
@@ -700,7 +701,9 @@ responsibility for the content. This statement does not count toward the page li
 \appendix
 
 \section*{Software and Data}
-The accompanying anonymized code provides the \texttt{ScaleNormalizedOGD} learner, the scale trackers
+The accompanying anonymized code provides the \texttt{ScaleNormalizedOGD} learner---named for
+the projected-gradient form the mirror step takes under the Euclidean regularizer
+(\cref{sec:method}), so it implements \cref{alg:snomd} exactly---the scale trackers
 (winsorized EMA, two-timescale envelope, block median), the configs, and the scripts that
 reproduce every figure and number, including \cref{tab:residual}'s real-data rows
 (\texttt{research\_review2\_checks.py}) and its GARCH-surrogate rows
