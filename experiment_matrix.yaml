@@ -1417,3 +1417,61 @@ stopping_rule: >
   One pass at the derivation. If it fails, record the obstruction and stop -- do not iterate
   toward a weaker theorem that technically clears the bar, and do not weaken (a)-(d) after
   seeing where the derivation breaks.
+---
+# ===========================================================================
+# ELEVENTH REGISTRATION -- C12B (block-median at matched budget)
+# ===========================================================================
+direction: C12B
+parent_direction: C12
+branch: research/c10-q6
+kind: ARTIFACT_REGENERATION
+status: REGISTERED_BEFORE_EXECUTION
+
+why: >
+  C12 corrected the tuning-budget defect for the plain SN-OMD row of tab:replication but not
+  for its sibling row, SN-OMD + block-median tracker, which is the SAME method with a different
+  scale tracker and whose cap is likewise pinned (blockmed_perrow default cap=5.0, tuned over
+  lr alone: 9 configurations). Adopting C12 into the table without this would place the same
+  method at two different tuning budgets in adjacent rows -- reintroducing, between two rows,
+  precisely the defect C10/Q6 exists to correct.
+
+audit_of_the_published_table_budgets: >
+  Per-row configuration counts as published: OGD 5, Normalized-GD 10, Scale-adaptive 10,
+  fixed-tau clip 70, AdaGrad-Norm 8, Cutkosky-Mehta 216, SN-OMD (M=5) 10, SN-OMD+block-median 9.
+  Cutkosky-Mehta's 216 = lr(9) x tau(6) x beta(4) is LEGITIMATE under the registered principle:
+  cm_perrow(tau, beta, lr) genuinely has three free parameters, and searching all three is
+  correct treatment, not favouritism. No change is made to CM. The defect is confined to the
+  two SN-OMD rows, both of which had their cap frozen.
+
+change: >
+  Block-median SN-OMD is tuned over lr x M instead of lr alone. The lr grid is the tracker
+  script's own LRS (9 values), unchanged, so the cap is the ONLY thing that differs from the
+  published row -- exactly parallel to C12's single change to the plain SN-OMD row.
+  M_GRID = [0.5, 1, 2, 5, 10, 30, 100], reused verbatim from C10/Q6 and C12, giving 63
+  configurations. It contains 5.0, so the published configuration stays reachable and window-1
+  can only improve.
+  The block length B stays pinned (B=10000 per-row, Bg=818 per-step), because it is a
+  tracker-internal constant, the analogue of the winsorized EMA's decay and winsorization
+  which are also pinned for the plain SN-OMD row. Tuning it would be a different change and
+  would break the parallel.
+
+reported: >
+  Mean, std, min, max, divergence count over all ten windows in the published format; held-out
+  windows 2-10 separately; window-1 in-sample; selected (lr, M) with a grid-boundary check;
+  divergence under both the inherited _diverged and the accepted C-10 relative criterion.
+
+reproduction_gate: >
+  Re-running the published configuration (cap pinned at 5, lr grid unchanged) must reproduce
+  the published block-median row to 0.005 weighted R2, or the run reports a harness problem
+  rather than a result.
+
+surprises_named_in_advance:
+  - block-median selecting M at a grid edge, which would mean it has collapsed toward an
+    endpoint method rather than remaining a distinct tracker variant
+  - the divergence count changing from 0/10, which tuning a cap downward should not cause
+
+artifact_policy: >
+  Writes to results/research/c12b/ only. Nothing in results/research/ is overwritten, and
+  windows_replication*.csv remain the artifacts the manuscript cites.
+
+out_of_scope: no manuscript edit in this direction; the table adoption is a separate step
