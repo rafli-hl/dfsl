@@ -161,14 +161,40 @@ untested, C-9 strengthened, C-10 opened as a prerequisite.
 
 **Direction closed as registered** -- no fourth stream, and no uncontaminated one remains.
 
+## Session 6 — direction C10C, building the C-10 criterion (REJECTED on one test)
+
+**Deliverable.** `scripts/research_divergence.py` -- divergence measured against the best
+constant predictor on the same window, so no per-stream constant survives, with the rolling
+window a fraction of the stream rather than a fixed 2000 steps.
+
+**Registered verdict: REJECTED.** V1 reference sanity PASS (0/18 flagged; the inherited Jane
+rule flags 6/18), V2 blow-up recall PASS (20/20, 0 missed), V3 monotonicity PASS (12 rays, 0
+violations), V5 kappa robustness PASS, **V4 non-vacuity FAIL** (synthetic 0/60).
+
+**The evidence indicts V4, not the criterion.** On synthetic nothing capped diverges up to
+`P = 256` (`L_ratio` 0.999 to 1.152) while true blow-ups sit at `L_ratio` 2.75e103. V4 asked
+for both classes on every stream, which is a property of the stream and grid rather than of
+the instrument. Not patched in-session, per the registration.
+
+**Amendment A1** reduced Jane's row cap 150000 -> 40000 on cost grounds, registered before
+the re-run after a measured 8x overrun.
+
+**Fell out of it:** capped SN-OMD does not diverge on the synthetic stream at any `P` in the
+grid, so C-7's `P*` needs scale drift and is not a property of the algorithm alone (C-11).
+
+**Also fixed this session, outside the research line:** the anonymized-supplement exclusion
+`"paper/icml2026."` stopped matching when the ICML files moved into `paper/icml2026/`, so the
+exclusion failed open while the identity self-check still reported clean. Fixed, and pinned by
+`tests/test_anon_exclusions.py` (suite 84 -> 104, verified by mutation).
+
 ## What is now open
 
-1. **A stream-comparable divergence criterion.** (Ledger C-10.) This now BLOCKS C-7,
-   C-8 and C-9 alike. Absolute loss thresholds do not transfer (target scale and tail move
-   them) and iterate blow-up cannot fire for a capped method. Needs something scale-free --
-   loss relative to the best-constant predictor on the same stream, or to a reference run --
-   designed and validated before any threshold search. Until it exists, no cross-stream
-   threshold claim is possible, and C-8 stays untestable.
+1. **Re-validate the C-10 criterion under a corrected V4.** (Ledger C-10.) The candidate
+   exists and passes four of five acceptance tests; V4 must be respecified as non-vacuity
+   *conditional on a divergent configuration existing in the probe set*. That is a
+   registration change, so it needs a new registration rather than an edit to C10C's. Until
+   the criterion passes a corrected suite, no cross-stream threshold claim is possible and
+   C-8 stays untestable.
 2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
    capped normalized step and should imply a boundary; whether its constant reproduces
    `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not

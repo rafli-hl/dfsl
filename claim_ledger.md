@@ -171,14 +171,42 @@ across streams.
 
 ## C-10 — A stream-comparable divergence criterion is a prerequisite
 
-**Status: OPEN — blocks C-7, C-8 and C-9 alike.**
+**Status: OPEN — one step further along. A candidate exists and is NOT accepted.**
 
 Absolute loss thresholds do not transfer across streams (target scale and tail index both
-move them), and the state-based alternative cannot fire for a capped method. A usable
-criterion must be **scale-free and stream-comparable** -- for example loss relative to the
-best-constant predictor on the same stream, or to a reference run -- and must be designed
-and validated BEFORE any threshold search rather than inherited from a script written for
-a different question. Until this exists, no cross-stream threshold claim can be made.
+move them), and the state-based alternative cannot fire for a capped method.
+
+**Candidate built (C10C, `scripts/research_divergence.py`).** Everything is measured against
+the best constant predictor on the same window, so no per-stream constant survives:
+`diverged ⟺ L_model/L_ref ≥ 2 OR Ppeak_model/Ppeak_ref ≥ κ`, κ = 10, with the rolling window
+a *fraction* of the stream rather than a fixed 2000 steps.
+
+**Registered verdict: REJECTED** — V4 (non-vacuity) failed on synthetic. V1 reference sanity,
+V2 blow-up recall (20/20, 0 missed), V3 monotonicity and V5 κ-robustness all passed.
+
+**The evidence indicts V4, not the criterion.** On synthetic the capped grid genuinely
+contains nothing divergent up to `P = 256` (`L_ratio` 0.999→1.152, `max‖w‖` 160.6) while true
+blow-ups register at `L_ratio` 2.75e103 — a hundred orders of magnitude of separation. V4
+asked "both classes present on every stream", which is a property of the stream × grid, not
+of the instrument; on a stream where nothing diverges a correct criterion must return one
+class. That is a defect in a test I wrote, and the registered verdict stands regardless: the
+suite is not edited in the session that ran it.
+
+Next step is a NEW registration respecifying V4 as non-vacuity *conditional on a divergent
+configuration existing in the probe set*, then re-validating. Until the criterion passes a
+corrected suite, no cross-stream threshold claim can be made.
+
+---
+
+## C-11 — `P*` requires scale drift; it is not a property of the algorithm alone
+
+**Status: SUPPORTED (registered output of C10C).**
+
+Capped SN-OMD does not diverge at any `P ≤ 256` on the synthetic stream, while it does on
+Jane and crypto. The synthetic stream is stationary in scale with a static comparator; Jane
+and crypto have drifting gradient scale and a moving target. So whatever C-7's `P*` measures
+needs that drift, which the synthetic suite lacks by construction. This also explains C10T's
+void from a second direction, independently of the criterion problem.
 
 ---
 
