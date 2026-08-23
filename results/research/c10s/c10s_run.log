@@ -1,0 +1,129 @@
+================================================================================================
+C10S -- stability threshold: 6 rays x 7 evaluations x 10 windows x 2 protocols, rows<=150000
+================================================================================================
+
+[preloading 10 windows]
+  loaded in 16s
+
+########## PROTOCOL: per-row ##########
+  ray M=0.5  (lr = P/M)
+    M=0.5   P=  6.000 lr=  12.000  div=0/10  meanR2=+0.1162  stable
+    M=0.5   P= 24.000 lr=  48.000  div=10/10  meanR2=-2.7422  DIVERGENT
+    M=0.5   P= 12.000 lr=  24.000  div=7/10  meanR2=-0.4364  DIVERGENT
+    M=0.5   P=  8.485 lr=  16.971  div=0/10  meanR2=-0.0564  stable
+    M=0.5   P= 10.091 lr=  20.182  div=1/10  meanR2=-0.2076  DIVERGENT
+    M=0.5   P=  9.253 lr=  18.507  div=1/10  meanR2=-0.1232  DIVERGENT
+    M=0.5   P=  8.861 lr=  17.722  div=1/10  meanR2=-0.0877  DIVERGENT
+  ray M=1  (lr = P/M)
+    M=1     P=  6.000 lr=   6.000  div=0/10  meanR2=+0.1558  stable
+    M=1     P= 24.000 lr=  24.000  div=10/10  meanR2=-2.4086  DIVERGENT
+    M=1     P= 12.000 lr=  12.000  div=6/10  meanR2=-0.3261  DIVERGENT
+    M=1     P=  8.485 lr=   8.485  div=0/10  meanR2=+0.0061  stable
+    M=1     P= 10.091 lr=  10.091  div=1/10  meanR2=-0.1243  DIVERGENT
+    M=1     P=  9.253 lr=   9.253  div=1/10  meanR2=-0.0530  DIVERGENT
+    M=1     P=  8.861 lr=   8.861  div=0/10  meanR2=-0.0223  stable
+  ray M=2  (lr = P/M)
+    M=2     P=  6.000 lr=   3.000  div=0/10  meanR2=+0.2359  stable
+    M=2     P= 24.000 lr=  12.000  div=10/10  meanR2=-1.1654  DIVERGENT
+    M=2     P= 12.000 lr=   6.000  div=0/10  meanR2=+0.0134  stable
+    M=2     P= 16.971 lr=   8.485  div=7/10  meanR2=-0.3535  DIVERGENT
+    M=2     P= 14.270 lr=   7.135  div=3/10  meanR2=-0.1345  DIVERGENT
+    M=2     P= 13.086 lr=   6.543  div=1/10  meanR2=-0.0543  DIVERGENT
+    M=2     P= 12.531 lr=   6.266  div=0/10  meanR2=-0.0186  stable
+  ray M=4  (lr = P/M)
+    M=4     P=  6.000 lr=   1.500  div=0/10  meanR2=+0.2302  stable
+    M=4     P= 24.000 lr=   6.000  div=10/10  meanR2=-0.8191  DIVERGENT
+    M=4     P= 12.000 lr=   3.000  div=0/10  meanR2=+0.0688  stable
+    M=4     P= 16.971 lr=   4.243  div=4/10  meanR2=-0.2128  DIVERGENT
+    M=4     P= 14.270 lr=   3.568  div=0/10  meanR2=-0.0436  stable
+    M=4     P= 15.562 lr=   3.891  div=2/10  meanR2=-0.1197  DIVERGENT
+    M=4     P= 14.902 lr=   3.726  div=2/10  meanR2=-0.0799  DIVERGENT
+  ray M=8  (lr = P/M)
+    M=8     P=  6.000 lr=   0.750  div=0/10  meanR2=+0.1658  stable
+    M=8     P= 24.000 lr=   3.000  div=10/10  meanR2=-0.7970  DIVERGENT
+    M=8     P= 12.000 lr=   1.500  div=0/10  meanR2=+0.0200  stable
+    M=8     P= 16.971 lr=   2.121  div=5/10  meanR2=-0.2585  DIVERGENT
+    M=8     P= 14.270 lr=   1.784  div=1/10  meanR2=-0.0941  DIVERGENT
+    M=8     P= 13.086 lr=   1.636  div=0/10  meanR2=-0.0252  stable
+    M=8     P= 13.665 lr=   1.708  div=1/10  meanR2=-0.0616  DIVERGENT
+  ray M=16  (lr = P/M)
+    M=16    P=  6.000 lr=   0.375  div=0/10  meanR2=+0.0697  stable
+    M=16    P= 24.000 lr=   1.500  div=10/10  meanR2=-1.3197  DIVERGENT
+    M=16    P= 12.000 lr=   0.750  div=1/10  meanR2=-0.1437  DIVERGENT
+    M=16    P=  8.485 lr=   0.530  div=0/10  meanR2=+0.0155  stable
+    M=16    P= 10.091 lr=   0.631  div=0/10  meanR2=-0.0455  stable
+    M=16    P= 11.004 lr=   0.688  div=0/10  meanR2=-0.0887  stable
+    M=16    P= 11.491 lr=   0.718  div=0/10  meanR2=-0.1153  stable
+
+  --- per-row rays ---
+    M=0.5   P* = 8.671   bracket [8.485, 8.861]   (max stable 8.485, min divergent 8.861)
+    M=1     P* = 9.055   bracket [8.861, 9.253]   (max stable 8.861, min divergent 9.253)
+    M=2     P* = 12.806   bracket [12.531, 13.086]   (max stable 12.531, min divergent 13.086)
+    M=4     P* = 14.583   bracket [14.270, 14.902]   (max stable 14.270, min divergent 14.902)
+    M=8     P* = 13.373   bracket [13.086, 13.665]   (max stable 13.086, min divergent 13.665)
+    M=16    P* = 11.743   bracket [11.491, 12.000]   (max stable 11.491, min divergent 12.000)
+
+  P*_hat (geometric mean over 6 usable rays) = 11.491
+  per-ray range [8.671, 14.583]   spread = 1.6818
+  REGISTERED VERDICT (primary, per-row): H4 INCONCLUSIVE (1.25 < spread < 2.00)
+
+########## PROTOCOL: per-step ##########
+  ray M=0.5  (lr = P/M)
+    M=0.5   P=  6.000 lr=  12.000  div=0/10  meanR2=-0.0242  stable
+    M=0.5   P= 24.000 lr=  48.000  div=10/10  meanR2=-7.4138  DIVERGENT
+    M=0.5   P= 12.000 lr=  24.000  div=9/10  meanR2=-1.4624  DIVERGENT
+    M=0.5   P=  8.485 lr=  16.971  div=4/10  meanR2=-0.4947  DIVERGENT
+    M=0.5   P=  7.135 lr=  14.270  div=0/10  meanR2=-0.2155  stable
+    M=0.5   P=  7.781 lr=  15.562  div=4/10  meanR2=-0.3416  DIVERGENT
+    M=0.5   P=  7.451 lr=  14.902  div=2/10  meanR2=-0.2765  DIVERGENT
+  ray M=1  (lr = P/M)
+    M=1     P=  6.000 lr=   6.000  div=0/10  meanR2=+0.0567  stable
+    M=1     P= 24.000 lr=  24.000  div=10/10  meanR2=-6.0650  DIVERGENT
+    M=1     P= 12.000 lr=  12.000  div=9/10  meanR2=-1.1028  DIVERGENT
+    M=1     P=  8.485 lr=   8.485  div=2/10  meanR2=-0.3224  DIVERGENT
+    M=1     P=  7.135 lr=   7.135  div=0/10  meanR2=-0.0993  stable
+    M=1     P=  7.781 lr=   7.781  div=2/10  meanR2=-0.2000  DIVERGENT
+    M=1     P=  7.451 lr=   7.451  div=1/10  meanR2=-0.1465  DIVERGENT
+  ray M=2  (lr = P/M)
+    M=2     P=  6.000 lr=   3.000  div=0/10  meanR2=+0.1746  stable
+    M=2     P= 24.000 lr=  12.000  div=10/10  meanR2=-3.8529  DIVERGENT
+    M=2     P= 12.000 lr=   6.000  div=6/10  meanR2=-0.5604  DIVERGENT
+    M=2     P=  8.485 lr=   4.243  div=1/10  meanR2=-0.0421  DIVERGENT
+    M=2     P=  7.135 lr=   3.568  div=0/10  meanR2=+0.0888  stable
+    M=2     P=  7.781 lr=   3.891  div=0/10  meanR2=+0.0294  stable
+    M=2     P=  8.126 lr=   4.063  div=0/10  meanR2=-0.0047  stable
+  ray M=4  (lr = P/M)
+    M=4     P=  6.000 lr=   1.500  div=0/10  meanR2=+0.2413  stable
+    M=4     P= 24.000 lr=   6.000  div=10/10  meanR2=-2.5170  DIVERGENT
+    M=4     P= 12.000 lr=   3.000  div=2/10  meanR2=-0.1777  DIVERGENT
+    M=4     P=  8.485 lr=   2.121  div=0/10  meanR2=+0.1493  stable
+    M=4     P= 10.091 lr=   2.523  div=1/10  meanR2=+0.0362  DIVERGENT
+    M=4     P=  9.253 lr=   2.313  div=0/10  meanR2=+0.1021  stable
+    M=4     P=  9.663 lr=   2.416  div=1/10  meanR2=+0.0744  DIVERGENT
+  ray M=8  (lr = P/M)
+    M=8     P=  6.000 lr=   0.750  div=0/10  meanR2=+0.2123  stable
+    M=8     P= 24.000 lr=   3.000  div=7/10  meanR2=-1.0218  DIVERGENT
+    M=8     P= 12.000 lr=   1.500  div=0/10  meanR2=+0.1619  stable
+    M=8     P= 16.971 lr=   2.121  div=1/10  meanR2=-0.1330  DIVERGENT
+    M=8     P= 14.270 lr=   1.784  div=1/10  meanR2=+0.0661  DIVERGENT
+    M=8     P= 13.086 lr=   1.636  div=1/10  meanR2=+0.1176  DIVERGENT
+    M=8     P= 12.531 lr=   1.566  div=1/10  meanR2=+0.1407  DIVERGENT
+  ray M=16  (lr = P/M)
+    M=16    P=  6.000 lr=   0.375  div=0/10  meanR2=+0.1466  stable
+    M=16    P= 24.000 lr=   1.500  div=1/10  meanR2=-0.0732  DIVERGENT
+    M=16    P= 12.000 lr=   0.750  div=0/10  meanR2=+0.2019  stable
+    M=16    P= 16.971 lr=   1.061  div=0/10  meanR2=+0.1530  stable
+    M=16    P= 20.182 lr=   1.261  div=1/10  meanR2=+0.0690  DIVERGENT
+    M=16    P= 18.507 lr=   1.157  div=1/10  meanR2=+0.1157  DIVERGENT
+    M=16    P= 17.722 lr=   1.108  div=1/10  meanR2=+0.1344  DIVERGENT
+
+  --- per-step rays ---
+    M=0.5   P* = 7.291   bracket [7.135, 7.451]   (max stable 7.135, min divergent 7.451)
+    M=1     P* = 7.291   bracket [7.135, 7.451]   (max stable 7.135, min divergent 7.451)
+    M=2     P* = 8.303   bracket [8.126, 8.485]   (max stable 8.126, min divergent 8.485)
+    M=4     P* = 9.456   bracket [9.253, 9.663]   (max stable 9.253, min divergent 9.663)
+    M=8     P* = 12.263   bracket [12.000, 12.531]   (max stable 12.000, min divergent 12.531)
+    M=16    P* = 17.342   bracket [16.971, 17.722]   (max stable 16.971, min divergent 17.722)
+
+  P*_hat (geometric mean over 6 usable rays) = 9.803
+  per-ray range [7.291, 17.342]   spread = 2.3784

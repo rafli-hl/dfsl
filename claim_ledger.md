@@ -73,25 +73,51 @@ defect found is in comparison design, not arithmetic.
 - **Product sufficiency (`P = lr·M`) is inconclusive for performance**: `eta2_P = 0.578`
   per-row against a registered survival threshold of 0.80.
 
-## C-7 — `P = lr·M` is a stability threshold
+## C-7 — `P = lr·M` locates a stability transition band
 
-**Status: EXPLORATORY — not preregistered, requires independent confirmation.**
+**Status: PARTIALLY SUPPORTED — the threshold is located; sufficiency is not established,
+and the original "perfect separation" wording is retired.**
 
-On the C10M grid, per-row divergence separates perfectly on the effective maximum step:
-20/20 configurations with `P ≤ 8` are stable, 10/10 with `P ≥ 16` diverge (per-step:
-1/5 at `P=8`, 3/4 at `P=16`). The true threshold lies in `(8, 16]`, unresolved.
+Originally logged from C10M as perfect separation (20/20 stable at `P ≤ 8`, 10/10 divergent
+at `P ≥ 16`). Tested in direction C10S (`results/research/c10s/r_c10s_summary.md`) on new
+configurations, along six rays holding `M` fixed with `lr = P/M`.
 
-If it holds, it reframes the cap as a stability parameter rather than an accuracy control,
-and explains the published setting's fragility as proximity to the boundary (`P = 10`,
-optimum near `P = 2–4`, cliff at `P ≈ 16`). No divergence hypothesis was registered, so
-this is an observation generated from the data, not a result. It is the leading successor
-question and connects directly to `thm:stability`.
+**Registered verdict: H4 INCONCLUSIVE.** Per-row spread across rays = 1.682 against a
+survival band of ≤1.25; per-step = 2.378, which would be falsified. Both guards clean:
+0 censored, 0 non-monotone, 6/6 rays usable, brackets resolved to a factor of 1.044.
 
-**Trap recorded.** The registered *secondary* statistic `eta2_P` computed over all 30
-configurations with R² floored at −1 is 0.9873 and would read as overwhelming support for
-product sufficiency. It is an artifact of `P` predicting divergence: floored divergent
-configurations align by `P` by construction. The non-diverged figure (0.578) is the one
-that speaks to performance.
+**Located:** `P*_hat = 11.49` per-row (geometric mean), per-ray range [8.67, 14.58], at
+150 000 rows per window. Per-step `P*_hat = 9.80`, range [7.29, 17.34].
+
+**What is genuinely supported.** `P` compresses a **32×** variation in `M` and a **23.6×**
+variation in the critical rate `lr*` into a **1.68×** variation in `P*`. The design made
+that hard: at fixed `P` the `M=0.5` ray clips ~57% of steps and `M=16` clips ~0.1%. `P` is
+far better than either factor alone, but misses the registered sufficiency tolerance.
+
+**What is retired.** The boundary is a **transition band, not a cliff**. The any-window
+criterion marks where the first of ten windows fails; the median-window threshold sits
+1.3–1.7× higher. C10M sampled `P` at factor-2 spacing — the width of the band — so it could
+not resolve the gradient and separation looked perfect. Post hoc.
+
+**Dominant threat.** The any-window criterion is an extreme-value statistic (minimum over
+ten windows), so each `P*` is set by the single most fragile window. This is the likeliest
+explanation of the per-row non-monotonicity (`P*` peaks at `M=4`, falls at `M=8, 16`), which
+no mechanism predicts. The 1.044 bracket is search resolution, **not** a confidence
+interval.
+
+**Trap recorded** (carried from C10M and still standing). The registered secondary statistic
+`eta2_P` over all 30 C10M configurations with R² floored at −1 is 0.9873 and would read as
+overwhelming support for product sufficiency. It is an artifact of `P` predicting
+divergence: floored divergent configurations align by `P` by construction.
+
+## C-8 — Does the *realized* maximum step explain C-7's residual?
+
+**Status: OPEN — post-hoc proposal, untested.**
+
+`P = lr·M` is the *nominal* maximum step, attained only when the clip binds, which for large
+`M` is rare. The realized maximum `lr·min(r_max, M)` would predict exactly the per-step
+pattern of `P*` rising with `M` (7.29 → 17.34 across `M = 0.5 → 16`). Generated from the
+C10S residual, so it must be tested on data that did not produce it.
 
 ---
 

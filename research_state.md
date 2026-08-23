@@ -71,22 +71,60 @@ stable at `P <= 8`, 10/10 divergent at `P >= 16`. See ledger C-7.
 **Instrumentation gate passed bit-exactly** (worst diff 0.00e+00), so the binding
 statistics describe the algorithm the rest of the repository measures.
 
+## Session 3 — direction C10S, locating the stability threshold (complete)
+
+**Question.** Is divergence governed by `P = lr*M` alone, and where exactly is the
+threshold?
+
+**Result: H4 INCONCLUSIVE.** Per-row spread across rays = 1.682 against a survival band of
+<= 1.25; per-step = 2.378, which would be falsified. Both registered guards clean in both
+protocols: 0 censored rays, 0 non-monotone rays, 6/6 usable, brackets resolved to a factor
+of 1.044. Write-up: `results/research/c10s/r_c10s_summary.md`. Ledger: C-7 updated,
+C-8 added.
+
+**Located.** `P*_hat = 11.49` per-row (range [8.67, 14.58]); `9.80` per-step (range
+[7.29, 17.34]), at 150 000 rows per window.
+
+**The substantive finding, stronger than the verdict.** `P` compresses a 32x variation in
+`M` and a 23.6x variation in the critical rate into a 1.68x variation in `P*`. The design
+was built to make that hard -- at fixed `P` the `M=0.5` ray clips ~57% of steps and `M=16`
+clips ~0.1%. `P` is far better than either factor alone while still missing the registered
+sufficiency tolerance.
+
+**C-7 partly retired.** The boundary is a transition band, not a cliff: the any-window
+criterion marks where the first of ten windows fails, and the median-window threshold sits
+1.3-1.7x higher. C10M sampled `P` at factor-2 spacing -- the width of the band -- so the
+separation looked perfect at that resolution. Post hoc.
+
+**Dominant threat, recorded.** The any-window criterion is an extreme-value statistic
+(minimum over ten windows), so each `P*` is set by the single most fragile window. It was
+inherited unchanged for comparability with C-7, which is a design cost accepted rather than
+a discovery. The 1.044 bracket is search resolution, not a confidence interval.
+
 ## What is now open
 
-1. **Is `P = lr*M` the stability threshold it appears to be, and where is it exactly?**
-   The leading successor question. Sharp, registrable, and it connects to `thm:stability`,
-   which should imply a `P` boundary if the theory describes the implementation. The
-   observed bracket `(8, 16]` is unresolved on a dyadic grid.
-2. **The mechanism of accuracy among stable configurations remains unexplained.** No
-   registered scalar summarized the surface; `eta2_P = 0.578` leaves most between-config
-   variance unaccounted for.
-3. **Rolling-origin selection.** Every transfer claim here rests on one selection window.
+1. **Does the *realized* maximum step `lr*min(r_max, M)` explain C-7's residual?**
+   (Ledger C-8.) `P` is the nominal maximum, attained only when the clip binds, which for
+   large `M` is rare. The realized maximum predicts exactly the per-step pattern of `P*`
+   rising with `M`. Post-hoc proposal from the C10S residual, so it must be tested on data
+   that did not generate it.
+2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
+   capped normalized step and should imply a boundary; whether its constant reproduces
+   `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not
+   attempted.
+3. **Re-locate the boundary under a non-extreme-value criterion.** The any-window rule makes
+   `P*` a minimum over ten windows. A median-window or per-window-survival analysis would
+   be more robust and is cheap given the recorded divergent-window fractions.
+4. **The mechanism of accuracy among stable configurations remains unexplained.** No
+   registered scalar summarized the C10M surface; `eta2_P = 0.578` leaves most
+   between-configuration variance unaccounted for.
+5. **Rolling-origin selection.** Every transfer claim here rests on one selection window.
    Whether the ordering survives a different choice of selection window is untested and is
    the single most load-bearing threat to the result.
-4. **Per-step grid adequacy.** The matched per-step arm selected at two grid edges
+6. **Per-step grid adequacy.** The matched per-step arm selected at two grid edges
    (`lr=8.0`, `M=0.5`); its optimum is unresolved. A widened per-step grid would be a
    separate, explicitly post-hoc run.
-5. **Re-run the full ten-window table at matched budget.** Only three arms were re-run.
+7. **Re-run the full ten-window table at matched budget.** Only three arms were re-run.
    Normalized-GD, AdaGrad-Norm, OGD and the uncapped endpoint were not, and their
    published tuning budgets have not been audited.
 
