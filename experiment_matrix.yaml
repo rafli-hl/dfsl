@@ -1327,3 +1327,93 @@ stopping_rule: one pass over the registered grids; no adaptive extension
 compute_budget:
   runs: ~466  # 346 tuning + 120 evaluation, across both protocols
   estimated_wallclock: ~10 minutes; may exceed the 600s foreground cap
+---
+# ===========================================================================
+# TENTH REGISTRATION -- direction D1/T1 (variation-adaptive dynamic regret)
+# ===========================================================================
+direction: D1_T1
+name: variation-adaptive dynamic regret
+branch: research/c10-q6
+registered_at_commit: 0aa50c1
+status: REGISTERED_BEFORE_EXECUTION
+kind: THEORY
+
+# ---------------------------------------------------------------------------
+why_this_direction: >
+  D1 is the brief's top-ranked direction and the one the proposed reframe is gated on. Two of
+  the alternatives are already substantially answered by completed Phase-2 work and would be
+  re-running settled questions:
+  D2 (C10) is CLOSED. Its own falsification condition -- "if the constant-scale advantage
+  vanishes once the tracker is properly tuned across regimes, it is a tuning artifact" -- is
+  what happened. At matched budget (70 joint (lr x M) configurations against the baseline's
+  70 over (lr x tau)) the ordering REVERSES: held-out per-row SN-OMD 0.2270 vs fixed-tau
+  0.2020, SN-OMD winning 9/9 held-out windows. See ledger C-1.
+  D3 (T4) is partly undercut by the same body of work. C10S found the divergence boundary is
+  governed, to within a factor of 1.68 across rays spanning 32x in M, by the effective maximum
+  step P = lr*M -- a rate-schedule quantity. That is close to D3's own falsification
+  condition, "if scale-dependent clipping can be made stable ... by a rate schedule alone, the
+  partition is about tuning, not structure". D3 is not dead, but it can no longer be attacked
+  without first accounting for P.
+  D4 is not actionable: no r1_* artifact exists in this repository. D5 is cheap but low value.
+
+# ---------------------------------------------------------------------------
+step_0_premise_check: >
+  The whole reframe rests on one empirical claim: that the causally normalized gradient has
+  tail index above 2, which is what empties Theorem 3.2 in the regime the paper measures.
+  Verify it from committed artifacts before any derivation, and report the number whatever it
+  is. If the normalized tail index is NOT above 2, the premise of both the brief's section 2.2
+  and this direction is wrong, and that is reported instead of proceeding.
+
+objective: >
+  A dynamic-regret bound for SN-OMD whose nonstationarity cost is explicit and MEASURABLE on
+  the real scale process -- in the scale path variation V_sigma = sum_t |s_t - s_{t-1}|, or a
+  regime count N -- rather than in T.
+
+the_structural_observation_to_exploit: >
+  The capped normalized gradient satisfies ||clip(g_t/s_{t-1}, M)|| <= M DETERMINISTICALLY.
+  The heavy-tail moment assumption is therefore not needed to control the update at all; it is
+  needed only to control the SCALE process. Appendix C already says as much -- "after scale
+  normalization the tail the learner actually sees has p ~ 2 ... the super-sqrt(T) growth of
+  the pooled budget largely evaporates" -- and the paper then keeps a T^{1/p} bound anyway.
+  The target is to carry that observation through: run the standard bounded-gradient dynamic
+  regret argument in NORMALIZED units, where everything is bounded by M, and let the scale
+  process re-enter only when converting back to loss units.
+
+success_criteria: >
+  ALL of the following, or it is not a success:
+  (a) a stated theorem with a COMPLETE proof written out, not a sketch;
+  (b) sublinear in T at p = 2, where the current bound is vacuous;
+  (c) every quantity in the rate is measurable on the real scale process -- V_sigma and P_T
+      are, an unobservable regime count is not;
+  (d) it reduces to the known bound in the stationary-scale special case, as a sanity check.
+
+failure_criteria_and_commitment: >
+  If the bound still collapses to T^{1/p+1/2}, or requires an assumption that makes the
+  nonstationarity term unmeasurable, the attempt FAILED. The obstruction is recorded in
+  theory_notes.md with the precise step where it arises, and the theory contribution is
+  demoted rather than defended. Per the brief's decision rule, failure means Structure C
+  (measurement-first) and Theorem 3.2 moves to a supporting role.
+
+anti_fabrication_commitment: >
+  THE BINDING CONSTRAINT ON THIS DIRECTION. No theorem is asserted without a proof I have
+  actually written out and checked line by line. If I reach only a proof sketch, it is
+  labelled a sketch and does NOT count as success under (a). The manuscript already carries
+  one sketched assumption which section E.8 honestly calls "a sketch, not a theorem"; adding a
+  second dressed as a theorem would be the worst outcome available in this phase -- worse than
+  reporting failure, because it would be an unfalsifiable claim in a document whose main
+  virtue is that it does not make them. Any step I cannot justify is marked GAP in the write-up
+  and the result is reported as incomplete.
+
+deliverable:
+  - theory_notes.md -- the derivation, complete with any GAP markers, and the obstruction if it fails
+  - ledger and state updates
+  - NO manuscript edit; the brief puts prose, section order and the abstract out of scope
+
+out_of_scope: >
+  Manuscript prose, abstract, title, figures, section ordering, page budget. No empirical
+  result is removed, no control dropped, no tie softened into an equivalence.
+
+stopping_rule: >
+  One pass at the derivation. If it fails, record the obstruction and stop -- do not iterate
+  toward a weaker theorem that technically clears the bar, and do not weaken (a)-(d) after
+  seeing where the derivation breaks.
