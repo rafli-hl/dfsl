@@ -179,3 +179,168 @@ out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No method is deleted, no control is removed, no
   statistical language is weakened. Prior artifacts are preserved: this run writes to new
   filenames under results/research/c10/ and overwrites nothing.
+---
+# ===========================================================================
+# SECOND PREREGISTRATION -- direction C10M (mechanism probe), 2026-08-23
+# ===========================================================================
+direction: C10M
+parent_direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: cb6b17c
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  THIS HYPOTHESIS WAS GENERATED AFTER SEEING THE C10/Q6 RESULT. It is preregistered
+  before its own execution, but it is not independent of the data that motivated it: the
+  observation that the budget-matched winner (lr=3, M=2) uses a TIGHTER cap at a HIGHER
+  rate than the published setting (lr=2, M=5) came from the C10 run. Nothing here can be
+  treated as independent confirmation of C10. It is a new question about mechanism, asked
+  of the same data.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  The cap M enters the update only through step magnitude
+  (lr/sqrt(k)) * min(r_t, M), where r_t = norm(g_t)/s_{t-1} is the gradient norm in units
+  of the predictable tracked scale. The clip BINDS when r_t > M. Two readings of why the
+  matched configuration transfers across windows and the published one does not:
+  (a) EFFECTIVE MAX STEP -- the cap's only role is to bound the step at lr*M/sqrt(k), so
+      performance depends on (lr, M) only through the product P = lr*M. Published P = 10,
+      matched P = 6: the matched setting truncates harder while moving faster on ordinary
+      steps.
+  (b) BINDING FREQUENCY -- what matters is how often the clip binds, i.e. what fraction of
+      steps are routed through the scale-free branch (magnitude exactly lr*M/sqrt(k),
+      immune to tracker error) rather than the scale-normalized branch (magnitude
+      lr*r_t/sqrt(k), which inherits the tracker's estimation error).
+  These are different mechanisms and they make different predictions.
+
+why_existing_evidence_is_insufficient: >
+  C10 evaluated exactly one (lr, M) configuration per arm on held-out windows. It
+  establishes that the matched configuration transfers better; it says nothing about which
+  property of that configuration is responsible, because a single point cannot separate
+  P = lr*M from the binding rate, from lr alone, or from M alone. No clip-binding
+  statistic has ever been recorded by any script in this repository.
+
+# ---------------------------------------------------------------------------
+hypothesis_H2: >
+  PRODUCT SUFFICIENCY. Held-out mean R2 is a function of the effective maximum step
+  P = lr*M alone; conditional on P, the individual values of lr and M do not matter.
+
+hypothesis_H3: >
+  BINDING-RATE MEDIATION. The clip-binding rate b (fraction of steps with r_t > M) is a
+  better single-scalar summary of held-out performance than P is.
+
+null_H0: >
+  Neither P nor b summarizes the surface: held-out performance depends on lr and M
+  separately and no single scalar of the registered candidates dominates.
+
+estimand:
+  primary: >
+    eta2_P = fraction of between-configuration variance in held-out mean R2 explained by
+    exact iso-P grouping (P = lr*M), computed on the dyadic grid where P has exact ties.
+  secondary:
+    - "rho2 = squared Spearman correlation between held-out mean R2 and each candidate
+      scalar summary (log P, binding rate b, log lr, log M). The best mediator is the
+      candidate with the largest rho2."
+    - per-window and per-configuration binding rate b, and quantiles of r_t
+      (p50, p90, p99, max), recorded for every configuration and window.
+    - mean and maximum per-step displacement norm.
+    - the same statistics for the two anchor configurations (published lr=2,M=5 and
+      matched lr=3,M=2), which are evaluated alongside the grid but excluded from the
+      variance analysis because they are not on it.
+
+practical_significance_threshold:
+  H2_survives: eta2_P >= 0.80
+  H2_falsified: eta2_P <= 0.50
+  H2_inconclusive: 0.50 < eta2_P < 0.80
+  H3_survives: rho2_b - rho2_logP >= 0.05
+  H3_falsified: rho2_b - rho2_logP <= -0.05
+  H3_inconclusive: absolute difference < 0.05 -- the two are not distinguishable here
+  rationale: >
+    eta2_P is the natural sufficiency statistic: if P were fully sufficient it would
+    explain all reproducible between-configuration variance. 0.80 leaves room for
+    measurement noise across nine windows; below 0.50 the product plainly is not the
+    controlling quantity. The H3 margin of 0.05 in rho2 is set so that a difference
+    smaller than typical sampling noise on 30 configurations is not called a winner.
+
+falsification_condition: >
+  H2 is FALSIFIED if eta2_P <= 0.50, i.e. configurations sharing an effective maximum step
+  perform substantially differently -- the cap then does something beyond bounding the
+  step. H3 is FALSIFIED if rho2_b is at least 0.05 BELOW rho2_logP, i.e. binding frequency
+  is the worse summary. Both may be falsified simultaneously; that outcome supports H0 and
+  will be reported as "no registered scalar explains the surface".
+
+# ---------------------------------------------------------------------------
+design:
+  experimental_unit: one (configuration, window) pair; held-out windows 2-10, n=9
+  no_selection_step: >
+    Every configuration is evaluated directly on every window. Nothing is tuned here, so
+    there is no selection-overfitting concern -- and equally, NO CONFIGURATION FOUND HERE
+    MAY BE REPORTED AS A RECOMMENDED SETTING, because choosing it would be selection on
+    evaluation data. This run maps a surface; it does not pick a point on it.
+  grids:
+    LR_DYADIC: [0.5, 1.0, 2.0, 4.0, 8.0]
+    M_DYADIC: [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+    anchors: [{lr: 2.0, M: 5.0, label: published}, {lr: 3.0, M: 2.0, label: matched}]
+  grid_justification: >
+    Dyadic so that P = lr*M takes exact repeated values along anti-diagonals, giving iso-P
+    groups with exact ties. Without exact ties eta2_P would require binning, and the bin
+    width would become a researcher degree of freedom.
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+  divergence_handling: >
+    Primary analysis uses configurations that do not diverge on any window, by the
+    inherited _diverged definition; the excluded count is reported. Secondary analysis
+    includes all configurations with held-out R2 floored at -1.0. Both are reported; the
+    primary is the non-diverged subset.
+
+instrumentation_validity_gate: >
+  The binding statistics require an instrumented copy of the snomd update. Before any
+  result is computed, the instrumented runner must reproduce the shared harness
+  (research_batched_check._step via anchor_perrow/anchor_batched) to within 1e-9 weighted
+  R2 on at least four (lr, M) configurations in both protocols. If it does not, HALT and
+  report an instrumentation failure. An instrumented reimplementation that silently
+  differs from the measured algorithm would invalidate every number in this run.
+
+analysis_plan:
+  - Validate the instrumented runner against the shared harness (gate above).
+  - Evaluate the dyadic grid and both anchors on all ten windows, both protocols,
+    recording R2 plus binding rate, r_t quantiles, and displacement statistics.
+  - Compute eta2_P by exact iso-P grouping on held-out mean R2; report the registered
+    H2 verdict.
+  - Compute rho2 for log P, b, log lr, log M; report the registered H3 verdict and the
+    ranking of all four.
+  - Report the anchors' binding rates and r_t quantiles descriptively, separately from
+    the variance analysis.
+
+seed_policy: >
+  Deterministic given (data slice, lr, M) -- no seeds. No bootstrap is registered for this
+  probe; uncertainty is reported as the across-window spread of per-window statistics.
+
+stopping_rule: >
+  A single pass over the registered grid and anchors. No adaptive extension. If the
+  surface's optimum sits on a grid edge, that is reported as grid inadequacy and NOT
+  followed by a widened re-run within this session.
+
+compute_budget:
+  configurations: 32   # 30 dyadic + 2 anchors
+  runs: 640            # 32 configs x 10 windows x 2 protocols
+  measured_cost_per_run: ~2.0s per-row instrumented, ~0.4s per-step, ~0.8s per window load
+  estimated_wallclock: ~20 minutes, single process, foreground
+
+decisions_that_follow:
+  if_H2_survives: >
+    The cap is redundant with the learning rate up to their product; the method has one
+    effective hyperparameter, not two, and the paper's framing of M as interpolating
+    between normalized-GD and scale-adaptive OGD needs re-examination on that basis.
+  if_H3_survives: >
+    Binding frequency is the controlling quantity, which supports the reading that the
+    tracked scale helps only insofar as the clip routes steps around its estimation error.
+    That is a mechanism the paper does not currently state.
+  if_both_falsified: >
+    Report that no registered scalar summarizes the surface, and that the (lr, M)
+    interaction is genuinely two-dimensional. Register the mechanism as unexplained.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. Prior
+  artifacts preserved: this run writes only to results/research/c10m/.
