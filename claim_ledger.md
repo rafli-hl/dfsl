@@ -89,10 +89,15 @@ survival band of ≤1.25; per-step = 2.378, which would be falsified. Both guard
 **Located:** `P*_hat = 11.49` per-row (geometric mean), per-ray range [8.67, 14.58], at
 150 000 rows per window. Per-step `P*_hat = 9.80`, range [7.29, 17.34].
 
-**AMENDED 2026-08-23 by C10R (held-out crypto).** The 1.68x tightness is **Jane-specific**.
+**AMENDED TWICE.** (a) By C10R (held-out crypto): the 1.68x tightness is **Jane-specific**.
 On BTC/USDT the same eight-ray procedure gives `spread_P = 5.75` against `spread_lr = 22.26`.
 `P` stays far better than the rate alone on both streams, but its tightness does not
 replicate, and 1.68x must not be quoted as a general property.
+(b) By C10T: what `P*` locates is a **loss-degradation** threshold, NOT a stability
+boundary. `thm:stability` bounds `||w_T|| <= 2*lr*M*sqrt(T)`, so a finite cap makes iterate
+divergence impossible; the iterates were bounded at every point on every grid, including
+the ones labelled divergent (measured `max||w||` = 59.11 at `P=128`, against a 1e8
+threshold). The word "stability" in this entry should be read as "loss stays bounded".
 
 **What is genuinely supported.** `P` compresses a **32×** variation in `M` and a **23.6×**
 variation in the critical rate `lr*` into a **1.68×** variation in `P*`. The design made
@@ -137,9 +142,12 @@ generate the hypothesis — `P*` rises monotonically with `M` across all eight r
 spread falls 5.75 → 2.49 (ratio 0.433); even `p90` gives 0.730. Both would have survived.
 This is post hoc and self-fitted, so it is suggestive, not a test.
 
-**C-8 is not refuted and not supported.** A clean test needs a **third** stream, with `q`
-fitted on Jane per-step and frozen, and a divergence criterion chosen on stability grounds.
-Re-testing on crypto is no longer possible: the answer there has been seen.
+**CLOSED AS UNTESTED (C10T, 2026-08-23).** The third-stream test on the synthetic suite
+came back **VOID**: all 48 ray x criterion x tail combinations censored, the state-based
+criterion right-censoring everything and Jane's `_diverged` left-censoring everything. Both
+failures are properties of the criteria, not of C-8 (see C-10). No uncontaminated stream
+remains, so the direction closes as registered. C-8 is neither refuted nor supported and
+cannot be tested until C-10 is resolved.
 
 ## C-9 — The divergence criterion dominates the threshold
 
@@ -153,6 +161,24 @@ eight rays resolve cleanly with thresholds 6.60 → 37.95.
 Any threshold reported anywhere in this line of work is a statement about a specific
 `_diverged` definition, not about divergence. The inherited criteria were calibrated for
 different questions and are not interchangeable.
+
+**STRENGTHENED by C10T.** It is not merely that criteria disagree. On a Student-t(1.5)
+stream Jane's rule fires on the **zero predictor** (peak rolling loss 34 627 against a
+threshold of 50, because the target has infinite variance), while crypto's rule never fired
+even at `P = 128`. And the obvious principled alternative -- iterate blow-up -- is vacuous
+for this algorithm family by construction. No criterion in this repository is comparable
+across streams.
+
+## C-10 — A stream-comparable divergence criterion is a prerequisite
+
+**Status: OPEN — blocks C-7, C-8 and C-9 alike.**
+
+Absolute loss thresholds do not transfer across streams (target scale and tail index both
+move them), and the state-based alternative cannot fire for a capped method. A usable
+criterion must be **scale-free and stream-comparable** -- for example loss relative to the
+best-constant predictor on the same stream, or to a reference run -- and must be designed
+and validated BEFORE any threshold search rather than inherited from a script written for
+a different question. Until this exists, no cross-stream threshold claim can be made.
 
 ---
 

@@ -129,13 +129,46 @@ ledger C-9.
 1.68x on Jane but 5.75x on crypto, against `spread_lr` of 23.6x and 22.3x. The compression
 relative to the rate alone replicates; the tightness does not. C-7 amended accordingly.
 
+## Session 5 — direction C10T, the clean test of C-8 on the synthetic suite (VOID)
+
+**Question.** Does the realized maximum step beat the nominal one on a stream that played no
+part in generating C-8?
+
+**Result: H6 VOID, H7 VOID.** All 48 ray x criterion x tail-index combinations censored, in
+OPPOSITE directions: the state-based criterion right-censored everything (nothing diverges
+even at `P = 128`), Jane's `_diverged` left-censored everything (everything diverges even at
+`P = 0.5`). Write-up: `results/research/c10t/r_c10t_summary.md`.
+
+**The streams were fine.** The registered sanity expectation held exactly: reference `r_p99`
+= 14.760 / 11.663 / 8.020 for tails 1.3 / 1.5 / 2.0. Instrumentation gate passed bit-exactly.
+Both failures are properties of the criteria.
+
+**Why the primary cannot fire -- provable without data, and I should have derived it before
+registering.** For a finite cap, `||w_T|| <= sum (lr/sqrt(k))*M <= 2*P*sqrt(T)` = 36 204 at the
+top of the bracket, against a registered threshold of 1e8; measured `max||w||` was 59.11. My
+justification -- that the criterion "refers to the quantity thm:stability bounds" -- was
+backwards: BECAUSE the theorem bounds it, it cannot discriminate.
+
+**Why the secondary fires everywhere.** On Student-t(1.5) the target has infinite variance
+(sample var ~3499), so peak rolling loss is ~34 600 for any learner -- including the ZERO
+predictor -- against an absolute threshold of 50 calibrated to Jane's standardized targets.
+
+**The finding that outlives the failure.** "Divergence" is not well defined across streams in
+this repository. Iterate divergence is impossible for capped SN-OMD, so every divergence
+measured in this line of work is a LOSS phenomenon, not instability -- C-7's `P*` is a
+loss-degradation threshold, not a stability boundary. Ledger: C-7 amended (b), C-8 closed as
+untested, C-9 strengthened, C-10 opened as a prerequisite.
+
+**Direction closed as registered** -- no fourth stream, and no uncontaminated one remains.
+
 ## What is now open
 
-1. **A clean test of C-8 on a THIRD stream.** (Ledger C-8.) Jane generated the
-   hypothesis and crypto's answer has now been seen, so neither can test it. The synthetic
-   suite is the obvious candidate -- data-free and reviewer-reproducible. Requirements:
-   `q` fitted on Jane *per-step* and frozen, and a divergence criterion chosen on stability
-   grounds rather than inherited (see C-9).
+1. **A stream-comparable divergence criterion.** (Ledger C-10.) This now BLOCKS C-7,
+   C-8 and C-9 alike. Absolute loss thresholds do not transfer (target scale and tail move
+   them) and iterate blow-up cannot fire for a capped method. Needs something scale-free --
+   loss relative to the best-constant predictor on the same stream, or to a reference run --
+   designed and validated before any threshold search. Until it exists, no cross-stream
+   threshold claim is possible, and C-8 stays untestable.
 2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
    capped normalized step and should imply a boundary; whether its constant reproduces
    `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not

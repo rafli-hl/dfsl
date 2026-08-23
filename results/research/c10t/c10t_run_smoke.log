@@ -1,0 +1,33 @@
+================================================================================================
+C10T -- clean test of C-8 on synthetic streams (q frozen = p99)
+tails [1.5], 3 independent streams, T=3000, d=5, 3 rays, bracket [0.5, 128.0]
+================================================================================================
+
+================================================================================================
+INSTRUMENTATION VALIDITY GATE (vs anchor_perrow / _step)
+================================================================================================
+  lr=0.5  M=0.5   instrumented=+0.0142015696 harness=+0.0142015696 diff=0.00e+00
+  lr=2    M=2     instrumented=+0.0135034788 harness=+0.0135034788 diff=0.00e+00
+  lr=3    M=5     instrumented=+0.0108424742 harness=+0.0108424742 diff=0.00e+00
+  lr=8    M=16    instrumented=-0.0176706931 harness=-0.0176706931 diff=0.00e+00
+  GATE PASSED (worst diff 0.00e+00 <= 1e-09)
+
+########## TAIL INDEX p = 1.5 ##########
+    reference (lr=0.5, M=8) stable; r-quantiles: p50=0.511  p90=2.318  p99=11.965  max=541.601
+
+  --- p=1.5  primary: state-based max||w||>1e8 ---
+    M=0.5    RIGHT_CENSORED -- excluded
+    M=4      RIGHT_CENSORED -- excluded
+    M=32     RIGHT_CENSORED -- excluded
+    SPREAD VOID (censored=3, usable=0)
+
+  --- p=1.5  secondary: Jane _diverged ---
+    M=0.5    LEFT_CENSORED -- excluded
+    M=4      LEFT_CENSORED -- excluded
+    M=32     LEFT_CENSORED -- excluded
+    SPREAD VOID (censored=3, usable=0)
+
+================================================================================================
+REGISTERED SANITY EXPECTATION AND H7
+================================================================================================
+  reference r_p99 by tail: p=1.5:11.965
