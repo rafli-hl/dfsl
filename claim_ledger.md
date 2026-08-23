@@ -89,6 +89,11 @@ survival band of ≤1.25; per-step = 2.378, which would be falsified. Both guard
 **Located:** `P*_hat = 11.49` per-row (geometric mean), per-ray range [8.67, 14.58], at
 150 000 rows per window. Per-step `P*_hat = 9.80`, range [7.29, 17.34].
 
+**AMENDED 2026-08-23 by C10R (held-out crypto).** The 1.68x tightness is **Jane-specific**.
+On BTC/USDT the same eight-ray procedure gives `spread_P = 5.75` against `spread_lr = 22.26`.
+`P` stays far better than the rate alone on both streams, but its tightness does not
+replicate, and 1.68x must not be quoted as a general property.
+
 **What is genuinely supported.** `P` compresses a **32×** variation in `M` and a **23.6×**
 variation in the critical rate `lr*` into a **1.68×** variation in `P*`. The design made
 that hard: at fixed `P` the `M=0.5` ray clips ~57% of steps and `M=16` clips ~0.1%. `P` is
@@ -112,12 +117,42 @@ divergence: floored divergent configurations align by `P` by construction.
 
 ## C-8 — Does the *realized* maximum step explain C-7's residual?
 
-**Status: OPEN — post-hoc proposal, untested.**
+**Status: still OPEN and explicitly UNTESTED. The registered test (C10R) was vacuous.**
 
 `P = lr·M` is the *nominal* maximum step, attained only when the clip binds, which for large
-`M` is rare. The realized maximum `lr·min(r_max, M)` would predict exactly the per-step
-pattern of `P*` rising with `M` (7.29 → 17.34 across `M = 0.5 → 16`). Generated from the
-C10S residual, so it must be tested on data that did not produce it.
+`M` is rare. The realized maximum `lr·min(r_q, M)` predicts `P*` rising with `M`.
+
+**Registered verdict was H5 FALSIFIED at `ratio = 1.0000` — and that number is an identity,
+not evidence.** Stage 1 selected `q* = max`, and Jane's `r_max = 49.93` exceeds every `M` on
+the grid, so `min(r_max, M) = M` and `R ≡ P` identically. The ratio was 1.0000 before any
+held-out data was touched.
+
+**Cause: a registration error of mine.** C-8 came from the Jane *per-step* residual; I
+registered the stage-1 fit on *per-row*, where the residual is non-monotone and no quantile
+can help. A per-step fit would have chosen `q = p99` (spread 2.378 → 1.561, ratio 0.656).
+
+**Post-hoc held-out evidence points the other way.** On crypto — a stream that did not
+generate the hypothesis — `P*` rises monotonically with `M` across all eight rays spanning
+128x in `M` (6.60 → 37.95), exactly C-8's prediction. With crypto's own `r_p99 = 7.033` the
+spread falls 5.75 → 2.49 (ratio 0.433); even `p90` gives 0.730. Both would have survived.
+This is post hoc and self-fitted, so it is suggestive, not a test.
+
+**C-8 is not refuted and not supported.** A clean test needs a **third** stream, with `q`
+fitted on Jane per-step and frozen, and a divergence criterion chosen on stability grounds.
+Re-testing on crypto is no longer possible: the answer there has been seen.
+
+## C-9 — The divergence criterion dominates the threshold
+
+**Status: SUPPORTED (registered output of C10R).**
+
+C10R registered two criteria in advance. Under crypto's native rule (peak > 1e3, adopted
+unchanged from prior work) **all eight rays are right-censored** — nothing diverges even at
+`P = 128`, and the registered rule voids the statistic. Under Jane's `_diverged` the same
+eight rays resolve cleanly with thresholds 6.60 → 37.95.
+
+Any threshold reported anywhere in this line of work is a statement about a specific
+`_diverged` definition, not about divergence. The inherited criteria were calibrated for
+different questions and are not interchangeable.
 
 ---
 

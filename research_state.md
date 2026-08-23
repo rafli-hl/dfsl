@@ -101,13 +101,41 @@ separation looked perfect at that resolution. Post hoc.
 inherited unchanged for comparability with C-7, which is a design cost accepted rather than
 a discovery. The 1.044 bracket is search resolution, not a confidence interval.
 
+## Session 4 — direction C10R, testing C-8 on held-out data (complete, but vacuous)
+
+**Question.** Does the realized maximum step `lr*min(r_q, M)` locate the divergence boundary
+better than the nominal `P = lr*M`, on a stream that did not generate the hypothesis?
+
+**Registered verdict: H5 FALSIFIED at ratio = 1.0000 -- and the number is an identity, not
+evidence.** Stage 1 chose `q* = max`; Jane's `r_max = 49.93` exceeds every `M` on the grid,
+so `min(r_max, M) = M` and `R` equals `P` identically. The ratio was fixed before any
+held-out data was touched. Write-up: `results/research/c10r/r_c10r_summary.md`.
+
+**Cause: my registration error.** C-8 came from the Jane *per-step* residual; I registered
+the stage-1 fit on *per-row*, where the residual is non-monotone and no quantile can help.
+A per-step fit would have chosen `q = p99` (ratio 0.656, inside the survival band).
+
+**The held-out data favours C-8, post hoc.** On crypto, `P*` rises monotonically with `M`
+across all eight rays spanning 128x in `M` (6.60 -> 37.95). With crypto's own `r_p99` the
+spread falls 5.75 -> 2.49 (ratio 0.433). Self-fitted, so suggestive rather than a test.
+Having seen it, I cannot repair the test on crypto; a third stream is required.
+
+**Registered primary criterion voided.** Crypto's native rule (peak > 1e3, adopted unchanged
+to avoid choosing a threshold after seeing results) right-censors all eight rays -- nothing
+diverges even at `P = 128`. Everything reported rests on the registered secondary. See
+ledger C-9.
+
+**A registered finding that stands.** `P`'s tightness is stream-dependent: `spread_P` is
+1.68x on Jane but 5.75x on crypto, against `spread_lr` of 23.6x and 22.3x. The compression
+relative to the rate alone replicates; the tightness does not. C-7 amended accordingly.
+
 ## What is now open
 
-1. **Does the *realized* maximum step `lr*min(r_max, M)` explain C-7's residual?**
-   (Ledger C-8.) `P` is the nominal maximum, attained only when the clip binds, which for
-   large `M` is rare. The realized maximum predicts exactly the per-step pattern of `P*`
-   rising with `M`. Post-hoc proposal from the C10S residual, so it must be tested on data
-   that did not generate it.
+1. **A clean test of C-8 on a THIRD stream.** (Ledger C-8.) Jane generated the
+   hypothesis and crypto's answer has now been seen, so neither can test it. The synthetic
+   suite is the obvious candidate -- data-free and reviewer-reproducible. Requirements:
+   `q` fitted on Jane *per-step* and frozen, and a divergence criterion chosen on stability
+   grounds rather than inherited (see C-9).
 2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
    capped normalized step and should imply a boundary; whether its constant reproduces
    `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not
