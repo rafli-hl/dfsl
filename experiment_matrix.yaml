@@ -1,0 +1,181 @@
+# Preregistration -- DFSL Phase 2, research execution
+#
+# NOTE ON GOVERNING DOCUMENTS: RESEARCH_CHARTER.md, research_state.md,
+# claim_ledger.md and results/research/r1_*.md are ABSENT from this repository, and
+# `git log --all` shows they have never been committed to it. This preregistration is
+# therefore written against the field list enumerated in the Phase-2 brief section 3,
+# which is the operative spec available. Section 1 of the brief (verify-or-discard
+# inherited R1 claims) is moot: no r1_* artifact exists. Direction R1c is consequently
+# not actionable and was excluded from consideration.
+
+direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: e66768d
+status: REGISTERED_BEFORE_EXECUTION
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  On the ten-window frozen-hyperparameter Jane benchmark, a CONSTANT scale
+  (fixed-tau clip, per-row mean weighted R2 0.2064) outperforms the PREDICTABLE
+  TRACKED scale the method is built on (SN-OMD M=5, 0.1398). Is that advantage a
+  property of the scale process, or an artifact of an unequal hyperparameter
+  tuning budget?
+
+why_existing_evidence_is_insufficient: >
+  Three reasons, established by reading the generator
+  (scripts/research_windows_replication.py) rather than the stored CSV.
+  (1) BUDGET ASYMMETRY. _grid() gives fixed-tau clip a joint 2-D grid over
+  (lr x tau) = 10 x 7 = 70 configurations on window 1, and gives SN-OMD a 1-D grid over
+  lr alone = 10 configurations, with the cap M pinned at 5. The pinned value came from a
+  separate sweep (results/research/jane_msweep.csv) run at a single fixed lr=0.5, never
+  jointly with the lr actually used here. This is a fairness defect in the baseline's
+  favour: a hyperparameter of the proposal is left at a default while the baseline's
+  structural analogue is tuned.
+  (2) THE TWO METHODS ARE THE SAME ALGORITHM. Read off research_baselines.py and
+  research_batched_check._step, the update magnitude is
+  fixed-tau clip = (lr/sqrt(k)) * min(norm(g_t), tau), and
+  SN-OMD cap M   = (lr/sqrt(k)) * min(norm(g_t)/s_t, M).
+  So SN-OMD with a CONSTANT scale s_t = s0 and cap M is algebraically identical to
+  fixed-tau clip with tau = M*s0 and lr' = lr/s0. The family differs in exactly one
+  place: whether the clip threshold is constant or tracks a predictable scale. That
+  makes the comparison meaningful only at matched budget over (lr, threshold).
+  (3) SELECTION WINDOW IS POOLED INTO THE REPORTED MEAN. The published protocol tunes on
+  window 1 and then reports the mean over all ten windows including window 1. Per-row,
+  SN-OMD WINS window 1 (0.2846 vs 0.2463) and loses all nine held-out windows
+  (0.1237 vs 0.2020) -- a selection-overfitting signature the pooled mean hides.
+
+# ---------------------------------------------------------------------------
+hypothesis_H1: >
+  The constant-scale advantage on held-out windows is substantially an artifact of the
+  unequal tuning budget. Giving SN-OMD a joint (lr x M) grid of the same cardinality (70)
+  that fixed-tau clip receives over (lr x tau) closes at least half of the held-out gap.
+
+null_H0: >
+  Budget equalization leaves the held-out gap essentially unchanged: the constant scale
+  beats the tracked scale for reasons other than tuning budget.
+
+estimand:
+  primary: >
+    delta_matched = mean over held-out windows w=2..10 of
+    [ R2(fixed-tau clip, w) - R2(SN-OMD joint-tuned over (lr,M), w) ],
+    per-row protocol, hyperparameters frozen from window 1.
+  reference: >
+    delta_published = the same quantity with SN-OMD tuned as published (lr only, M=5),
+    MEASURED IN THIS RUN rather than read from the stored CSV.
+  derived: fraction_closed = (delta_published - delta_matched) / delta_published
+  secondary:
+    - per-step protocol, same quantities
+    - count of held-out windows on which fixed-tau clip beats each SN-OMD arm
+    - window-1 (in-sample) R2 per arm, reported separately, never pooled into the primary
+    - selected (lr, M) and (lr, tau), with an explicit grid-boundary check
+
+practical_significance_threshold:
+  H1_survives: fraction_closed >= 0.50
+  H1_falsified: fraction_closed <= 0.25
+  inconclusive: 0.25 < fraction_closed < 0.50
+  rationale: >
+    A budget artifact that explains less than a quarter of the gap does not account for
+    the phenomenon. One that explains more than half means the published comparison
+    cannot support a claim about scale processes at all. The middle band is reported as
+    inconclusive, not rounded to whichever verdict is more convenient.
+
+falsification_condition: >
+  H1 is FALSIFIED if fraction_closed <= 0.25, i.e. fixed-tau clip still beats the
+  budget-matched SN-OMD by more than three quarters of the currently reported held-out
+  gap. That outcome establishes the constant-scale advantage as robust to tuning budget
+  and is a direct problem for the premise the method is built on. It will be reported as
+  such, not reframed.
+
+# ---------------------------------------------------------------------------
+design:
+  experimental_unit: one time window (n=9 held-out; window 1 reserved for selection)
+  pairing: paired by window -- all arms see identical rows in identical order
+  selection_split:
+    selection: window 1 = date[0,120)
+    evaluation: windows 2-10, disjoint 120-day windows with 30-day gaps
+  note_on_published_protocol: >
+    The published protocol reports the mean over all ten windows, including the selection
+    window. Both are reported here; the held-out mean is primary.
+
+  arms:
+    - id: A1_fixedtau_2d
+      method: fixed-tau clip
+      grid: lr in LRS_SF (10) x tau in TAUS (7) = 70
+      role: baseline, reproduces published tuning exactly
+    - id: A2_snomd_1d_published
+      method: SN-OMD, cap pinned M=5
+      grid: lr in LRS_SF (10) = 10
+      role: reproduces published proposal tuning exactly
+    - id: A3_snomd_2d_matched
+      method: SN-OMD, cap tuned
+      grid: lr in LRS_SF (10) x M in M_GRID (7) = 70
+      role: budget-matched proposal -- the intervention
+
+  grids:
+    LRS_SF: [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
+    TAUS: [2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 300.0]
+    M_GRID: [0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 100.0]
+  m_grid_justification: >
+    Spans the published msweep support {0.5,1,2,5,10,30} and extends to 100 so the
+    uncapped limit is approached from inside the grid. Cardinality is set equal to
+    len(TAUS) so the two arms receive identical configuration counts, which is the point.
+
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+  selection_criterion: highest window-1 weighted R2, identical rule for every arm
+
+# ---------------------------------------------------------------------------
+analysis_plan:
+  - Reproduce A1 and A2 and compare against results/research/windows_replication.csv.
+  - Report delta_published, delta_matched, fraction_closed, and the registered verdict.
+  - Paired analysis over the 9 held-out windows - mean paired difference, standard error,
+    percentile bootstrap CI over windows (10000 resamples, seed 20260823), and an exact
+    two-sided sign test. n=9 is small and the CI will be wide; this is stated, not hidden.
+  - Report window-1 in-sample R2 separately for every arm.
+  - Grid-boundary check on every selected hyperparameter.
+
+reproduction_gate: >
+  If the reproduced A1 or A2 held-out mean differs from the stored CSV by more than 0.005
+  weighted R2, HALT and report a reproduction failure instead of proceeding. Matching a
+  stored artifact proves internal consistency, not correctness
+  (audit/ICLR2027_SUMMARY.md, "Methodological note"); failing to match proves something
+  is wrong and must not be worked around.
+
+seed_policy: >
+  Every algorithm here is deterministic given (data slice, hyperparameters) -- no seeds.
+  Data slices are fixed by date range and row cap. The only stochastic component is the
+  window bootstrap, seeded at 20260823.
+
+stopping_rule: >
+  A single pass over the registered grids. No adaptive extension, no early stopping, no
+  re-running with a modified grid after seeing results. If a selected hyperparameter lands
+  on a grid boundary, that is reported as grid inadequacy; any widened re-run is a
+  separate, explicitly post-hoc analysis and is labelled as such in the results.
+
+compute_budget:
+  window1_tuning_runs: 300
+  evaluation_runs: 60
+  measured_cost_per_run: ~2.0s per-row, ~0.4s per-step, ~0.8s per window load
+  estimated_wallclock: ~10 minutes, single process, foreground
+
+# ---------------------------------------------------------------------------
+decisions_that_follow:
+  if_H1_survives: >
+    The published ten-window comparison cannot support a claim about constant vs tracked
+    scales; it is confounded with tuning budget. The tracker claim must be downgraded and
+    the ten-window table re-run at matched budget before any manuscript use. Does NOT
+    establish that the tracked scale is better -- only that existing evidence does not
+    show it worse.
+  if_H1_falsified: >
+    The constant-scale advantage is real and survives matched tuning. C10/Q6 becomes the
+    central open problem of the project rather than a footnote, and the mechanism question
+    (why a constant threshold beats a tracked one under drift) is the next direction.
+  if_inconclusive: >
+    Report the partial effect with its CI, register the residual gap as unexplained, and
+    do not claim either verdict.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method is deleted, no control is removed, no
+  statistical language is weakened. Prior artifacts are preserved: this run writes to new
+  filenames under results/research/c10/ and overwrites nothing.
