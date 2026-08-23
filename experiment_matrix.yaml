@@ -509,3 +509,179 @@ out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No method deleted, no control removed. No
   configuration from this run may be reported as a recommended setting: this maps a
   stability boundary and performs no selection. Writes confined to results/research/c10s/.
+---
+# ===========================================================================
+# FOURTH PREREGISTRATION -- direction C10R (realized max step, held-out test)
+# ===========================================================================
+direction: C10R
+parent_direction: C10S
+branch: research/c10-q6
+registered_at_commit: c59af35
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  Ledger C-8 was generated from the C10S residual on Jane: the per-step thresholds P* rose
+  monotonically with M (7.29 -> 17.34 across M = 0.5 -> 16), which the NOMINAL maximum step
+  P = lr*M does not predict but a REALIZED maximum step lr*min(r_q, M) would. C10S's
+  registration states that any such proposal "may be proposed but not tested on this data".
+  This registration honours that: Jane is used only to FIT the free parameter, and the test
+  is on a stream that did not generate the hypothesis.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  P = lr*M is the maximum step the update could take, but it is attained only when the clip
+  binds, which for large M is rare. Does the REALIZED maximum step,
+  R = lr * min(r_q, M) where r_q is a high quantile of the gradient-to-scale ratio
+  r_t = norm(g_t)/s_{t-1}, locate the divergence boundary better than P does?
+
+why_existing_evidence_is_insufficient: >
+  C10S measured the boundary on Jane and found P compresses a 32x variation in M and a
+  23.6x variation in the critical rate into a 1.68x variation in P* -- good, but short of
+  the registered 1.25 sufficiency tolerance, with a systematic residual (per-step P* rising
+  monotonically in M). C-8 was invented to explain that residual, so Jane cannot test it:
+  any parameterization invented to fit a residual will fit that residual.
+
+# ---------------------------------------------------------------------------
+hypothesis_H5: >
+  On a stream that did not generate the hypothesis, the realized maximum step collapses the
+  per-ray divergence thresholds substantially better than the nominal maximum step does.
+
+null_H0: >
+  The realized maximum step is no better than the nominal one on held-out data: C-8 is a
+  post-hoc rationalization of a Jane-specific residual.
+
+# ---------------------------------------------------------------------------
+design:
+  two_stage: >
+    STAGE 1 (FIT, on Jane -- the generating data). The free parameter is the quantile level
+    q. Choose q* = argmin over the registered grid of the spread of
+    R*_M = (P*_M / M) * min(r_q, M), using the C10S per-row thresholds P*_M and Jane's
+    reference r-quantiles. No new Jane runs; this is a re-analysis of committed artifacts and
+    is NOT a test.
+    STAGE 2 (TEST, on crypto -- held out). Repeat the C10S bisection on the BTC/USDT stream,
+    measure that stream's own reference r-quantiles, and evaluate R with q* FROZEN from
+    stage 1. The comparison of spread_R against spread_P on crypto is the test.
+
+  q_grid: [p50, p90, p99, max]
+  q_grid_justification: >
+    These are the quantiles already recorded per configuration and window by
+    research_c10m_binding.py, so stage 1 requires no re-run and cannot be tuned by choosing
+    a convenient quantile after the fact. None is degenerate a priori: Jane's r_p99 is
+    around 5-6 against rays spanning M = 0.5 to 16, so min(r_q, M) is a non-trivial
+    transformation somewhere in the range for every candidate.
+
+  reference_r_measurement: >
+    r_t is recorded PRE-clip by the instrumented runner, so values above M are still
+    observed. The reference configuration is (lr=0.5, M=8): comfortably inside the stable
+    region and binding only ~0.3% of steps on Jane, so the trajectory -- and hence the r
+    distribution -- is barely distorted by clipping. Quantiles are pooled across the ten
+    windows. Registered fallback ladder if the reference diverges on any window:
+    (0.5, 8) -> (0.2, 8) -> (0.1, 8); the fallback actually used is reported.
+
+  heldout_stream:
+    name: Binance BTC/USDT 1h (research_crypto_mechanism.load_features)
+    n: 76888 bars, 2017-09-15 to 2025-03-11, 13 features
+    windows: ten disjoint 6000-bar windows with gaps, exactly as research_crypto_algorithms
+    target_rescale: >
+      y divided by its global standard deviation, as that script already does. This is a
+      CONSTANT rescale: it leaves R2 unchanged and preserves the volatility drift, and only
+      calibrates the loss scale so a Jane-calibrated learning rate is meaningful. Adopted
+      unchanged rather than re-derived.
+
+  M_RAYS: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]
+  P_bracket: [0.5, 128.0]
+  n_bisect: 10
+  bracket_justification: >
+    Deliberately far wider than Jane's [6, 24] because the crypto threshold is unknown and
+    narrowing it would require looking at the test data first. Ten bisections resolve each
+    ray to a factor of 256^(1/1024) = 1.0054.
+  protocol: per-row only (the crypto harness has no per-step group structure)
+
+  divergence_criterion:
+    primary: >
+      The crypto script's own rule, peak rolling loss > 1e3, adopted unchanged. It was
+      calibrated for this stream by prior work, so adopting it avoids choosing a threshold
+      after seeing results.
+    secondary: >
+      Jane's _diverged (peak > 50 or R2 <= -1), reported alongside as a sensitivity. BOTH
+      are reported whatever they show; the primary is fixed in advance so a disagreement
+      cannot be resolved by preference.
+
+  guards: >
+    The C10S censoring and monotonicity guards apply unchanged. Rays whose bracket endpoints
+    are both stable or both divergent are censored and excluded; two or more censored rays
+    void the spread statistic. Every stable P visited must fall strictly below every
+    divergent P visited on that ray, or the ray is excluded as non-monotone.
+
+# ---------------------------------------------------------------------------
+estimand:
+  primary: ratio = spread_R / spread_P on the held-out crypto stream, where spread_X = max_over_rays(X*) / min_over_rays(X*)
+  secondary:
+    - spread of the pure-rate parameterization lr* = P*/M on crypto, as a reference point
+      for how much any product-like parameterization is buying
+    - stage-1 Jane spreads for every q in the grid, so the fit is visible and not just its
+      argmin
+    - per-ray thresholds and brackets on crypto under both divergence criteria
+
+practical_significance_threshold:
+  H5_survives: ratio <= 0.769      # spread_R at most spread_P / 1.3
+  H5_falsified: ratio >= 1.00      # no improvement, or worse
+  H5_inconclusive: 0.769 < ratio < 1.00
+  rationale: >
+    R has a fitted free parameter and P has none, so R must clear a margin rather than merely
+    tie to be preferred. A 30% reduction in spread is the smallest improvement that would
+    justify a more complicated parameterization carrying a fitted constant.
+
+falsification_condition: >
+  H5 is FALSIFIED if ratio >= 1.00 on crypto: the realized maximum step is then no better
+  than the nominal one on data that did not generate it, and C-8 is a post-hoc
+  rationalization of a Jane-specific residual. This will be reported as such and C-8 retired.
+
+stage1_degeneracy_rule: >
+  If no q in the grid reduces the Jane spread below the spread of P itself, then C-8 fails
+  on its own generating data. That is recorded explicitly, and stage 2 still runs with the
+  argmin q* -- the best available candidate -- so the held-out result is reported either way
+  rather than the direction being quietly abandoned at the point it looks bad.
+
+analysis_plan:
+  - Stage 1: report the Jane spread for every q in the grid and the resulting q*.
+  - Stage 2: bisect all eight crypto rays; apply both guards before quoting any threshold.
+  - Report spread_P, spread_R, ratio, and the registered H5 verdict, under the primary
+    divergence criterion; repeat under the secondary as a sensitivity.
+  - Report the pure-rate spread for context.
+
+seed_policy: deterministic given (stream, lr, M) -- no seeds, no bootstrap.
+
+stopping_rule: >
+  One pass. The q grid is fixed at four levels and is not extended after seeing stage 1. The
+  crypto bracket and ray set are not adjusted after seeing stage 2. If the result is
+  inconclusive it is reported inconclusive.
+
+compute_budget:
+  crypto_runs: 960          # 8 rays x up to 12 evaluations x 10 windows
+  measured_cost_per_run: 0.078s on a 6000-bar window
+  estimated_wallclock: ~2 minutes, single process, foreground
+
+scope_limits: >
+  One held-out stream. Crypto hourly returns are close to unpredictable (best fixed linear
+  R2 ~ 0.002), so this tests the STABILITY boundary only and says nothing about accuracy.
+  Thresholds remain horizon-specific and window-length-specific.
+
+decisions_that_follow:
+  if_H5_survives: >
+    C-8 is promoted: the realized maximum step is the better stability parameterization, and
+    the residual C10S found has a mechanism. The cap then matters through how often it
+    actually binds, which partly rehabilitates the binding-frequency reading that C10M could
+    not support directly.
+  if_H5_falsified: >
+    C-8 is retired. P remains the best available single parameterization despite its
+    residual, and the residual stays unexplained rather than being explained by a quantity
+    that does not transfer.
+  if_inconclusive: >
+    Report the ratio with no verdict. Do not re-fit q, do not add rays, do not switch the
+    divergence criterion to whichever gives a cleaner answer.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration is reported as a recommended setting. Writes confined to
+  results/research/c10r/.
