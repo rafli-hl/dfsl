@@ -298,3 +298,118 @@ the CM tie under correction.
 | 16 | app:adaptive's closing sentence gave SN-OMD's deployed-schedule score as `$0.28$` (`tab:jane`'s lr=2 number) four lines below a table of the same quantity reading `$0.247$` from the common sweep, and rmk:scope already quotes `$0.25$` from that same sweep. Three statements of one quantity, one of them from a different grid. | `$0.25$`, matching both the table above it and rmk:scope |
 
 **Build after item 16: 8.878pp main text, 28pp total, 0 undefined refs, 0 overfull >10pt.**
+
+---
+
+## Pass V — closing the frozen ICML-round audit (2026-08-22)
+
+`audit/AUDIT_REPORT.md` is the frozen, read-only audit from the ICML round. Its Top-10
+findings were re-checked against the *current* tree (not against what earlier logs claimed
+about them). Six were already resolved; four were still open. Three are closed here.
+
+| # | Finding | Status before this pass |
+|---|---|---|
+| 1 | CRITICAL — repo not anonymized, export never run | RESOLVED (export runs clean, 0 identity tokens) |
+| 2 | MAJOR — `tab:residual` surrogate rows had no committed generator | RESOLVED (`research_residual_surrogate.py` tracked) |
+| 3 | MAJOR — bootstrap-SE prose contradicted its own table | RESOLVED in substance; see FLAGGED below |
+| 4 | Action: extend the staleness test to the bootstrap CSVs | **OPEN → FIXED here** |
+| 5 | MODERATE — per-regime theorem, undischarged tracker assumption | CLOSED by design (hedged; promoted to `thm:regretbody` with caveats) |
+| 6 | MODERATE — headline numbers not reviewer-reproducible | PARTIAL (see below) |
+| 7 | MINOR — `paper/references.bib` orphaned | **OPEN → FIXED here** |
+| 8 | MINOR — doc-drift, "Theorem 3.3" | RESOLVED |
+| 9 | MINOR — `ScaleNormalizedOGD` vs "OMD" | **OPEN → FIXED here** |
+| 10 | MODERATE — bootstrap block length may understate variance | OPEN (see below) |
+
+### FIXED — 17: the staleness test now guards paper claims, not just generators
+
+Finding 4's recommended action ("extend the diff test to bootstrap CSVs") was never done, and
+the cost compounded. `ARTIFACTS` guarded exactly one CSV, `tracker_a1.csv`. None of
+`baselines_jane.csv`, `table1_errorbars.csv`, `tracker_bootstrap.csv` or
+`windows_replication_summary.csv` was checked against anything — which is why the
+predictable-scale defect survived two full audits that both certified
+`tab:replication`'s divergence count as "exact".
+
+Simply adding those CSVs to `ARTIFACTS` would **not** have caught it. A regeneration diff
+compares an artifact against its generator, and in Pass IV the generator and the artifact were
+wrong *together* — re-running the buggy code reproduces the buggy CSV and the test stays green.
+What was missing is a guard on the pair that actually has to agree: **the number printed in the
+paper and the measurement behind it.**
+
+New third guard style in `tests/test_artifacts_fresh.py`,
+`test_paper_number_matches_its_csv`: each entry pins a regex over `iclr2027.tex` to a row and
+column of a committed CSV, and asserts the printed figure is a correct rounding of the measured
+one. Seven entries cover `tab:jane` (SN-OMD, normalized-GD, scale-adaptive, both protocols),
+`tab:replication`'s uncapped divergence count, both `sec:experiments` prose restatements of the
+divergence counts, and the `app:tracker` Bonferroni gap with its uncorrected CI.
+
+Two properties worth noting. It reads committed bytes only — no Jane parquet, no regeneration —
+so unlike `ARTIFACTS` it is a **real check in a data-less CI checkout**, which is where reviewers
+run it. And the match count is asserted to be exactly 1, so rewording a guarded sentence fails
+loudly rather than silently disarming the guard.
+
+Verified by mutation, not just by passing: reverting the prose `7/10` to its pre-fix `6/10`
+fails the guard with `paper says 6.0, windows_replication_summary.csv says 7`. That is precisely
+the error that survived two audits.
+
+Suite: **77 → 84 tests**, all passing.
+
+### FIXED — 18: `paper/references.bib` deleted
+
+Eleven entries, a superseded citekey convention (`catoni2012challenging` vs. the cited
+`catoni2012`), and **zero** of its keys cited by either `iclr2027.tex` or `icml2026.tex` — both
+use `\bibliography{refs}`. Confirmed the dataset entry survives under `janestreet2024` in
+`refs.bib` before removing. It was also shipping in the anonymized supplement, so this removes an
+anonymization surface as well: export now **247 → 246 files**, self-check still clean.
+
+### FIXED — 19: the OMD/OGD naming reconciled, in two places
+
+The paper says "Online Mirror Descent" throughout; the shipped class is `ScaleNormalizedOGD`.
+Finding 9 rated this an easy reviewer snag. Closed in both directions:
+
+* `sec:method` — the update is already written as a projection, so the equivalence is added
+  as a clause on the existing sentence: "under the Euclidean regularizer used throughout, the
+  mirror step is exactly this projected gradient step."
+* `Software and Data` (page-exempt) — the class is now introduced as "named for the
+  projected-gradient form the mirror step takes under the Euclidean regularizer
+  (`sec:method`), so it implements `alg:snomd` exactly."
+
+**Page-budget note.** The first draft of the `sec:method` sentence was three lines and pushed
+main text to **9.116pp — over the 9pp limit**, a desk-reject risk that a clean `latexmk` exit
+does not report. Rewritten as a single clause it costs nothing measurable: back to **8.878pp**.
+The class-name half was moved to the page-exempt section for the same reason.
+
+### Still open from the frozen audit
+
+| # | Item | Why not closed |
+|---|---|---|
+| 6 | Headline numbers not reviewer-reproducible from a clean clone | Partly mitigated and not fully closable: the crypto stream auto-downloads, so the *stability dichotomy* does replicate data-free, and `research_synthetic.py` needs no external data at all. The specific ask — a seeded Jane mini-slice — is still not shipped, and the Jane parquet stays Kaggle-gated. |
+| 10 | Bootstrap block length may understate variance | Needs a re-run of the block bootstrap at 3-day and 5-day block lengths to report SE sensitivity. Compute, not a text fix. The auditor rated it 65% confidence and did not quantify it. |
+| 3 | Residual: the surviving "$3\times$" SE claim in `app:tracker` | The defect Finding 3 named is gone — the superseded `.024/.021` appear nowhere. But the sentence still says "the $3\times$ block-bootstrap SE of `tab:jane`" without naming a comparator. It is ~3.3x against the bounded family's tightest per-row SE (`.080` vs `.024`), 2.2x against normalized-GD, and per-step SN-OMD's SE (`.059`) is *lower* than normalized-GD's (`.077`). Defensible, imprecise; an author call on which comparator to state. |
+
+**Build after Pass V: 8.878pp main text (unchanged), 28pp total, 0 undefined refs,
+0 overfull >10pt, 84 tests pass, supplement 246 files with 0 identity tokens.**
+
+### FIXED — 20: `out/icml2026.synctex(busy)` untracked
+
+A zero-byte latexmk crash stub from the ICML round, committed to the repo and still tracked.
+`.gitignore:43` already covered `out/`, but an ignore rule does not untrack a file that is
+already in the index, so it survived every prior pass. `git rm --cached` removes it from the
+index and the existing rule keeps it out; the empty file stays on disk, harmless. It was already
+excluded from the supplement by the `out/` glob added alongside `paper/icml2026.` in
+`make_anon_release.py`, so this changes the repo, not the export.
+
+### Verification re-run at close of Pass V
+
+All Pass-V claims re-checked against a rebuilt tree rather than against the log that asserted
+them — the Pass-IV lesson that matching a stored artifact proves consistency, not correctness:
+
+* `latexmk` clean: 0 undefined refs, 0 overfull >10pt, 28pp total.
+* Main text independently re-measured from the PDF text coordinates rather than taken from the
+  previous log line: last main-text baseline sits at `y=124.76` on page 9, the `Ethics Statement`
+  heading at `y=96.31`, giving **8.88–8.90pp** depending on whether the text block is referenced
+  to its top edge or to the first baseline. The recorded `8.878` agrees to within one 10.96pt
+  line. Under the 9pp limit with roughly 0.1pp — about six lines — of headroom, so the budget is
+  real and any future addition to the main text has to be paid for.
+* 84 tests pass in the project venv.
+* Supplement rebuilds at 246 files, self-check clean; `paper/icml2026.*`, `out/`, `audit/` and
+  the deleted `references.bib` all confirmed absent from the export tree.

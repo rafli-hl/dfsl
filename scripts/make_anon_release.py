@@ -40,6 +40,12 @@ EXCLUDE_EXACT = {
 EXCLUDE_GLOBS = (
     "__pycache__/", ".pyc",  # committed bytecode -> junk, never in a release
     "audit/",                # internal reviewer-audit notes (name identity + reviewer dialogue)
+    # The superseded ICML 2026 version of this same paper (source + compiled PDF). Its metadata
+    # is identity-clean, so the token self-check below passes it -- but shipping a prior-venue
+    # build discloses submission history to a double-blind ICLR reviewer, which is a different
+    # kind of leak than the one that check looks for.
+    "paper/icml2026.",
+    "out/",                  # stray committed latexmk output (one empty .synctex(busy) stub)
 )
 
 # Identity tokens that must not appear anywhere in the export tree (case-insensitive).
