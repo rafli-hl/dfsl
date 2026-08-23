@@ -34,6 +34,15 @@ selected at two grid edges, so its magnitude is not resolved.
 scale processes in either direction. It must be re-run at matched budget before any
 manuscript use.
 
+**RESOLVED (C12, 2026-08-24): the full six-method table has been regenerated at matched
+budget** (`results/research/c12/`). Reproduction gate perfect — all ten checks on the five
+untouched methods at `max|diff| = 0.000000`, so SN-OMD's grid is the only thing that moved.
+Per-row, all ten windows: SN-OMD **0.1398 → 0.2359** (+0.0961), moving from 4th to **1st**;
+std 0.1095 → 0.0471; worst window −0.1071 → +0.1693. Every other row unchanged to four
+decimals. The divergence partition is unchanged (scale-adaptive 7/10, OGD per-step 9/10,
+bounded scale-free 0/10) and robust to the accepted C-10 criterion (scale-adaptive 6/10
+there). SN-OMD selected `M = 2`, interior, so it did not collapse onto either endpoint.
+
 ## C-2 — "SN-OMD is fragile across windows (held-out sd 0.103, min −0.107)"
 
 **Status: CONFOUNDED.** The fragility is a property of the published configuration
@@ -315,6 +324,27 @@ because the theory's parameter cannot exceed 2 while the data's index does. This
 and more precise than "the measurement empties the theorem", which overstates: at the measured
 indices the global exponent is `T^{0.91}` (raw) or `T^{0.77}` (normalized) — sublinear, not
 vacuous. Exponent arithmetic verified for `p ∈ {1.2, 1.5, 2.0, 2.43, 3.73}`.
+
+---
+
+## C-15 — The stability partition is robust to the divergence criterion
+
+**Status: SUPPORTED (C12 secondary).**
+
+Regenerating the table reported divergence counts under both the inherited `_diverged` and the
+C-10 relative criterion accepted in C10C3:
+
+| protocol | method | inherited | relative |
+|---|---|---|---|
+| per-row | Scale-adaptive OGD | 7/10 | 6/10 |
+| per-step | OGD | 9/10 | 9/10 |
+| — | every bounded scale-free method | 0/10 | 0/10 |
+
+The **partition** — bounded scale-free methods stay bounded, scale-dependent ones do not — does
+not depend on which criterion is used, which is the load-bearing claim. The exact **count** does:
+scale-adaptive per-row differs by one window. So the paper's stability dichotomy survives C-9's
+finding that criteria do not transfer, while any specific `k/10` figure should be understood as
+criterion-dependent.
 
 ---
 

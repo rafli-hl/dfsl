@@ -1,0 +1,85 @@
+{
+  "M_GRID": [
+    2.0,
+    10.0
+  ],
+  "frozen": {
+    "per-row/OGD": {
+      "lr": 0.002
+    },
+    "per-row/Normalized-GD": {
+      "lr": 0.5
+    },
+    "per-row/Scale-adaptive OGD": {
+      "lr": 0.1
+    },
+    "per-row/SN-OMD (M tuned)": {
+      "lr": 0.5,
+      "M": 2.0
+    },
+    "per-row/fixed-tau clip": {
+      "lr": 0.1,
+      "tau": 5.0
+    },
+    "per-row/AdaGrad-Norm": {
+      "lr": 0.3
+    },
+    "per-step/OGD": {
+      "lr": 0.002
+    },
+    "per-step/Normalized-GD": {
+      "lr": 0.5
+    },
+    "per-step/Scale-adaptive OGD": {
+      "lr": 0.5
+    },
+    "per-step/SN-OMD (M tuned)": {
+      "lr": 0.5,
+      "M": 10.0
+    },
+    "per-step/fixed-tau clip": {
+      "lr": 0.1,
+      "tau": 5.0
+    },
+    "per-step/AdaGrad-Norm": {
+      "lr": 0.3
+    }
+  },
+  "boundary_flags": {
+    "per-row/OGD": [
+      "lr=0.002 at edge"
+    ],
+    "per-row/Normalized-GD": [],
+    "per-row/Scale-adaptive OGD": [
+      "lr=0.1 at edge"
+    ],
+    "per-row/SN-OMD (M tuned)": [
+      "M=2 at edge  <-- collapsed toward an endpoint method"
+    ],
+    "per-row/fixed-tau clip": [
+      "lr=0.1 at edge",
+      "tau=5 at edge"
+    ],
+    "per-row/AdaGrad-Norm": [
+      "lr=0.3 at edge"
+    ],
+    "per-step/OGD": [
+      "lr=0.002 at edge"
+    ],
+    "per-step/Normalized-GD": [],
+    "per-step/Scale-adaptive OGD": [],
+    "per-step/SN-OMD (M tuned)": [
+      "M=10 at edge  <-- collapsed toward an endpoint method"
+    ],
+    "per-step/fixed-tau clip": [
+      "lr=0.1 at edge",
+      "tau=5 at edge"
+    ],
+    "per-step/AdaGrad-Norm": [
+      "lr=0.3 at edge"
+    ]
+  },
+  "repro_gate": {},
+  "repro_gate_pass": true,
+  "wallclock_sec": 4.4
+}

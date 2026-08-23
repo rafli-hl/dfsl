@@ -263,6 +263,29 @@ advantage is a tuning artifact and reverses at matched budget), D3 is partly und
 and D4 is not actionable. The section 2.3 check found a null on predictability that is absent
 from the manuscript -- ledger C-12.
 
+## Session 10 — direction C12, tab:replication at matched budget (complete)
+
+**Result: SN-OMD moves from 4th to 1st on the paper's own headline table**, purely by tuning
+the cap it already has over the same 70 configurations its comparator already received.
+Write-up: `results/research/c12/r_c12_summary.md`.
+
+Per-row, all ten windows: SN-OMD **0.1398 -> 0.2359** (+0.0961), std 0.1095 -> 0.0471, worst
+window -0.1071 -> +0.1693. **Every other row unchanged to four decimals**, and the reproduction
+gate passed all ten checks at `max|diff| = 0.000000` -- so the only thing that moved is the one
+grid that was defective.
+
+**None of the three registered surprises occurred.** SN-OMD selected `M = 2`, interior, so it did
+not collapse onto normalized-GD (`M->0`) or scale-adaptive OGD (`M->inf`). The divergence
+partition is unchanged (scale-adaptive 7/10, OGD per-step 9/10, bounded scale-free 0/10). The
+untouched methods reproduced exactly.
+
+**Secondary, and substantive:** the partition is robust to the accepted C-10 criterion
+(scale-adaptive 6/10 there rather than 7/10), so the stability dichotomy is not an artifact of
+the inherited absolute threshold -- though the exact count is criterion-dependent. Ledger C-15.
+
+**No manuscript edit.** The paper's `windows_replication*.csv` are untouched, so its current
+numbers and the guard pinning them both still hold.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

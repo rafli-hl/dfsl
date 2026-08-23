@@ -1,0 +1,37 @@
+protocol,window,window_idx,method,setting,n_configs,weighted_r2,diverged,diverged_rel
+per-row,"[0,120)",1,OGD,lr=0.002,2,-0.15152,false,false
+per-row,"[0,120)",1,Normalized-GD,lr=0.5,3,0.38873,false,false
+per-row,"[0,120)",1,Scale-adaptive OGD,lr=0.1,3,0.31288,false,false
+per-row,"[0,120)",1,SN-OMD (M tuned),"lr=0.5,M=2",6,0.44899,false,false
+per-row,"[0,120)",1,fixed-tau clip,"lr=0.1,tau=5",6,0.42317,false,false
+per-row,"[0,120)",1,AdaGrad-Norm,lr=0.3,2,0.32785,false,false
+per-row,"[150,270)",2,OGD,lr=0.002,2,0.06667,false,false
+per-row,"[150,270)",2,Normalized-GD,lr=0.5,3,0.20477,false,false
+per-row,"[150,270)",2,Scale-adaptive OGD,lr=0.1,3,0.1788,false,false
+per-row,"[150,270)",2,SN-OMD (M tuned),"lr=0.5,M=2",6,0.30894,false,false
+per-row,"[150,270)",2,fixed-tau clip,"lr=0.1,tau=5",6,0.21419,false,false
+per-row,"[150,270)",2,AdaGrad-Norm,lr=0.3,2,0.21663,false,false
+per-row,"[300,420)",3,OGD,lr=0.002,2,0.03821,false,false
+per-row,"[300,420)",3,Normalized-GD,lr=0.5,3,0.1234,false,false
+per-row,"[300,420)",3,Scale-adaptive OGD,lr=0.1,3,0.09381,false,false
+per-row,"[300,420)",3,SN-OMD (M tuned),"lr=0.5,M=2",6,0.18592,false,false
+per-row,"[300,420)",3,fixed-tau clip,"lr=0.1,tau=5",6,0.14185,false,false
+per-row,"[300,420)",3,AdaGrad-Norm,lr=0.3,2,0.16886,false,false
+per-step,"[0,120)",1,OGD,lr=0.002,2,0.11934,false,false
+per-step,"[0,120)",1,Normalized-GD,lr=0.5,3,0.50136,false,false
+per-step,"[0,120)",1,Scale-adaptive OGD,lr=0.5,3,0.42192,false,false
+per-step,"[0,120)",1,SN-OMD (M tuned),"lr=0.5,M=10",6,0.42192,false,false
+per-step,"[0,120)",1,fixed-tau clip,"lr=0.1,tau=5",6,0.50136,false,false
+per-step,"[0,120)",1,AdaGrad-Norm,lr=0.3,2,0.3895,false,false
+per-step,"[150,270)",2,OGD,lr=0.002,2,0.18742,false,false
+per-step,"[150,270)",2,Normalized-GD,lr=0.5,3,0.40462,false,false
+per-step,"[150,270)",2,Scale-adaptive OGD,lr=0.5,3,0.2286,false,false
+per-step,"[150,270)",2,SN-OMD (M tuned),"lr=0.5,M=10",6,0.2286,false,false
+per-step,"[150,270)",2,fixed-tau clip,"lr=0.1,tau=5",6,0.40462,false,false
+per-step,"[150,270)",2,AdaGrad-Norm,lr=0.3,2,0.25834,false,false
+per-step,"[300,420)",3,OGD,lr=0.002,2,0.13321,false,false
+per-step,"[300,420)",3,Normalized-GD,lr=0.5,3,0.30429,false,false
+per-step,"[300,420)",3,Scale-adaptive OGD,lr=0.5,3,0.18935,false,false
+per-step,"[300,420)",3,SN-OMD (M tuned),"lr=0.5,M=10",6,0.18935,false,false
+per-step,"[300,420)",3,fixed-tau clip,"lr=0.1,tau=5",6,0.30429,false,false
+per-step,"[300,420)",3,AdaGrad-Norm,lr=0.3,2,0.22483,false,false

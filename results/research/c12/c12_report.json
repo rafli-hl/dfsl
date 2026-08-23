@@ -1,0 +1,116 @@
+{
+  "M_GRID": [
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0,
+    30.0,
+    100.0
+  ],
+  "frozen": {
+    "per-row/OGD": {
+      "lr": 0.001
+    },
+    "per-row/Normalized-GD": {
+      "lr": 3.0
+    },
+    "per-row/Scale-adaptive OGD": {
+      "lr": 0.5
+    },
+    "per-row/SN-OMD (M tuned)": {
+      "lr": 3.0,
+      "M": 2.0
+    },
+    "per-row/fixed-tau clip": {
+      "lr": 0.2,
+      "tau": 20.0
+    },
+    "per-row/AdaGrad-Norm": {
+      "lr": 3.0
+    },
+    "per-step/OGD": {
+      "lr": 0.005
+    },
+    "per-step/Normalized-GD": {
+      "lr": 5.0
+    },
+    "per-step/Scale-adaptive OGD": {
+      "lr": 0.2
+    },
+    "per-step/SN-OMD (M tuned)": {
+      "lr": 8.0,
+      "M": 0.5
+    },
+    "per-step/fixed-tau clip": {
+      "lr": 0.2,
+      "tau": 20.0
+    },
+    "per-step/AdaGrad-Norm": {
+      "lr": 1.0
+    }
+  },
+  "boundary_flags": {
+    "per-row/OGD": [
+      "lr=0.001 at edge"
+    ],
+    "per-row/Normalized-GD": [],
+    "per-row/Scale-adaptive OGD": [],
+    "per-row/SN-OMD (M tuned)": [],
+    "per-row/fixed-tau clip": [],
+    "per-row/AdaGrad-Norm": [],
+    "per-step/OGD": [],
+    "per-step/Normalized-GD": [],
+    "per-step/Scale-adaptive OGD": [],
+    "per-step/SN-OMD (M tuned)": [
+      "lr=8 at edge",
+      "M=0.5 at edge  <-- collapsed toward an endpoint method"
+    ],
+    "per-step/fixed-tau clip": [],
+    "per-step/AdaGrad-Norm": []
+  },
+  "repro_gate": {
+    "per-row/OGD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-row/Normalized-GD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-row/Scale-adaptive OGD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-row/fixed-tau clip": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-row/AdaGrad-Norm": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-step/OGD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-step/Normalized-GD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-step/Scale-adaptive OGD": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-step/fixed-tau clip": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    },
+    "per-step/AdaGrad-Norm": {
+      "max_abs_diff": 0.0,
+      "ok": true
+    }
+  },
+  "repro_gate_pass": true,
+  "wallclock_sec": 2369.4
+}

@@ -205,7 +205,7 @@ narrowed to what the current design supports. This is a **new blocker**, entered
 
 | # | Item | Blocked on |
 |---|---|---|
-| 1 | **BLOCKER — `tab:replication` rests on a confounded comparison.** The ordering reverses at matched tuning budget (Phase 2, C10/Q6). | Re-running the ten-window table at matched budget, or narrowing the claim to what the current design supports. Author call on which. |
+| 1 | `tab:replication` rests on a confounded comparison. **A corrected artifact now exists** (C12, `results/research/c12/`): SN-OMD 0.1398 → 0.2359 per-row, 4th → 1st; every other row unchanged to 4 d.p.; reproduction gate 0.000000 on all ten checks; divergence partition unchanged. | Author decision only: adopt the regenerated table (and relabel the row `M` tuned), or narrow the claim. No longer blocked on measurement. |
 | 2 | Wall-clock runtime figure for the Reproducibility Statement | A timed full-suite run over the Jane parquet. Open across four rounds. |
 | 3 | §4 sentence noting the deployed anytime schedule is not the more accurate one | Author decision. The gate (a decomposition giving trustworthy numbers) is satisfied; the investigation showed the gap was grid-tuning, so if this goes in it stands on the schedule argument alone — not automatic. |
 | 4 | GitHub release | `gh` authenticated as `rafli07p`, repo owner is `rafli-hl`. |
@@ -260,4 +260,5 @@ drifted away from it.
 - [x] Tag on the submission commit (`c32db71`) — deliberately NOT moved onto the research branch
 - [ ] Wall-clock runtime disclosed
 - [ ] §4 schedule sentence — decide
-- [ ] **`tab:replication` re-run at matched budget, or claim narrowed** (open item 1)
+- [x] `tab:replication` re-run at matched budget — corrected artifact in `results/research/c12/`
+- [ ] **Adopt the corrected `tab:replication`, or narrow the claim** — author decision (open item 1)

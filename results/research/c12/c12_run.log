@@ -1,0 +1,78 @@
+====================================================================================================
+C12 -- tab:replication at MATCHED tuning budget (only SN-OMD's grid changes)
+10 windows, rows<=150000; SN-OMD gets lr x M = 10x7=70, fixed-tau gets lr x tau = 10x7=70
+====================================================================================================
+
+########## per-row ##########
+[tune] window 1 date[0,120)  n=150000
+  OGD                        5 cfg  lr=0.001               win1 R2=+0.0184   <-- lr=0.001 at edge
+  Normalized-GD             10 cfg  lr=3                   win1 R2=+0.2205
+  Scale-adaptive OGD        10 cfg  lr=0.5                 win1 R2=+0.1593
+  SN-OMD (M tuned)          70 cfg  lr=3,M=2               win1 R2=+0.3152
+  fixed-tau clip            70 cfg  lr=0.2,tau=20          win1 R2=+0.2463
+  AdaGrad-Norm               8 cfg  lr=3                   win1 R2=+0.3286
+[eval] window 1 done (407s)
+[eval] window 2 done (510s)
+[eval] window 3 done (601s)
+[eval] window 4 done (706s)
+[eval] window 5 done (821s)
+[eval] window 6 done (929s)
+[eval] window 7 done (1035s)
+[eval] window 8 done (1145s)
+[eval] window 9 done (1252s)
+[eval] window 10 done (1360s)
+
+########## per-step ##########
+[tune] window 1 date[0,120)  n=150000
+  OGD                        5 cfg  lr=0.005               win1 R2=+0.1392
+  Normalized-GD             10 cfg  lr=5                   win1 R2=+0.3712
+  Scale-adaptive OGD        10 cfg  lr=0.2                 win1 R2=+0.0804
+  SN-OMD (M tuned)          70 cfg  lr=8,M=0.5             win1 R2=+0.3837   <-- lr=8 at edge; M=0.5 at edge  <-- collapsed toward an endpoint method
+  fixed-tau clip            70 cfg  lr=0.2,tau=20          win1 R2=+0.3821
+  AdaGrad-Norm               8 cfg  lr=1                   win1 R2=+0.2189
+[eval] window 1 done (1522s)
+[eval] window 2 done (1611s)
+[eval] window 3 done (1710s)
+[eval] window 4 done (1810s)
+[eval] window 5 done (1905s)
+[eval] window 6 done (2002s)
+[eval] window 7 done (2100s)
+[eval] window 8 done (2188s)
+[eval] window 9 done (2277s)
+[eval] window 10 done (2369s)
+
+====================================================================================================
+MATCHED-BUDGET TABLE   (all ten windows, published format | held-out 2-10)
+====================================================================================================
+
+per-row:
+  method                    cfg  all-10 mean     std   div  div_rel   held-out     win1
+  SN-OMD (M tuned)           70      +0.2359  0.0471   0/10      0/10    +0.2270  +0.3152
+  fixed-tau clip             70      +0.2064  0.0311   0/10      0/10    +0.2020  +0.2463
+  AdaGrad-Norm                8      +0.1980  0.0706   0/10      0/10    +0.1835  +0.3286
+  Normalized-GD              10      +0.1787  0.0286   0/10      0/10    +0.1741  +0.2205
+  OGD                         5      +0.0010  0.0434   0/10      0/10    -0.0010  +0.0184
+  Scale-adaptive OGD         10 -298909.0291 846736.0972   7/10      6/10 -332121.1612  +0.1593
+
+per-step:
+  method                    cfg  all-10 mean     std   div  div_rel   held-out     win1
+  SN-OMD (M tuned)           70      +0.2138  0.1229   0/10      0/10    +0.1949  +0.3837
+  fixed-tau clip             70      +0.2016  0.1312   0/10      0/10    +0.1815  +0.3821
+  AdaGrad-Norm                8      +0.1882  0.0290   0/10      0/10    +0.1848  +0.2189
+  Scale-adaptive OGD         10      +0.0950  0.0179   0/10      0/10    +0.0966  +0.0804
+  Normalized-GD              10      +0.0941  0.2079   0/10      0/10    +0.0633  +0.3712
+  OGD                         5 -354911900407372745415961541520833678495417977284037505081940627092476213037307177821850215526988513280.0000 1122329973986139529614565868185698806425608567214816224102454843714332400593632653594250926789283020800.0000   9/10      9/10 -394346556008191932443801207109445168392377639387530004251376380139588605590563851841507225411468132352.0000  +0.1392
+
+====================================================================================================
+REPRODUCTION GATE -- the five untouched methods must match the published CSV
+====================================================================================================
+  per-row   OGD                    max|diff|=0.000000  OK
+  per-row   Normalized-GD          max|diff|=0.000000  OK
+  per-row   Scale-adaptive OGD     max|diff|=0.000000  OK
+  per-row   fixed-tau clip         max|diff|=0.000000  OK
+  per-row   AdaGrad-Norm           max|diff|=0.000000  OK
+  per-step  OGD                    max|diff|=0.000000  OK
+  per-step  Normalized-GD          max|diff|=0.000000  OK
+  per-step  Scale-adaptive OGD     max|diff|=0.000000  OK
+  per-step  fixed-tau clip         max|diff|=0.000000  OK
+  per-step  AdaGrad-Norm           max|diff|=0.000000  OK
