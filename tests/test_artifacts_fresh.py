@@ -218,6 +218,25 @@ PAPER_CLAIMS = [
         "windows_replication_summary.csv", {"method": "OGD"},
         [(1, "per-step", "n_diverged", 0)],
     ),
+    # tab:replication's two SN-OMD rows, adopted at matched tuning budget (C12, C12B).
+    # These pin the MEANS; the divergence counts above pin the stability partition. Both
+    # rows are tuned over (lr, M) -- the defect these replaced was a pinned cap.
+    (
+        "tab:replication SN-OMD (M tuned), both protocols",
+        r"\\textbf\{SN-OMD \(\$M\$ tuned, ours\)\}\s*&\s*\$([\d.]+)\\pm(\.\d+)\$"
+        r"\s*&\s*\$0/10\$\s*&\s*\$([\d.]+)\\pm(\.\d+)\$",
+        "c12/c12_matched_summary.csv", {"method": "SN-OMD (M tuned)"},
+        [(1, "per-row", "mean", 2), (2, "per-row", "std", 2),
+         (3, "per-step", "mean", 2), (4, "per-step", "std", 2)],
+    ),
+    (
+        "tab:replication SN-OMD + block-median tracker, both protocols",
+        r"\+ block-median tracker\}\s*&\s*\$([\d.]+)\\pm(\.\d+)\$"
+        r"\s*&\s*\$0/10\$\s*&\s*\$\\mathbf\{([\d.]+)\}\\pm(\.\d+)\$",
+        "c12b/c12b_summary.csv", {"arm": "matched"},
+        [(1, "per-row", "mean", 2), (2, "per-row", "std", 2),
+         (3, "per-step", "mean", 2), (4, "per-step", "std", 2)],
+    ),
     (
         "app:tracker Bonferroni: per-step block-vs-EMA gap and uncorrected CI",
         r"the gap over the EMA default,\s*\$\+([\d.]+)\$ \(\$\[\+([\d.]+),\+([\d.]+)\]\$",

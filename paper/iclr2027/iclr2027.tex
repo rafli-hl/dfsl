@@ -466,9 +466,9 @@ distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{shar
 normalized tail is heavy, \emph{broad} when it is mild, as on Jane: there a finite cap still
 beats full normalization by ${+}0.11$ per-row, though the mid-range caps sit within noise.
 SN-OMD's per-row error bar runs about twice normalized-GD's ($\pm.079$ vs.\ $\pm.037$;
-\cref{tab:jane}, and no wider per-step), which the replication traces to the winsorized-EMA
-tracker rather than the cap---the block median roughly halves it
-(\cref{tab:replication,sec:tracker}).
+\cref{tab:jane}, and no wider per-step). The replication does not trace this to the tracker:
+once the cap is tuned alongside the rate, the deployed winsorized-EMA is the \emph{tighter}
+of the two SN-OMD rows across windows (\cref{tab:replication,sec:tracker}).
 
 \paragraph{Replication across ten disjoint windows.} A single contiguous window cannot
 settle a claim that is \emph{about} regime dependence, so we re-run the entire comparison on
@@ -479,24 +479,25 @@ stability partition replicates and hardens:} every finite-cap bounded scale-free
 bounded on all ten windows ($0/10$ divergences), while the uncapped $M\!\to\!\infty$ endpoint
 diverges on $7/10$ (per-row) and plain OGD's frozen rate diverges on $9/10$ (per-step). The
 uncapped endpoint's $0/10$ per-step is not batching conferring robustness but a lower frozen
-rate ($\mathrm{lr}{=}0.2$ vs.\ $0.5$ per-row), so it underfits ($0.09\!\pm\!.02$) instead of
+rate ($\mathrm{lr}{=}0.2$ vs.\ $0.5$ per-row), so it underfits ($0.10\!\pm\!.02$) instead of
 diverging; the finite cap is stable at every rate on \emph{both} protocols. So ``OGD
 has no robust rate'' and ``the cap buys unconditional stability'' hold
 across the whole record, not merely on the reported window. \emph{(ii) No bounded member dominates, and which
 one is best is tracker- and protocol-dependent:} per-row two methods co-lead in a statistical
-tie---the block-median SN-OMD ($0.29\!\pm\!0.07$) and the normalize-and-clip baseline of
-\citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; paired $+0.004$, CI $[-0.014,+0.023]$, $6/10$;
-\cref{app:tracker})---both clear of the rest (fixed-$\tau$ $0.21$,
+tie---the block-median SN-OMD ($0.28\!\pm\!0.09$) and the normalize-and-clip baseline of
+\citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; the paired contrast of \cref{app:tracker}---%
+$+0.004$, CI $[-0.014,+0.023]$, $6/10$---predates the cap
+tuning)---both clear of the rest (fixed-$\tau$ $0.21$,
 AdaGrad-Norm $0.20$, normalized-GD $0.18$), among which the per-window winner rotates between the
-clip and AdaGrad. Per-step the ordering reshuffles and no member leads (fixed-$\tau$
-clip and block $0.20$, AdaGrad-Norm $0.19$); normalized-GD and CM collapse to $0.09\!\pm\!0.21$,
-their window-1-optimal rates having overfit that window (\cref{app:grid}). With its \emph{deployed} winsorized-EMA tracker SN-OMD
-stays bounded but is the most \emph{variable} member per-row ($0.14\!\pm\!0.11$, negative on one
-window); swapping in the block-median tracker (\cref{sec:tracker}) roughly halves that variance
-($0.11\!\to\!0.07$) and lifts the mean to the co-leading $0.29$, never negative, $0/10$
-divergences. So the excess variance is the EMA tracker's, not the cap's---but the
-robust-and-accurate tracker is the one \emph{without} a proven $W_s$ bound (\cref{sec:tracker}),
-the same guarantee-versus-accuracy gap stated there.
+clip and AdaGrad. Per-step the ordering reshuffles without separating the pack (block $0.24$,
+SN-OMD $0.21$, clip $0.20$, AdaGrad-Norm $0.19$, all within one standard deviation); normalized-GD and CM collapse to $0.09\!\pm\!0.21$,
+their window-1-optimal rates having overfit that window (\cref{app:grid}). With its cap tuned alongside the rate, SN-OMD's
+\emph{deployed} winsorized-EMA tracker is the \emph{less} variable of the two SN-OMD rows
+per-row ($0.24\!\pm\!0.05$ against the block median's $0.28\!\pm\!0.09$), and neither is negative
+on any window; both keep $0/10$ divergences. The block median buys ${\approx}{+}0.04$ of mean at
+the cost of spread, so the tracker choice trades accuracy against variability rather than
+dominating. The more accurate tracker remains the one \emph{without} a proven $W_s$ bound
+(\cref{sec:tracker}), the same guarantee-versus-accuracy gap stated there.
 
 \begin{table}[t]
 \caption{\textbf{Ten-window replication, hyperparameters frozen from window~1}
@@ -506,9 +507,10 @@ blows up at the frozen rate). Every finite-cap bounded scale-free method stays b
 windows; the uncapped endpoint and plain OGD do not. \emph{No single member dominates across both
 protocols:} per-row the block-median SN-OMD and the normalize-and-clip method of
 \citet{cutkoskymehta2021} \emph{co-lead} in a statistical tie, both clear of the rest; per-step no
-member leads decisively (\cref{sec:experiments,app:tracker}). Rates are tuned on window~1 over a
-grid with all \emph{accuracy-relevant} optima interior (the boundary flags, and why they are not
-truncated optima, in \cref{app:grid}); CM at $\beta{=}0$ \emph{is} normalized-GD (bit-identical
+member leads decisively (\cref{sec:experiments,app:tracker}). Both SN-OMD rows are tuned over $(\mathrm{lr},M)$, the same two-parameter
+budget fixed-$\tau$ gets over $(\mathrm{lr},\tau)$; methods with no threshold parameter are tuned
+over $\mathrm{lr}$ alone, their whole parameter space. All \emph{accuracy-relevant} optima are
+interior (\cref{app:grid}); CM at $\beta{=}0$ \emph{is} normalized-GD (bit-identical
 per-step cell, not a duplicated row).}
 \label{tab:replication}
 \centering
@@ -521,13 +523,13 @@ per-step cell, not a duplicated row).}
 Method & mean$\pm$std & div & mean$\pm$std & div \\
 \midrule
 OGD                                    & $0.00\pm.04$ & $0/10$ & --- & $9/10$ \\
-Scale-adaptive OGD ($M\!\to\!\infty$)  & --- & $7/10$ & $0.09\pm.02$ & $0/10$ \\
+Scale-adaptive OGD ($M\!\to\!\infty$)  & --- & $7/10$ & $0.10\pm.02$ & $0/10$ \\
 Normalized-GD ($M\!\to\!0$)            & $0.18\pm.03$ & $0/10$ & $0.09\pm.21$ & $0/10$ \\
-Fixed-$\tau$ clip                      & $0.21\pm.03$ & $0/10$ & $\mathbf{0.20}\pm.13$ & $0/10$ \\
+Fixed-$\tau$ clip                      & $0.21\pm.03$ & $0/10$ & $0.20\pm.13$ & $0/10$ \\
 AdaGrad-Norm                           & $0.20\pm.07$ & $0/10$ & $0.19\pm.03$ & $0/10$ \\
 Cutkosky--Mehta (2021)                 & $\mathbf{0.29}\pm.04$ & $0/10$ & $0.09\pm.21$ & $0/10$ \\
-\textbf{SN-OMD ($M{=}5$, ours)}        & $0.14\pm.11$ & $0/10$ & $0.12\pm.15$ & $0/10$ \\
-\quad\emph{+ block-median tracker}     & $\mathbf{0.29}\pm.07$ & $0/10$ & $\mathbf{0.20}\pm.13$ & $0/10$ \\
+\textbf{SN-OMD ($M$ tuned, ours)}      & $0.24\pm.05$ & $0/10$ & $0.21\pm.12$ & $0/10$ \\
+\quad\emph{+ block-median tracker}     & $0.28\pm.09$ & $0/10$ & $\mathbf{0.24}\pm.11$ & $0/10$ \\
 \bottomrule
 \end{tabular}
 \end{small}
@@ -1567,12 +1569,12 @@ the least analyzed: \cref{prop:tracker} does not cover it either, and we prove n
 $W_s$. So a best-performing tracker is again one with no guarantee; the gap between what we
 can \emph{prove} (envelope) and what we would \emph{deploy} (EMA, or block) is if anything
 wider than before. The ten-window replication (\cref{tab:replication}) makes this concrete:
-holding hyperparameters frozen from window~1, the block-median tracker roughly halves SN-OMD's
-per-row across-window $R^2$ standard deviation ($0.11\!\to\!0.07$) and lifts its mean from
-$0.14$ to the co-leading $0.29$---never negative---whereas the deployed
-winsorized-EMA is the variable one. This traces the $3\times$ block-bootstrap SE of
-\cref{tab:jane} to the tracker rather than the cap, and sharpens the deploy question: the
-tracker that is most accurate and most regime-robust is exactly the one we cannot yet bound.
+holding hyperparameters frozen from window~1 and tuning each row's cap alongside its rate, the
+block-median tracker lifts SN-OMD's per-row mean from $0.24$ to the co-leading $0.28$ while
+\emph{widening} its across-window standard deviation ($0.05\!\to\!0.09$); neither row is
+negative on any window. The across-window variability therefore tracks the cap setting rather
+than the tracker, and the deploy question is sharpened rather than settled: the tracker that is
+most accurate is exactly the one we cannot yet bound.
 
 The accuracy gaps are easy to over-read, so we test them across regimes: the ten frozen
 windows (\cref{tab:replication}) are the instrument that varies the hypothesized variable, so
