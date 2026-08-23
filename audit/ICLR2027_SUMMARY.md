@@ -4,7 +4,7 @@ Progress tracker for the SN-OMD paper targeting **ICLR 2027**. Detail on individ
 fixes lives in [`ICLR2027_REMEDIATION_LOG.md`](ICLR2027_REMEDIATION_LOG.md); this file
 is the top-level view: where the paper stands, what is settled, what is still open.
 
-Last verified: **2026-08-23**, commit `202d983`.
+Last verified: **2026-08-23**, at `c32db71` (tagged `iclr2027-submission`).
 
 ---
 
@@ -12,9 +12,10 @@ Last verified: **2026-08-23**, commit `202d983`.
 
 | | |
 |---|---|
-| Branch | `paper-submission` (67 commits), **ahead of `origin` by 1** |
-| HEAD | `202d983` — Pass V: paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
-| Tag | `iclr2027-submission` → `1cfdfaa` (annotated object `8346fa1`) — **now one commit behind HEAD** |
+| Branch | `paper-submission` (68 commits), in sync with `origin/paper-submission` |
+| Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
+| `master` | At the PR #6 merge (`df25bc3`), which is **pre-Pass-V** — the Pass V commits are on `paper-submission` only, pending a new PR |
+| Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`), force-moved off `1cfdfaa` and pushed |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1841 lines) |
 | Main text | **8.878pp** of a 9pp limit (re-measured from the PDF 2026-08-23: 8.88–8.90pp, ~0.1pp headroom) |
 | Total | 28pp (statements, references, appendix do not count) |
