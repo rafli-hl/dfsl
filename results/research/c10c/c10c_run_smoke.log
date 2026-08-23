@@ -1,0 +1,68 @@
+================================================================================================
+C10C -- acceptance tests for the C-10 relative divergence criterion
+================================================================================================
+
+================================================================================================
+INSTRUMENTATION GATE (tracked runner vs anchor_perrow)
+================================================================================================
+  snomd   cap=0.5      lr=0.5    diff=0.00e+00
+  snomd   cap=8        lr=2      diff=0.00e+00
+  ogd     cap=0        lr=0.01   diff=0.00e+00
+  snomd   cap=1e+09    lr=0.1    diff=0.00e+00
+  GATE PASSED (worst 0.00e+00 <= 1e-09)
+
+########## STREAM: jane  (3 windows) ##########
+  window 0: 8 configs done (6s)
+  window 1: 8 configs done (9s)
+  window 2: 8 configs done (11s)
+  V3 ray M=0.5   stable= 2 divergent= 2  OK
+  V3 ray M=8     stable= 2 divergent= 2  OK
+
+########## STREAM: crypto  (3 windows) ##########
+  window 0: 8 configs done (17s)
+  window 1: 8 configs done (18s)
+  window 2: 8 configs done (19s)
+  V3 ray M=0.5   stable= 2 divergent= 2  OK
+  V3 ray M=8     stable= 3 divergent= 1  OK
+
+########## STREAM: synthetic  (3 windows) ##########
+  window 0: 8 configs done (21s)
+  window 1: 8 configs done (21s)
+  window 2: 8 configs done (22s)
+  V3 ray M=0.5   stable= 3 divergent= 1  OK
+  V3 ray M=8     stable= 4 divergent= 0  OK
+
+================================================================================================
+ACCEPTANCE TESTS
+================================================================================================
+
+V1 reference sanity: 18 reference runs, 0 wrongly flagged divergent -> PASS
+   (for contrast, the inherited Jane rule flags 6/18 of them)
+
+V2 detects true blow-up: 13 runs with max||w||>1e6, 0 missed -> PASS
+   synthetic: 3 true blow-ups
+   crypto: 3 true blow-ups
+   jane: 7 true blow-ups
+
+V3 monotone in P: 6 rays, 0 violations -> PASS
+
+V4 non-vacuous [crypto]: divergent=2/12  -> both classes
+
+V4 non-vacuous [synthetic]: divergent=0/12  -> ONE CLASS ONLY
+
+V4 non-vacuous [jane]: divergent=3/12  -> both classes
+V4 overall -> FAIL
+
+V5 kappa robustness [synthetic]: 0.000 of 12 classifications move across kappa in {5,10,20} -> ok
+V5 kappa robustness [jane]: 0.000 of 12 classifications move across kappa in {5,10,20} -> ok
+V5 kappa robustness [crypto]: 0.000 of 12 classifications move across kappa in {5,10,20} -> ok
+V5 overall -> PASS
+
+================================================================================================
+VERDICT: criterion REJECTED   V1=PASS  V2=PASS  V3=PASS  V4=FAIL  V5=PASS
+================================================================================================
+
+Descriptive -- agreement with inherited criteria on the capped grid:
+  crypto     new=  2/12  jane=  2/12  crypto=  0/12   agree(new,jane)=1.00  agree(new,crypto)=0.83
+  synthetic  new=  0/12  jane= 12/12  crypto=  0/12   agree(new,jane)=0.00  agree(new,crypto)=1.00
+  jane       new=  3/12  jane=  3/12  crypto=  0/12   agree(new,jane)=1.00  agree(new,crypto)=0.75

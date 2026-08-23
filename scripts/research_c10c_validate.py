@@ -121,10 +121,10 @@ def gate(streams, log):
     log(f"  GATE PASSED (worst {worst:.2e} <= {GATE_TOL:.0e})")
 
 
-def load_streams(smoke):
+def load_streams(smoke, jane_rows):
     out = {}
     idx = [0, 4, 8]
-    n_jane_rows = 20000 if smoke else 150000
+    n_jane_rows = 20000 if smoke else jane_rows
     jane = []
     for i in idx:
         lo, hi = WINDOWS[i]
@@ -148,6 +148,10 @@ def load_streams(smoke):
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
+    # Registered design says 150000. Amendment 2026-08-23 (see experiment_matrix.yaml
+    # doc 6, amendments) allows a reduced Jane row cap on COST grounds only; V1-V5 are
+    # pass/fail properties of the instrument and do not depend on window length.
+    ap.add_argument("--jane-rows", type=int, default=150000)
     args = ap.parse_args()
     global LRS, MS, RAY_MS, RAY_PS, BLOWUP_LRS
     if args.smoke:
@@ -166,8 +170,9 @@ def main() -> None:
 
     log("=" * 96)
     log("C10C -- acceptance tests for the C-10 relative divergence criterion")
+    log(f"jane_rows={args.jane_rows}" + ("  (REDUCED -- registered amendment, cost grounds)" if args.jane_rows != 150000 else ""))
     log("=" * 96)
-    streams = load_streams(args.smoke)
+    streams = load_streams(args.smoke, args.jane_rows)
     gate(streams["synthetic"], log)
 
     rows: list[dict] = []

@@ -986,3 +986,37 @@ out_of_scope_this_session: >
 
 compute_budget:
   estimated_wallclock: ~5 minutes, dominated by Jane's three 150k-row windows
+
+amendments:
+  - id: A1
+    date_utc: "2026-08-23"
+    made_before_seeing: >
+      No acceptance-test output from the full run. The run was killed after producing only
+      the instrumentation gate result (PASSED, 0.00e+00) and two Jane per-window progress
+      lines. V1-V5 are all computed at the end of the script, so none had been evaluated.
+    change: >
+      The Jane row cap is reduced from the registered 150000 to 40000 for these instrument
+      checks. Implemented as an explicit --jane-rows flag whose default remains the
+      registered 150000, so the deviation is visible in the invocation and in the run log
+      rather than hidden in a constant.
+    reason: >
+      COST ONLY. Measured 1171s per Jane window against an estimated ~150s, an 8x overrun.
+      The cost is dominated by the V2 blow-up probes: OGD and the uncapped endpoint at high
+      rates run almost every step through overflow arithmetic, which is far slower than the
+      normal float path. Those probes are the independent ground truth for V2 and cannot be
+      dropped.
+    why_this_cannot_fit_the_instrument_to_the_answers: >
+      Three reasons, stated because a post-registration change to a design parameter always
+      deserves them.
+      (1) V1-V5 are pass/fail properties of the criterion -- reference sanity, recall against
+          an independent ground truth, monotonicity, non-vacuity, kappa robustness. None is a
+          measurement whose VALUE depends on window length.
+      (2) The change touches Jane only. The one acceptance signal already seen is the SMOKE
+          run's V4 failure on synthetic, which this cannot influence.
+      (3) Nothing about the criterion itself changes: no threshold, no kappa, no clause, no
+          rolling-window rule. Only how many rows of one stream the checks run on.
+    residual_risk: >
+      A shorter Jane window could in principle change a classification near a boundary, which
+      would show up as a V3 or V4 difference. If the full-cap result is ever needed, it can be
+      recovered by dropping the flag; the registered default is unchanged.
+    authorized_by: user, in-session, after being shown the cost overrun and this option
