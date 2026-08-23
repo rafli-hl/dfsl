@@ -22,10 +22,10 @@ Last verified: **2026-08-24**, commit `a506251` (branch `research/c10-q6`).
 | Total | 28pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull >10pt, 0 stray tabs |
 | Tests | **104 passed** (84 + 20 anon-exclusion guards) |
-| Anon supplement | **CURRENTLY BROKEN** — the export crashes on the in-flight `paper/` restructuring. See Open items 1–2 |
+| Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
 
-`paper/icml2026.tex` is a **frozen ICML snapshot**. It is not back-synced, and it is
-excluded from the anonymized supplement.
+`paper/icml2026/` is a **frozen ICML snapshot** (moved there from flat `paper/*` on
+2026-08-24). It is not back-synced, and it is excluded from the anonymized supplement.
 
 ---
 
@@ -205,14 +205,13 @@ narrowed to what the current design supports. This is a **new blocker**, entered
 
 | # | Item | Blocked on |
 |---|---|---|
-| 1 | **BLOCKER — the anonymized export crashes.** `paper/algorithm.sty`, `algorithmic.sty`, `fancyhdr.sty` and `refs.bib` are tracked at their old flat paths but have been moved on disk into `paper/icml2026/`, so `make_anon_release` tries to copy files that are not there. | Committing the `paper/` restructuring, which is uncommitted work in the tree. The export should recover on its own once it lands, since the moved files then match the prior-venue exclusion. |
-| 2 | **BLOCKER — `tab:replication` rests on a confounded comparison.** The ordering reverses at matched tuning budget (Phase 2, C10/Q6). | Re-running the ten-window table at matched budget, or narrowing the claim to what the current design supports. Author call on which. |
-| 3 | Wall-clock runtime figure for the Reproducibility Statement | A timed full-suite run over the Jane parquet. Open across four rounds. |
-| 4 | §4 sentence noting the deployed anytime schedule is not the more accurate one | Author decision. The gate (a decomposition giving trustworthy numbers) is satisfied; the investigation showed the gap was grid-tuning, so if this goes in it stands on the schedule argument alone — not automatic. |
-| 5 | GitHub release | `gh` authenticated as `rafli07p`, repo owner is `rafli-hl`. |
-| 6 | Audit finding 10 — bootstrap block-length sensitivity | A re-run of the block bootstrap at 3-day and 5-day blocks. Compute, not a text fix. |
-| 7 | Audit finding 6 — Jane numbers not reviewer-reproducible | Partly mitigated (crypto auto-downloads, synthetic suite is data-free); a seeded Jane mini-slice is still not shipped. |
-| 8 | Audit finding 3 residual — the "$3\times$" SE claim names no comparator | Author call: ~3.3x against the family's tightest per-row SE, 2.2x against normalized-GD, and per-step SN-OMD's SE is *lower* than normalized-GD's. |
+| 1 | **BLOCKER — `tab:replication` rests on a confounded comparison.** The ordering reverses at matched tuning budget (Phase 2, C10/Q6). | Re-running the ten-window table at matched budget, or narrowing the claim to what the current design supports. Author call on which. |
+| 2 | Wall-clock runtime figure for the Reproducibility Statement | A timed full-suite run over the Jane parquet. Open across four rounds. |
+| 3 | §4 sentence noting the deployed anytime schedule is not the more accurate one | Author decision. The gate (a decomposition giving trustworthy numbers) is satisfied; the investigation showed the gap was grid-tuning, so if this goes in it stands on the schedule argument alone — not automatic. |
+| 4 | GitHub release | `gh` authenticated as `rafli07p`, repo owner is `rafli-hl`. |
+| 5 | Audit finding 10 — bootstrap block-length sensitivity | A re-run of the block bootstrap at 3-day and 5-day blocks. Compute, not a text fix. |
+| 6 | Audit finding 6 — Jane numbers not reviewer-reproducible | Partly mitigated (crypto auto-downloads, synthetic suite is data-free); a seeded Jane mini-slice is still not shipped. |
+| 7 | Audit finding 3 residual — the "$3\times$" SE claim names no comparator | Author call: ~3.3x against the family's tightest per-row SE, 2.2x against normalized-GD, and per-step SN-OMD's SE is *lower* than normalized-GD's. |
 
 **Decided, not open.** RMSProp/Adam do *not* get ten-window rows — the schedule control
 is a single window at each method's own tuned rate, and `app:adaptive` says so. Whether
@@ -228,7 +227,7 @@ python scripts/research_batched_check.py          # tab:jane, tab:replication
 python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
 python -m pytest -q                               # 104 tests
-python scripts/make_anon_release.py               # double-blind supplement (currently fails, item 1)
+python scripts/make_anon_release.py               # double-blind supplement (307 files)
 ```
 
 Phase-2 research (branch `research/c10-q6`, preregistered in `experiment_matrix.yaml`):
@@ -255,10 +254,10 @@ drifted away from it.
 - [x] 0 undefined refs, clean build
 - [x] Tests pass (104)
 - [x] Tables regenerated from corrected code
-- [ ] **Anonymized supplement builds** — currently CRASHES (open item 1)
+- [x] Anonymized supplement builds, 0 identity tokens (307 files, 2026-08-24)
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
 - [x] Prior-venue material excluded from the supplement — exclusion glob repaired 2026-08-24 after the `paper/` move silently un-matched it; pinned by `tests/test_anon_exclusions.py`
 - [x] Tag on the submission commit (`c32db71`) — deliberately NOT moved onto the research branch
 - [ ] Wall-clock runtime disclosed
 - [ ] §4 schedule sentence — decide
-- [ ] **`tab:replication` re-run at matched budget, or claim narrowed** (open item 2)
+- [ ] **`tab:replication` re-run at matched budget, or claim narrowed** (open item 1)
