@@ -60,10 +60,38 @@ defect found is in comparison design, not arithmetic.
 
 ## C-6 — Mechanism: why does `M=2` at `lr=3` transfer across windows when `M=5` at `lr=2` does not?
 
-**Status: OPEN.** The winning matched configuration uses a *tighter* cap at a *higher*
-rate. Whether that reflects clip-binding frequency, an interaction between cap and the
-tracked scale's drift, or something else is unexamined. This is the natural successor
-direction.
+**Status: still OPEN.** Probed in direction C10M
+(`results/research/c10m/r_c10m_summary.md`); both registered hypotheses came back
+**inconclusive** and neither mechanism was established.
+
+- **Clip-binding frequency is not supported as the mechanism.** The two anchors differ
+  ten-fold in binding rate (published 0.0122, matched 0.1220), but across a 30-point
+  dyadic grid binding rate is almost a deterministic function of `M` alone and has the
+  *weakest* rank association with held-out performance of the four registered candidates
+  (`rho2 = 0.007`). Caveat recorded against my own design: `rho2` is a monotone statistic
+  and the surface is single-peaked, so the H3 test was under-powered by construction.
+- **Product sufficiency (`P = lr·M`) is inconclusive for performance**: `eta2_P = 0.578`
+  per-row against a registered survival threshold of 0.80.
+
+## C-7 — `P = lr·M` is a stability threshold
+
+**Status: EXPLORATORY — not preregistered, requires independent confirmation.**
+
+On the C10M grid, per-row divergence separates perfectly on the effective maximum step:
+20/20 configurations with `P ≤ 8` are stable, 10/10 with `P ≥ 16` diverge (per-step:
+1/5 at `P=8`, 3/4 at `P=16`). The true threshold lies in `(8, 16]`, unresolved.
+
+If it holds, it reframes the cap as a stability parameter rather than an accuracy control,
+and explains the published setting's fragility as proximity to the boundary (`P = 10`,
+optimum near `P = 2–4`, cliff at `P ≈ 16`). No divergence hypothesis was registered, so
+this is an observation generated from the data, not a result. It is the leading successor
+question and connects directly to `thm:stability`.
+
+**Trap recorded.** The registered *secondary* statistic `eta2_P` computed over all 30
+configurations with R² floored at −1 is 0.9873 and would read as overwhelming support for
+product sufficiency. It is an artifact of `P` predicting divergence: floored divergent
+configurations align by `P` by construction. The non-diverged figure (0.578) is the one
+that speaks to performance.
 
 ---
 

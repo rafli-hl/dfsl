@@ -45,19 +45,48 @@ comparison of scale processes **only** at matched budget over `(lr, threshold)`.
 sweep at a different learning rate. This is a fairness defect in the baseline's favour.
 The published SN-OMD ten-window figures are the under-tuned ones.
 
+## Session 2 — direction C10M, the clip-binding mechanism probe (complete)
+
+**Question.** Does the cap act through the effective maximum step `P = lr*M`, or through
+how often the clip binds?
+
+**Result: both registered hypotheses INCONCLUSIVE.** `eta2_P = 0.578` per-row against a
+0.80 survival threshold (H2); `rho2_b - rho2_logP = -0.011` against a +/-0.05 band (H3).
+Neither mechanism established. Full write-up: `results/research/c10m/r_c10m_summary.md`.
+
+**Clip-binding frequency is not supported.** The anchors differ ten-fold in binding rate
+(0.0122 published vs 0.1220 matched) but across the grid binding rate is almost a
+deterministic function of `M` alone and carries the weakest association with held-out
+performance of the four candidates. A single anchor pair could not have separated this
+from the concurrent `lr` and `P` differences, which is why the grid was needed.
+
+**Design error, recorded.** `rho2` is a monotone statistic and the surface is single-peaked
+in both `lr` and `M`, so the H3 test was under-powered by construction. An unregistered
+exact-grouping `eta2` (which does not assume monotonicity) reverses the implied ordering:
+`P` 0.578 > `M` 0.443 > `lr` 0.357 per-row. Recorded as post hoc.
+
+**Exploratory, not preregistered:** divergence separates perfectly on `P` per-row -- 20/20
+stable at `P <= 8`, 10/10 divergent at `P >= 16`. See ledger C-7.
+
+**Instrumentation gate passed bit-exactly** (worst diff 0.00e+00), so the binding
+statistics describe the algorithm the rest of the repository measures.
+
 ## What is now open
 
-1. **Mechanism (successor to C10/Q6).** Why does `M=2` at `lr=3` transfer across windows
-   when `M=5` at `lr=2` does not? Clip-binding frequency is the obvious first probe. It
-   was deliberately not run this session — it was not preregistered, and running it after
-   seeing the result would be post hoc.
-2. **Rolling-origin selection.** Every transfer claim here rests on one selection window.
+1. **Is `P = lr*M` the stability threshold it appears to be, and where is it exactly?**
+   The leading successor question. Sharp, registrable, and it connects to `thm:stability`,
+   which should imply a `P` boundary if the theory describes the implementation. The
+   observed bracket `(8, 16]` is unresolved on a dyadic grid.
+2. **The mechanism of accuracy among stable configurations remains unexplained.** No
+   registered scalar summarized the surface; `eta2_P = 0.578` leaves most between-config
+   variance unaccounted for.
+3. **Rolling-origin selection.** Every transfer claim here rests on one selection window.
    Whether the ordering survives a different choice of selection window is untested and is
    the single most load-bearing threat to the result.
-3. **Per-step grid adequacy.** The matched per-step arm selected at two grid edges
+4. **Per-step grid adequacy.** The matched per-step arm selected at two grid edges
    (`lr=8.0`, `M=0.5`); its optimum is unresolved. A widened per-step grid would be a
    separate, explicitly post-hoc run.
-4. **Re-run the full ten-window table at matched budget.** Only three arms were re-run.
+5. **Re-run the full ten-window table at matched budget.** Only three arms were re-run.
    Normalized-GD, AdaGrad-Norm, OGD and the uncapped endpoint were not, and their
    published tuning budgets have not been audited.
 
