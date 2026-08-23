@@ -344,3 +344,168 @@ decisions_that_follow:
 out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No method deleted, no control removed. Prior
   artifacts preserved: this run writes only to results/research/c10m/.
+---
+# ===========================================================================
+# THIRD PREREGISTRATION -- direction C10S (locate the stability threshold)
+# ===========================================================================
+direction: C10S
+parent_direction: C10M
+branch: research/c10-q6
+registered_at_commit: cb3d7ed
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  Follows the EXPLORATORY, unregistered observation logged as ledger C-7: on the C10M
+  dyadic grid, per-row divergence separated perfectly on the effective maximum step
+  P = lr*M (20/20 stable at P <= 8, 10/10 divergent at P >= 16). That observation was
+  generated from data, not registered. This direction registers it as a hypothesis and
+  tests it on configurations C10M never evaluated. It is a confirmation attempt on new
+  points, not a re-analysis of the same ones -- but the hypothesis still originated in the
+  data, and a positive result is weaker evidence than if it had been registered first.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  Is divergence governed by the effective maximum step P = lr*M alone, and if so, where
+  exactly is the threshold P*?
+
+why_existing_evidence_is_insufficient: >
+  C10M's dyadic grid brackets the per-row threshold only to (8, 16] -- a factor of two --
+  and confounds P with the (lr, M) split, because each iso-P anti-diagonal contains a
+  fixed small set of splits. More seriously, configurations sharing a P can have very
+  different TYPICAL steps: the step is (lr/sqrt(k))*min(r_t, M) with r_t = ||g_t||/s_{t-1},
+  so at P=16 the split (lr=32, M=0.5) clips 57% of steps while (lr=1, M=16) clips 0.1% and
+  takes typical steps ~30x smaller. If divergence still turns at the same P across such
+  splits, the maximum step really is the controlling quantity. If it does not, P is the
+  wrong parameterization and C-7 was an artifact of the dyadic grid's limited splits.
+
+# ---------------------------------------------------------------------------
+hypothesis_H4: >
+  P-SUFFICIENCY FOR STABILITY. There is a single threshold P* such that, along every ray
+  through (lr, M) space, configurations with P below P* are stable on all ten windows and
+  configurations above it diverge on at least one. Operationally, the per-ray thresholds
+  agree to within a factor of 1.25.
+
+null_H0: >
+  The divergence boundary depends on lr and M separately, not on their product: the per-ray
+  thresholds differ by a factor of 2 or more, and C-7 reflects the dyadic grid's limited
+  set of (lr, M) splits rather than a property of P.
+
+estimand:
+  primary: >
+    spread = max_over_rays(P*_M) / min_over_rays(P*_M), where P*_M is the bisection
+    threshold on the ray with cap M held fixed and lr = P/M. Per-row protocol.
+  point_estimate: >
+    P*_hat = geometric mean of the per-ray thresholds, reported with the per-ray bracket
+    endpoints (each bracket resolved to a factor of about 1.044).
+  secondary:
+    - per-step protocol, same quantities
+    - per-ray thresholds tabulated against M, to expose any systematic trend
+    - fraction of the ten windows that diverge at each visited P, not only the any-window
+      indicator, so the boundary's sharpness in windows is visible
+
+practical_significance_threshold:
+  H4_survives: spread <= 1.25
+  H4_falsified: spread >= 2.00
+  H4_inconclusive: 1.25 < spread < 2.00
+  rationale: >
+    C10M resolved the threshold only to a factor of 2, so a spread at or above 2 means this
+    scan has learned nothing C10M did not already imply and P is not pinning the boundary.
+    A spread within 1.25 across rays whose typical step sizes differ by more than an order
+    of magnitude would be a strong statement that the maximum step is what matters.
+
+falsification_condition: >
+  H4 is FALSIFIED if spread >= 2.00, i.e. the divergence boundary sits at materially
+  different P on different rays. That outcome retires C-7 as a grid artifact and means the
+  cap and the rate act on stability separately. It will be reported as such.
+
+# ---------------------------------------------------------------------------
+design:
+  rays: >
+    Six rays, each with the cap M held fixed and the rate set to lr = P/M, so that moving
+    along a ray changes P while holding the clip threshold constant. This is the design
+    choice that breaks the P/(lr,M) confound: at a given P the six rays differ in typical
+    step size by more than an order of magnitude.
+  M_RAYS: [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+  P_bracket: [6.0, 24.0]
+  bracket_justification: >
+    C10M places the per-row threshold in (8, 16]. The bracket is widened to [6, 24] so that
+    both endpoints are expected to be decided (6 stable, 24 divergent) on every ray, which
+    is what makes the endpoint check a real test rather than an assumption.
+
+  search: >
+    Deterministic log-space bisection, fully specified in advance so the procedure is not
+    an adaptive researcher degree of freedom. Evaluate both endpoints first. If both are
+    stable the ray is right-censored (P* > 24); if both divergent, left-censored (P* < 6);
+    either way the ray stops and is excluded from the spread statistic. Otherwise perform
+    exactly 5 bisections at P_mid = sqrt(P_lo * P_hi), moving P_hi down on divergence and
+    P_lo up on stability. Final bracket width is a factor of 4^(1/32) = 1.044; the ray
+    threshold P*_M is reported as sqrt(P_lo * P_hi) of the final bracket.
+  evaluations_per_ray: 7
+  censoring_rule: >
+    Censored rays are excluded from the spread statistic and reported explicitly. If two or
+    more of the six rays are censored, the spread statistic is declared uninformative and
+    no H4 verdict is issued.
+
+  monotonicity_validity_check: >
+    Bisection presupposes that divergence is monotone in P along a ray. This is checked,
+    not assumed: every stable P visited on a ray must be strictly below every divergent P
+    visited on that ray. A violation invalidates the bisection for that ray, and the ray is
+    reported as non-monotone and excluded from the spread statistic rather than having its
+    threshold quoted.
+
+  divergence_criterion: >
+    The inherited _diverged from research_windows_replication, unchanged, applied per
+    window; a configuration counts as divergent if it diverges on at least one of the ten
+    windows. This is exactly the rule that produced C-7, so the two are comparable.
+  windows: all ten, preloaded once (~1.0 GB, against 5.2 GB available)
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+
+analysis_plan:
+  - Run the bisection independently for each protocol; the two searches may visit different
+    points and that is expected.
+  - Apply the monotonicity check to every ray before any threshold is quoted.
+  - Report per-ray thresholds and brackets, the spread statistic, and the registered
+    H4 verdict.
+  - Report P*_hat as the geometric mean over uncensored, monotone rays.
+  - Tabulate per-ray threshold against M so a systematic trend is visible. ANY alternative
+    parameterization suggested by such a trend is post hoc and must be labelled as such;
+    it may be proposed but not tested on this data.
+
+seed_policy: deterministic given (data slice, lr, M) -- no seeds, no bootstrap.
+
+stopping_rule: >
+  Exactly 7 evaluations per ray per protocol, fixed in advance. No extra refinement after
+  seeing the answer, no widening of [6, 24], no additional rays. If the result is
+  inconclusive it is reported inconclusive.
+
+compute_budget:
+  configurations: 84   # 6 rays x 7 evaluations x 2 protocols
+  runs: 840            # x 10 windows
+  measured_cost_per_run: ~2.0s per-row, ~0.4s per-step
+  estimated_wallclock: ~17 minutes, single process; will exceed the 600s foreground cap
+
+scope_limits: >
+  The threshold is measured at 150000 rows per window on the Jane stream with the existing
+  standardization. The step is (lr/sqrt(k))*min(r_t, M), so the horizon enters through k
+  and a different row cap could move P*. Nothing here speaks to other datasets.
+
+decisions_that_follow:
+  if_H4_survives: >
+    C-7 is promoted from exploratory to supported, with a numeric threshold. The cap is a
+    stability parameter acting through lr*M, and thm:stability -- which bounds iterates
+    under a capped normalized step -- acquires a concrete empirical prediction to be checked
+    against: whether its constant reproduces P*.
+  if_H4_falsified: >
+    C-7 is retired as an artifact of the dyadic grid's limited (lr, M) splits. The cap and
+    the rate act on stability separately, and the mechanism question returns to open with
+    one fewer candidate.
+  if_inconclusive: >
+    Report the per-ray thresholds and the spread with no verdict. Do not re-run with a
+    different bracket or more rays inside this session.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration from this run may be reported as a recommended setting: this maps a
+  stability boundary and performs no selection. Writes confined to results/research/c10s/.
