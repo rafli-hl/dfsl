@@ -1,0 +1,36 @@
+{
+  "M_GRID": [
+    2.0,
+    5.0
+  ],
+  "LRS": [
+    0.2,
+    1.0
+  ],
+  "frozen": {
+    "per-row": {
+      "lr": 0.2,
+      "M": 2.0
+    },
+    "per-step": {
+      "lr": 0.2,
+      "M": 2.0
+    }
+  },
+  "repro": {
+    "per-row": {
+      "mine": 0.16845333333333334,
+      "manuscript": 0.29,
+      "abs_diff": 0.12154666666666664,
+      "ok": false
+    },
+    "per-step": {
+      "mine": 0.26872666666666667,
+      "manuscript": 0.2,
+      "abs_diff": 0.06872666666666666,
+      "ok": false
+    }
+  },
+  "repro_pass": false,
+  "wallclock_sec": 4.0
+}

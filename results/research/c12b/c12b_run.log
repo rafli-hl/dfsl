@@ -1,0 +1,36 @@
+================================================================================================
+C12B -- block-median SN-OMD at matched budget (cap is the ONLY change)
+grid: lr(9) x M(7) = 63  vs published lr(9) with cap pinned at 5
+================================================================================================
+
+########## per-row ##########
+  matched   frozen lr=3, M=10   window1 R2=+0.4255
+  published frozen lr=3, M=5   window1 R2=+0.4067
+  matched: 10 windows done (349s)
+  published: 10 windows done (536s)
+
+########## per-step ##########
+  matched   frozen lr=3, M=2   window1 R2=+0.3983
+  published frozen lr=2, M=5   window1 R2=+0.3511
+  matched: 10 windows done (715s)
+  published: 10 windows done (867s)
+
+================================================================================================
+BLOCK-MEDIAN: published (cap pinned) vs matched budget
+================================================================================================
+
+per-row:
+  arm        setting           all-10 mean     std      min    div  div_rel   held-out     win1
+  published  lr=3    M=5           +0.2913  0.0678  +0.1991    0/10      0/10    +0.2785  +0.4067
+  matched    lr=3    M=10          +0.2817  0.0851  +0.1687    0/10      0/10    +0.2657  +0.4255
+
+per-step:
+  arm        setting           all-10 mean     std      min    div  div_rel   held-out     win1
+  published  lr=2    M=5           +0.2012  0.1255  +0.0069    0/10      0/10    +0.1845  +0.3511
+  matched    lr=3    M=2           +0.2420  0.1087  +0.0952    0/10      0/10    +0.2246  +0.3983
+
+================================================================================================
+REPRODUCTION GATE -- published arm vs the manuscript's block-median row
+================================================================================================
+  per-row   mine=+0.2913  manuscript=+0.29  diff=0.0013  OK
+  per-step  mine=+0.2012  manuscript=+0.20  diff=0.0012  OK

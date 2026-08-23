@@ -286,6 +286,23 @@ the inherited absolute threshold -- though the exact count is criterion-dependen
 **No manuscript edit.** The paper's `windows_replication*.csv` are untouched, so its current
 numbers and the guard pinning them both still hold.
 
+## Session 11 — direction C12B, block-median at matched budget (complete)
+
+**Reproduction gate passed** (published arm re-runs to 0.2913 / 0.2012 against the manuscript's
+0.29 / 0.20), so the comparison is sound.
+
+**Matched budget is NOT a free win.** Per-row it makes block-median *worse* on held-out data:
+the wider search picks `M=10`, wins window 1 (+0.4255 vs +0.4067) and loses held-out (+0.2657
+vs +0.2785). Per-step it helps substantially (+0.2012 -> +0.2420 all-ten). Ledger C-16.
+
+This is the single-selection-window threat biting concretely rather than hypothetically, and it
+must be stated whenever the matched-budget result is presented.
+
+**The table can now be adopted consistently.** Both SN-OMD rows at matched budget, CM untouched
+(its 216-config grid over three genuinely free parameters is correct treatment). The paper's
+honest headline survives: block-median 0.28 vs CM 0.29 still ties rather than beats, exactly as
+the abstract says.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

@@ -1,0 +1,13 @@
+protocol,arm,window_idx,lr,M,weighted_r2,diverged,diverged_rel
+per-row,matched,1,0.2,2.0,0.3078,false,false
+per-row,matched,2,0.2,2.0,0.10392,false,false
+per-row,matched,3,0.2,2.0,0.09364,false,false
+per-row,published,1,0.2,5.0,0.3078,false,false
+per-row,published,2,0.2,5.0,0.10392,false,false
+per-row,published,3,0.2,5.0,0.09364,false,false
+per-step,matched,1,0.2,2.0,0.38223,false,false
+per-step,matched,2,0.2,2.0,0.22157,false,false
+per-step,matched,3,0.2,2.0,0.20238,false,false
+per-step,published,1,0.2,5.0,0.38223,false,false
+per-step,published,2,0.2,5.0,0.22157,false,false
+per-step,published,3,0.2,5.0,0.20238,false,false

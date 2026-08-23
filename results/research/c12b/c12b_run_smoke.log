@@ -1,0 +1,36 @@
+================================================================================================
+C12B -- block-median SN-OMD at matched budget (cap is the ONLY change)
+grid: lr(2) x M(2) = 4  vs published lr(2) with cap pinned at 5
+================================================================================================
+
+########## per-row ##########
+  matched   frozen lr=0.2, M=2   window1 R2=+0.3078   <-- lr=0.2 at edge; M=2 at edge <-- collapsed toward an endpoint
+  published frozen lr=0.2, M=5   window1 R2=+0.3078
+  matched: 10 windows done (2s)
+  published: 10 windows done (3s)
+
+########## per-step ##########
+  matched   frozen lr=0.2, M=2   window1 R2=+0.3822   <-- lr=0.2 at edge; M=2 at edge <-- collapsed toward an endpoint
+  published frozen lr=0.2, M=5   window1 R2=+0.3822
+  matched: 10 windows done (4s)
+  published: 10 windows done (4s)
+
+================================================================================================
+BLOCK-MEDIAN: published (cap pinned) vs matched budget
+================================================================================================
+
+per-row:
+  arm        setting           all-10 mean     std      min    div  div_rel   held-out     win1
+  published  lr=0.2  M=5           +0.1685  0.1208  +0.0936    0/10      0/10    +0.0988  +0.3078
+  matched    lr=0.2  M=2           +0.1685  0.1208  +0.0936    0/10      0/10    +0.0988  +0.3078
+
+per-step:
+  arm        setting           all-10 mean     std      min    div  div_rel   held-out     win1
+  published  lr=0.2  M=5           +0.2687  0.0988  +0.2024    0/10      0/10    +0.2120  +0.3822
+  matched    lr=0.2  M=2           +0.2687  0.0988  +0.2024    0/10      0/10    +0.2120  +0.3822
+
+================================================================================================
+REPRODUCTION GATE -- published arm vs the manuscript's block-median row
+================================================================================================
+  per-row   mine=+0.1685  manuscript=+0.29  diff=0.1215  *** MISMATCH ***
+  per-step  mine=+0.2687  manuscript=+0.20  diff=0.0687  *** MISMATCH ***

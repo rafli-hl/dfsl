@@ -348,6 +348,35 @@ criterion-dependent.
 
 ---
 
+## C-16 — Matched budget is not uniformly favourable
+
+**Status: SUPPORTED (C12B).**
+
+Applying the same cap-tuning correction to the block-median SN-OMD row:
+
+| protocol | published (cap pinned 5) | matched | held-out change |
+|---|---|---|---|
+| per-row | 0.2913 (`lr=3, M=5`) | 0.2817 (`lr=3, M=10`) | **−0.0128** |
+| per-step | 0.2012 (`lr=2, M=5`) | 0.2420 (`lr=3, M=2`) | **+0.0401** |
+
+Per-row the wider search picks `M=10`, which **wins window 1** (+0.4255 vs +0.4067) and then
+**loses held-out** (+0.2657 vs +0.2785) — selection overfitting, demonstrated rather than
+hypothesized. Reproduction gate passed (published arm re-runs to 0.2913 / 0.2012 against the
+manuscript's 0.29 / 0.20).
+
+**The correction removes a defect in the comparison; it does not reliably improve the method
+it is applied to.** C12 gained +0.0961 per-row for plain SN-OMD; C12B loses 0.0128 for
+block-median. This is the single-selection-window threat biting concretely, and it should be
+stated whenever the matched-budget result is presented.
+
+**Consequence for `tab:replication`:** adopting consistently leaves the paper's honest headline
+intact — block-median 0.28 against Cutkosky–Mehta 0.29 still **ties rather than beats**, which
+is what the abstract already claims. Cutkosky–Mehta is untouched: its 216-configuration grid is
+`lr(9) × τ(6) × β(4)` over three genuinely free parameters, which is correct treatment, not
+favouritism.
+
+---
+
 ## Untouched this phase
 
 `UNTOUCHED` — not examined, status unchanged:
