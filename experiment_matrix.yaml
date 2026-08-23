@@ -864,3 +864,125 @@ decisions_that_follow:
 out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No method deleted, no control removed. No
   configuration reported as a recommended setting. Writes confined to results/research/c10t/.
+---
+# ===========================================================================
+# SIXTH REGISTRATION -- direction C10C (instrument construction, ledger C-10)
+# ===========================================================================
+direction: C10C
+parent_direction: C10T
+branch: research/c10-q6
+registered_at_commit: a4e5a9e
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+what_this_is_not: >
+  This is not a hypothesis test. It builds a measuring instrument and states, in advance, the
+  acceptance tests it must pass. The distinction matters because the failure mode here is not
+  a false positive -- it is tuning the instrument until it reproduces thresholds I already
+  know and like. Every acceptance test below is therefore a property of the INSTRUMENT
+  (invariance, sanity, robustness), and none references the value or location of any
+  threshold. No threshold search is run in this session.
+
+known_contamination: >
+  I already know the numbers a threshold search produced under the old criteria: Jane per-row
+  P* in [8.67, 14.58], crypto in [6.60, 37.95], synthetic void. A criterion that happened to
+  reproduce those would be indistinguishable from one fitted to them. That is why V1-V5 below
+  test the instrument and not its output, and why locating thresholds is deferred.
+
+# ---------------------------------------------------------------------------
+problem_statement: >
+  Ledger C-10. Two families of divergence criterion are in use and neither transfers.
+  (1) LOSS-BASED WITH ABSOLUTE THRESHOLDS. Jane's _diverged fires when peak rolling weighted
+      squared error exceeds 50 -- a number calibrated to Jane's standardized targets. On a
+      Student-t(1.5) stream the target has infinite variance and the statistic is ~34600 for
+      ANY predictor, including the zero predictor, so the rule fires on everything. Crypto's
+      rule uses 1e3 and fired on nothing, even at P=128.
+  (2) STATE-BASED. Iterate blow-up cannot happen for a capped method: the step is bounded by
+      (lr/sqrt(k))*M so ||w_T|| <= 2*lr*M*sqrt(T), which is exactly what thm:stability
+      guarantees. Any state threshold is either unreachable or fires only on the uncapped
+      endpoint.
+  A third non-comparability sits inside (1): _peak_rolling_loss uses a FIXED 2000-step window,
+  which is 1.3% of a Jane window, 33% of a crypto window, and 10% of a synthetic stream.
+
+# ---------------------------------------------------------------------------
+proposed_criterion: >
+  RELATIVE DIVERGENCE. Everything is measured against the best constant predictor on the SAME
+  window, so no per-stream constant appears.
+  Let c* = weighted mean of y (the best constant under weighted squared loss),
+  L_model = weighted MSE of the learner, L_ref = weighted MSE of c*,
+  Ppeak_model, Ppeak_ref = peak rolling weighted squared error of each, over a window of
+  max(100, floor(T/10)) steps -- a FRACTION of the stream, not a fixed count.
+  Then
+      diverged  <=>  (L_model / L_ref >= 2)  OR  (Ppeak_model / Ppeak_ref >= kappa)
+  with kappa = 10, and either ratio non-finite counting as divergence.
+  Reading: the learner is divergent if it is at least twice as bad as doing nothing overall,
+  or if its worst local stretch is an order of magnitude worse than doing nothing there.
+  The first clause is the scale-free half of the inherited rule, restated against the best
+  constant instead of zero. The second replaces the absolute threshold that failed.
+  kappa is a dimensionless multiple, not a loss level; V5 tests whether it matters.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1_reference_sanity: >
+    The best-constant predictor and the zero predictor must be classified NON-DIVERGENT on
+    every window of every stream. This is the property the inherited Jane rule violates: it
+    calls the zero predictor divergent on synthetic. PASS requires 100% -- a criterion that
+    flags doing-nothing as divergence is measuring the stream, not the learner.
+  V2_detects_true_blowup: >
+    Ground truth is taken from the iterate norm, which is INDEPENDENT of the criterion and is
+    genuinely unbounded for uncapped methods: a run has truly blown up if max_t ||w_t|| > 1e6.
+    Every such run must be classified divergent. PASS requires 100% recall on this set. The
+    probe set is plain OGD and the uncapped endpoint (cap=1e9) across a rate grid, which is
+    where real explosion lives.
+  V3_monotone_in_P: >
+    Along a ray with M fixed and lr = P/M, no stable configuration may sit above a divergent
+    one. Bisection presupposes this; if the instrument does not deliver it, the search
+    procedure used throughout this line of work is invalid. PASS requires 0 violations.
+  V4_non_vacuous: >
+    On every stream the criterion must classify at least one configuration in the probe grid
+    as stable AND at least one as divergent. This is what both inherited criteria failed on
+    synthetic, in opposite directions. PASS requires both classes present on all three streams.
+  V5_kappa_robustness: >
+    Classifications are recomputed at kappa in {5, 10, 20}. The fraction of grid
+    configurations whose classification changes across that range must be below 0.10 on every
+    stream. If it is not, the criterion is an absolute threshold wearing a ratio's clothing.
+
+overall_acceptance: >
+  The criterion is ACCEPTED only if V1-V5 all pass on all three streams. If any test fails the
+  criterion is REJECTED and reported as such; it is not patched and re-run within this
+  session, because patching against a failed acceptance test with the thresholds already known
+  is how the instrument gets fitted to the answers.
+
+# ---------------------------------------------------------------------------
+design:
+  streams:
+    jane: three windows (indices 1, 5, 9 of the ten), 150000 rows, per-row
+    crypto: three windows (indices 1, 5, 9 of the ten), 6000 bars, per-row
+    synthetic: three independent streams (seeds 1000, 1004, 1008), T=20000, tail p=1.5
+  stream_subsetting_justification: >
+    Three windows per stream rather than ten. These are instrument checks, not measurements,
+    and V1-V5 are pass/fail per configuration; more windows would multiply cost without
+    changing what any test can conclude. Indices are fixed in advance.
+  probe_grid:
+    capped: lr in [0.5, 1, 2, 4, 8] x M in [0.5, 2, 8, 32]
+    blowup_probe: OGD and uncapped (cap=1e9) at lr in [0.01, 0.1, 1.0, 4.0]
+  ray_for_V3: M in [0.5, 2, 8, 32], P in a fixed geometric ladder from 0.5 to 128 (12 points)
+
+  comparison_reporting: >
+    For context only, the same grid is classified by the two inherited criteria and the
+    agreement rate with the new one is reported. This is DESCRIPTIVE. Disagreement is not
+    evidence against either, since the inherited criteria are already known not to transfer.
+
+instrumentation: >
+  Reuses the gate-verified instrumented runner pattern: the runner must reproduce
+  anchor_perrow to 1e-9 weighted R2 on at least four configurations before any classification
+  is computed, or HALT.
+
+out_of_scope_this_session: >
+  No threshold search. No re-run of C-7, C-8 or C-9. No manuscript work. The deliverable is a
+  validated (or rejected) criterion plus its acceptance report. Relocating the thresholds under
+  the new instrument is the NEXT direction and is deliberately not started here, so that the
+  instrument is fixed before it is pointed at the questions it was built for.
+
+compute_budget:
+  estimated_wallclock: ~5 minutes, dominated by Jane's three 150k-row windows
