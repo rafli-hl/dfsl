@@ -210,16 +210,40 @@ Not done here -- the registration forbids patching in the session that ran the t
 exactly the rule that matters when I have a clean argument for a change that also makes my
 own instrument pass.
 
+## Session 8 — direction C10C3, dropping V4 (ACCEPTED, with qualifications)
+
+**Verdict: criterion ACCEPTED.** V1/V2/V3/V5/V6/V8 pass. Write-up:
+`results/research/c10c3/r_c10c3_summary.md`.
+
+**V8 (blind, the property C-10 exists for).** A pure change of units on `(y, preds)` leaves
+the new criterion identical on 100% of runs; the inherited Jane rule changes its answer on
+54-94% (invariant fraction 0.458 / 0.236 / 0.062). The unit-carrying failure is now measured
+rather than argued.
+
+**V7 (blind diagnostic, and it indicts my own construction).** Across 109 divergent runs the
+peak clause changed ZERO decisions. The criterion reduces to `L_ratio >= 2` alone, the peak
+machinery and `kappa` carry no weight, and V5's pass was VACUOUS -- zero movement across
+`kappa` is what an inert parameter looks like.
+
+**What the fix actually was.** `L_ratio >= 2` is exactly `R2 <= -1` against the best constant,
+and that clause was already scale-invariant. The inherited rule's failure to transfer came
+entirely from its absolute `peak > 50` clause; the repair is to delete it. The peak-ratio
+replacement I built contributes nothing.
+
+**Qualifications carried forward:** V4 was removed by user decision rather than evidence; only
+V1/V2/V3/V5 (C10C), V6 (C10C2) and V8 (here) were blind when run; V6 is a marginal pass on
+Jane (0.967 vs the inherited 1.000); amendment A1's 40000-row Jane cap applies throughout.
+
 ## What is now open
 
-1. **A suite that can actually be passed.** (Ledger C-10.) Drop V4 -- it is
-   unfalsifiable for capped methods, since no criterion-independent ground truth of
-   divergence exists when the iterates are provably bounded -- and keep V6. Degeneracy is
-   already excluded by V1 and V2, which are anchored on uncapped/OGD probes where the iterate
-   norm genuinely is unbounded. Given the pattern, the next registration must state
-   explicitly, BEFORE choosing any threshold, whether the quantity it applies to is one
-   `thm:stability` already bounds. Until the criterion passes, it is not accepted and must not
-   be used to locate thresholds, so C-8 stays untestable.
+1. **Simplify the criterion to its one working clause**, or find a stream where the peak
+   clause earns its place. V7 showed it inert across 109 divergent runs. That is a change to
+   the criterion, so it needs its own registration rather than an edit in the session that
+   found the redundancy.
+2. **Relocate `P*` under the accepted criterion** (ledger C-7). This is what C-10 was built
+   to unblock, and it is now unblocked. Given the pattern of the last three registrations,
+   state explicitly BEFORE choosing any threshold whether the quantity it applies to is one
+   `thm:stability` already bounds.
 2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
    capped normalized step and should imply a boundary; whether its constant reproduces
    `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not

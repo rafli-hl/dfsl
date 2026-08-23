@@ -1,0 +1,68 @@
+{
+  "results": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V5": true,
+    "V6": true,
+    "V8": true
+  },
+  "accepted": true,
+  "v6": {
+    "synthetic": {
+      "new": 1.0,
+      "jane": 1.0,
+      "pass": true
+    },
+    "crypto": {
+      "new": 0.9833333333333333,
+      "jane": 0.9833333333333333,
+      "pass": true
+    },
+    "jane": {
+      "new": 0.9666666666666667,
+      "jane": 1.0,
+      "pass": true
+    }
+  },
+  "v8": {
+    "crypto": {
+      "new": 1.0,
+      "jane": 0.2361111111111111,
+      "pass": true
+    },
+    "synthetic": {
+      "new": 1.0,
+      "jane": 0.0625,
+      "pass": true
+    },
+    "jane": {
+      "new": 1.0,
+      "jane": 0.4583333333333333,
+      "pass": true
+    }
+  },
+  "v7": {
+    "synthetic": {
+      "P_only": 0,
+      "L_only": 3,
+      "both": 6,
+      "divergent": 9
+    },
+    "jane": {
+      "P_only": 0,
+      "L_only": 6,
+      "both": 60,
+      "divergent": 66
+    },
+    "crypto": {
+      "P_only": 0,
+      "L_only": 13,
+      "both": 21,
+      "divergent": 34
+    }
+  },
+  "v7_reducible": true,
+  "jane_rows": 40000,
+  "wallclock_sec": 280.3
+}

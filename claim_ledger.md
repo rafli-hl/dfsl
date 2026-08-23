@@ -212,9 +212,34 @@ V1/V2/V3/V5 from C10C plus V6 from C10C2. Honest cost recorded: on Jane the new 
 slightly *less* truncation-stable than the inherited rule (0.967 vs 1.000), passing on the
 registered 0.05 margin rather than by matching.
 
-The next registration should drop V4 with the argument above and keep V6. Until the criterion
-passes a suite that can be passed, it is not accepted and must not be used to locate
-thresholds.
+**RESOLVED (C10C3, 2026-08-23): criterion ACCEPTED**, at
+`scripts/research_divergence.py`, with qualifications that are load-bearing rather than
+decorative.
+
+V4 was dropped **by user decision, not by evidence** — I argued it unfalsifiable for capped
+methods and flagged that this is the argument a motivated author produces. V1/V2/V3/V5/V6/V8
+all pass.
+
+**V8, the blind test that validates the premise:** a pure change of units on `(y, preds)`
+leaves the new criterion's classification identical on 100% of runs, while the inherited Jane
+rule changes its answer on 54%–94% (invariant fraction 0.458 jane / 0.236 crypto / 0.062
+synthetic). The inherited criteria demonstrably carry units; this one does not.
+
+**V7, the blind diagnostic that indicts my own construction:** across 109 divergent runs on
+three streams the peak clause changed **zero** decisions. The criterion is reducible to
+`L_ratio ≥ 2` alone; the peak machinery and `κ` carry no weight; and **V5's pass was vacuous**
+— zero movement across `κ` is what an inert parameter looks like.
+
+**What the C-10 fix actually was.** `L_ratio ≥ 2` is exactly `R² ≤ −1` against the best
+constant, and that clause was *already* scale-invariant (scaling `y` and `preds` by `c` scales
+model and baseline error alike). So the inherited rule's failure to transfer was caused
+entirely by its absolute `peak > 50` clause, and the repair is to delete it. The peak-ratio
+replacement contributes nothing on any stream tested — the real fix is far smaller than the
+machinery built around it.
+
+Follow-up, not started: simplify the criterion to its one working clause, or find a stream
+where the peak clause earns its place. That is a change to the criterion and needs its own
+registration.
 
 ---
 
