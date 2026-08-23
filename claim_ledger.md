@@ -192,9 +192,29 @@ of the instrument; on a stream where nothing diverges a correct criterion must r
 class. That is a defect in a test I wrote, and the registered verdict stands regardless: the
 suite is not edited in the session that ran it.
 
-Next step is a NEW registration respecifying V4 as non-vacuity *conditional on a divergent
-configuration existing in the probe set*, then re-validating. Until the criterion passes a
-corrected suite, no cross-stream threshold claim can be made.
+**C10C2 respecified V4 and re-validated. REJECTED again — and V4 turned out to be
+unfalsifiable, not merely mis-tuned.** Its applicability condition asked whether the capped
+grid contains a run with `max‖w‖ > 1e6`; `thm:stability` bounds `‖w_T‖ ≤ 2·lr·M·√T`, so at the
+grid's largest `P = 256` the bound is 102 400 / 72 408 / 39 659 on jane / synthetic / crypto
+and observed maxima are 276.6 / 160.6 / 128.3. No capped configuration can ever satisfy it.
+This is the same error as C10T's `1e8` state threshold, made a second time.
+
+**The conclusion: for capped methods there is no criterion-independent ground truth of
+divergence.** The iterates are provably bounded, so divergence for this family is inherently a
+loss judgment — which is what the criterion measures. Non-vacuity within the capped grid
+cannot be validated against independent ground truth by any construction. Degeneracy is
+already excluded without it: always-divergent fails V1, always-stable fails V2, both anchored
+on uncapped/OGD probes where `‖w‖` genuinely is unbounded.
+
+**Standing on evidence rather than verdict:** five of six tests pass, including the one blind
+test (V6, truncation stability, comparative against the inherited rule). Blind evidence is now
+V1/V2/V3/V5 from C10C plus V6 from C10C2. Honest cost recorded: on Jane the new criterion is
+slightly *less* truncation-stable than the inherited rule (0.967 vs 1.000), passing on the
+registered 0.05 margin rather than by matching.
+
+The next registration should drop V4 with the argument above and keep V6. Until the criterion
+passes a suite that can be passed, it is not accepted and must not be used to locate
+thresholds.
 
 ---
 

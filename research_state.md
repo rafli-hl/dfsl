@@ -187,14 +187,39 @@ grid, so C-7's `P*` needs scale drift and is not a property of the algorithm alo
 exclusion failed open while the identity self-check still reported clean. Fixed, and pinned by
 `tests/test_anon_exclusions.py` (suite 84 -> 104, verified by mutation).
 
+## Session 7 — direction C10C2, correcting V4 (REJECTED again)
+
+**Registered verdict: REJECTED.** V1, V2, V3, V5 pass; **V6 (new and blind) passes**; V4
+fails -- and this time V4 turned out to be unfalsifiable rather than mis-tuned. Write-up:
+`results/research/c10c2/r_c10c2_summary.md`.
+
+**The same error twice.** V4's applicability asked for a capped configuration with
+`max||w|| > 1e6`. `thm:stability` bounds `||w_T|| <= 2*lr*M*sqrt(T)`, so at the grid's largest
+`P = 256` the bound is 102400 / 72408 / 39659 and observed maxima are 276.6 / 160.6 / 128.3.
+Unreachable by three to four orders of magnitude -- the same class of error as C10T's `1e8`
+state threshold, which I had already diagnosed and written up before repeating it.
+
+**V6, the one blind test:** truncation agreement new vs inherited -- synthetic 1.000/1.000,
+crypto 0.983/0.983, jane 0.967/1.000. Passes on the registered 0.05 margin, but on Jane the
+new criterion is genuinely *less* stable than the inherited rule, which is a real cost and is
+reported as one.
+
+**Conclusion that follows:** for capped methods there is no criterion-independent ground truth
+of divergence, because the iterates are provably bounded. V4 should be dropped, not retuned.
+Not done here -- the registration forbids patching in the session that ran the test, which is
+exactly the rule that matters when I have a clean argument for a change that also makes my
+own instrument pass.
+
 ## What is now open
 
-1. **Re-validate the C-10 criterion under a corrected V4.** (Ledger C-10.) The candidate
-   exists and passes four of five acceptance tests; V4 must be respecified as non-vacuity
-   *conditional on a divergent configuration existing in the probe set*. That is a
-   registration change, so it needs a new registration rather than an edit to C10C's. Until
-   the criterion passes a corrected suite, no cross-stream threshold claim is possible and
-   C-8 stays untestable.
+1. **A suite that can actually be passed.** (Ledger C-10.) Drop V4 -- it is
+   unfalsifiable for capped methods, since no criterion-independent ground truth of
+   divergence exists when the iterates are provably bounded -- and keep V6. Degeneracy is
+   already excluded by V1 and V2, which are anchored on uncapped/OGD probes where the iterate
+   norm genuinely is unbounded. Given the pattern, the next registration must state
+   explicitly, BEFORE choosing any threshold, whether the quantity it applies to is one
+   `thm:stability` already bounds. Until the criterion passes, it is not accepted and must not
+   be used to locate thresholds, so C-8 stays untestable.
 2. **Compare `P*` against `thm:stability`'s constant.** The theorem bounds iterates under a
    capped normalized step and should imply a boundary; whether its constant reproduces
    `P*_hat ~ 11.5` is the one place this empirical line touches the paper's theory. Not
