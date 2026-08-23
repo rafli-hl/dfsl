@@ -1216,3 +1216,114 @@ compute_budget:
 out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
   C-9. Writes go to results/research/c10c3/ and overwrite nothing.
+---
+# ===========================================================================
+# NINTH REGISTRATION -- direction C12 (regenerate tab:replication, matched budget)
+# ===========================================================================
+direction: C12
+parent_direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: c135eda
+status: REGISTERED_BEFORE_EXECUTION
+kind: ARTIFACT_REGENERATION
+
+what_this_is: >
+  A like-for-like regeneration of tab:replication with the tuning-budget confound removed.
+  Not a new hypothesis: C10/Q6 already established, on a three-arm subset, that equalizing the
+  budget reverses the SN-OMD vs fixed-tau ordering. This extends that correction to the whole
+  six-method table so the manuscript has a defensible artifact to cite.
+
+provenance_disclosure: >
+  I already know what the three-arm subset does: at matched budget SN-OMD reaches 0.2270
+  held-out per-row against fixed-tau's 0.2020, winning 9/9 held-out windows. So the direction
+  of the SN-OMD/fixed-tau change is not news. What is NOT known, and is the reason to run the
+  full table: where the other four methods land relative to a properly tuned SN-OMD, whether
+  the divergence partition survives, and whether tuning M collapses SN-OMD onto one of its own
+  endpoints (normalized-GD at M->0, scale-adaptive OGD at M->inf), which would make three rows
+  of the table redundant rather than three distinct methods.
+
+# ---------------------------------------------------------------------------
+the_defect_being_corrected: >
+  research_windows_replication._grid gives fixed-tau clip a joint 2-D grid over (lr x tau) =
+  10 x 7 = 70 configurations and gives SN-OMD a 1-D grid over lr alone = 10, with the cap
+  pinned at M=5 -- a value selected in a separate sweep (jane_msweep.csv) at a single fixed
+  lr=0.5, never jointly with the lr used here. Both methods have exactly one threshold
+  parameter; one gets it tuned and the other does not.
+
+which_methods_change_and_why:
+  SN-OMD: >
+    1-D (lr) -> 2-D (lr x M). This is the correction. M is a free threshold parameter and was
+    pinned; tau, its structural analogue in the baseline, was tuned.
+  fixed-tau clip: unchanged -- already 2-D over (lr x tau)
+  Normalized-GD: >
+    unchanged, 1-D. It is the M->0 limit of the SN-OMD family and has NO free threshold
+    parameter, so a 1-D grid is intrinsic to the method rather than a deficiency in its
+    treatment. Same for Scale-adaptive OGD (the M->inf limit).
+  OGD: unchanged, 1-D -- no threshold parameter
+  AdaGrad-Norm: unchanged, 1-D -- no threshold parameter
+  note: >
+    Giving every method a 2-D grid would be the wrong fix. The principle is that each method
+    is tuned over ITS OWN free parameters; the defect was that one method's free parameter was
+    frozen while the comparator's was not.
+
+# ---------------------------------------------------------------------------
+design:
+  unchanged_from_published: >
+    Ten windows, 150000 rows each, selection on window 1, hyperparameters then frozen, both
+    protocols, the same lr grids, and the same inherited _diverged criterion. Only SN-OMD's
+    grid changes. Everything else is held fixed so the difference is attributable.
+  M_GRID: [0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 100.0]
+  m_grid_justification: >
+    Reused verbatim from the C10/Q6 registration rather than re-chosen. Seven values, matching
+    len(TAUS), so SN-OMD and fixed-tau clip receive identical configuration counts. It also
+    contains 5.0, so the published configuration remains reachable and the new selection can
+    only be as good or better on window 1.
+  divergence_criterion:
+    primary: >
+      The inherited _diverged, unchanged, so the regenerated table is directly comparable to
+      the published one. Changing both the tuning and the criterion at once would make the
+      difference unattributable.
+    secondary: >
+      The C-10 relative criterion accepted in C10C3, reported alongside. It is the criterion
+      that actually transfers across streams, and reporting both shows whether the divergence
+      partition is an artifact of the old rule.
+
+reported_quantities:
+  - mean, std, min, max and divergence count over ALL TEN windows -- the published table's
+    format, for like-for-like comparison
+  - the same over HELD-OUT windows 2-10 only, reported separately. C10/Q6 showed the
+    published all-ten mean pools its own selection window and conceals selection overfitting;
+    both are reported and neither is suppressed
+  - window-1 (in-sample) score per method
+  - selected hyperparameters per method and protocol, with an explicit grid-boundary check
+  - for SN-OMD, the selected M, and whether it sits at 0.5 or 100 (its grid edges), which
+    would mean it has collapsed toward normalized-GD or scale-adaptive OGD
+
+what_would_be_a_surprise: >
+  Stated in advance so it cannot be rationalized after the fact.
+  (a) SN-OMD selecting M at a grid edge, which would make it a relabelling of one of the two
+      endpoint methods rather than a distinct row.
+  (b) The divergence partition changing -- the published table has OGD and the uncapped
+      endpoint diverging while every bounded scale-free method does not. Tuning M cannot make
+      OGD stable, so a change there would indicate something wrong with the harness.
+  (c) The regenerated fixed-tau, OGD, normalized-GD, scale-adaptive and AdaGrad rows differing
+      from the published CSV at all. Their grids are untouched, so they must reproduce; a
+      REPRODUCTION GATE at 0.005 weighted R2 halts the run if they do not.
+
+artifact_policy: >
+  Writes to results/research/c12/ ONLY. windows_replication.csv and
+  windows_replication_summary.csv are NOT overwritten: they are what the manuscript currently
+  cites and what tests/test_artifacts_fresh.py::test_paper_number_matches_its_csv pins the
+  printed numbers to. Regenerating them in place would destroy the cited artifact and trip
+  that guard, which is the guard working as designed.
+
+out_of_scope: >
+  NO manuscript edit. This produces a corrected artifact and a report; deciding what
+  tab:replication should say, and rewriting the prose and the table, is a separate step
+  requiring author judgement about which claim the paper now makes.
+
+seed_policy: deterministic given (window, method, hyperparameters) -- no seeds
+stopping_rule: one pass over the registered grids; no adaptive extension
+compute_budget:
+  runs: ~466  # 346 tuning + 120 evaluation, across both protocols
+  estimated_wallclock: ~10 minutes; may exceed the 600s foreground cap
