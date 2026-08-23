@@ -685,3 +685,182 @@ out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No method deleted, no control removed. No
   configuration is reported as a recommended setting. Writes confined to
   results/research/c10r/.
+---
+# ===========================================================================
+# FIFTH PREREGISTRATION -- direction C10T (clean test of C-8, synthetic suite)
+# ===========================================================================
+direction: C10T
+parent_direction: C10R
+branch: research/c10-q6
+registered_at_commit: 6b2c9e5
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  This is the clean test of C-8 that C10R failed to deliver. Two contaminations are already
+  spent and are disclosed rather than worked around.
+  (1) The frozen quantile level q* = p99 was NOT chosen by a preregistered fit. It was the
+  argmin of a POST-HOC computation in C10R, run on Jane per-step after the registered
+  per-row fit came back degenerate. It is still a fit on the generating stream, which is
+  what the design allows, but it was not blind.
+  (2) Jane generated C-8 and crypto's answer has been seen, so neither can serve as the test
+  stream again. The synthetic suite has never been touched by this line of work; it is the
+  only uncontaminated stream left, and after this run there will be none.
+  Nothing about the synthetic streams below has been inspected before registration.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  Does the realized maximum step R = lr * min(r_q, M) locate the divergence boundary better
+  than the nominal P = lr*M, on a stream that played no part in generating the hypothesis?
+
+why_existing_evidence_is_insufficient: >
+  C10R's registered test was vacuous: its stage-1 fit selected q = max, Jane's r_max exceeds
+  every M on the grid, so R was identically equal to P and the ratio was 1.0000 by
+  construction. The favourable crypto ratios (0.433 at p99, 0.730 at p90) were computed post
+  hoc using crypto's own quantiles on crypto's own thresholds -- fitted and evaluated on the
+  same data. C-8 is therefore untested in both directions.
+
+# ---------------------------------------------------------------------------
+hypothesis_H6: >
+  With q frozen at p99, the realized maximum step collapses the per-ray divergence
+  thresholds substantially better than the nominal one on synthetic streams.
+
+hypothesis_H7: >
+  If C-8 is a general mechanism rather than a stream-specific coincidence, it holds across
+  tail regimes: the ratio clears the survival threshold at all three tail indices, not only
+  the primary one.
+
+null_H0: >
+  The realized maximum step is no better than the nominal one on an uncontaminated stream.
+  C-8 is then a post-hoc rationalization and is retired.
+
+# ---------------------------------------------------------------------------
+design:
+  stream: >
+    The repository's own synthetic generator (scripts/research_synthetic.py), reused at its
+    canonical settings rather than re-chosen: d=5, T=20000, sigma=1.0, x ~ N(0, I_d),
+    y_t = <u, x_t> + eps_t with eps_t symmetric Student-t of tail index p, static unit-norm
+    comparator u. Data-free, so a reviewer can reproduce it exactly, which the Jane numbers
+    are not.
+  window_analogue: >
+    Ten INDEPENDENT replicate streams, seeds 1000..1009, each drawing its own u, X and eps.
+    These play the role the ten time windows play on Jane and crypto. They are genuinely
+    independent rather than disjoint slices of one record, which is a strengthening.
+  tail_indices:
+    primary: 1.5
+    secondary: [1.3, 2.0]
+    justification: >
+      Exactly the three values the repository's synthetic suite already uses; 1.5 is its
+      default for the dynamic experiment. Chosen by prior work, not by me, and fixed before
+      any threshold is measured.
+
+  M_RAYS: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]
+  P_bracket: [0.5, 128.0]
+  n_bisect: 10
+  protocol: per-row only
+  q_frozen: p99
+
+  algorithm: >
+    The same anchor_perrow harness used on Jane and crypto, driven with unit weights so the
+    gradient 2*(<w,x>-y)*x matches the synthetic suite's loss exactly. Using one
+    implementation across all three streams is deliberate: it removes the algorithm as a
+    source of cross-stream difference.
+
+  divergence_criterion:
+    primary: >
+      STATE-BASED, chosen on stability grounds as C10R's postmortem requires, and defined
+      before any synthetic run: a configuration diverges on a stream if the iterate norm is
+      non-finite at any step, or max_t ||w_t|| > 1e8. This refers to the quantity
+      thm:stability actually bounds, involves no loss threshold, and needs no per-stream
+      calibration -- which is what made the two inherited criteria non-comparable (ledger
+      C-9). With standardized inputs a bounded run has ||w|| of order 1 to 1e2, so 1e8 is
+      unambiguous blow-up and is not a tuned boundary.
+    secondary: >
+      Jane's _diverged, reported alongside for comparability with C10S and C10R. Both are
+      reported whatever they show.
+
+  instrumentation_validity_gate: >
+    Tracking max ||w_t|| needs a runner that mirrors research_batched_check._step. Before any
+    threshold is computed it must reproduce anchor_perrow to within 1e-9 weighted R2 on at
+    least four (lr, M) configurations. If it does not, HALT. Same gate as C10M, which passed
+    bit-exactly.
+
+  guards: >
+    C10S censoring and monotonicity guards, unchanged. Two or more censored rays void the
+    spread statistic for that condition; a ray with a stable P above a divergent P is
+    excluded as non-monotone rather than quoted.
+
+# ---------------------------------------------------------------------------
+estimand:
+  primary: ratio = spread_R / spread_P at tail index 1.5 under the state-based criterion
+  secondary:
+    - the same ratio at tail indices 1.3 and 2.0
+    - the same ratios under the inherited Jane criterion
+    - spread of the pure-rate parameterization lr* = P*/M, as a reference point
+    - measured r_p99 per tail index, with the per-ray thresholds and brackets
+
+registered_sanity_expectation: >
+  Heavier tails should produce larger normalized-gradient spikes, so the measured reference
+  r_p99 should be ordered p=1.3 > p=1.5 > p=2.0. This is a check on whether the streams do
+  what the generator is supposed to do, NOT a hypothesis. If the ordering fails, the
+  interpretation of every ratio below is weakened and that is reported.
+
+practical_significance_threshold:
+  H6_survives: ratio <= 0.769
+  H6_falsified: ratio >= 1.00
+  H6_inconclusive: 0.769 < ratio < 1.00
+  H7_supported: all three tail indices clear 0.769
+  H7_falsified: the primary clears it but at least one secondary has ratio >= 1.00
+  rationale: >
+    Thresholds are carried over unchanged from C10R so the two runs are directly comparable
+    and the bar cannot be said to have moved after a vacuous result. R carries a fitted free
+    parameter and P carries none, so R must clear a margin rather than tie.
+
+falsification_condition: >
+  H6 is FALSIFIED if ratio >= 1.00 at tail index 1.5 under the state-based criterion. C-8 is
+  then retired: it would have failed on the only uncontaminated stream available, and the
+  favourable crypto numbers would stand exposed as self-fitting. This will be reported
+  plainly, and the direction closed rather than moved to a fourth stream.
+
+analysis_plan:
+  - Pass the instrumentation gate, or halt.
+  - Measure reference r-quantiles per tail index at (lr=0.5, M=8), fallback ladder as C10R.
+  - Check the registered sanity expectation on r_p99 ordering.
+  - Bisect all eight rays per tail index per criterion; apply both guards before quoting.
+  - Report spread_P, spread_R, spread_lr, ratio, and the H6/H7 verdicts.
+
+seed_policy: >
+  Streams are seeded 1000..1009 and fixed in advance. Given a stream and (lr, M) the run is
+  deterministic. No bootstrap.
+
+stopping_rule: >
+  One pass. q is not re-fitted. The ray set, bracket, tail indices and criteria are not
+  adjusted after seeing results. If the result is inconclusive it is reported inconclusive,
+  and no fourth stream is sought -- there is no uncontaminated one left.
+
+compute_budget:
+  runs: 2880   # 3 tails x 8 rays x up to 12 evaluations x 10 streams
+  measured_cost_per_run: 0.241s at T=20000, d=5
+  estimated_wallclock: ~12 minutes; exceeds the 600s foreground cap
+
+scope_limits: >
+  The synthetic stream is STATIONARY in scale: sigma is constant and the noise is i.i.d.
+  Student-t, so there is no scale drift and the predictable tracker has little to track. That
+  makes this a clean test of C-8's r-quantile mechanism but a narrow one -- it does not
+  reproduce the drifting-scale conditions of Jane or crypto, and a positive result here does
+  not establish that the mechanism survives drift.
+
+decisions_that_follow:
+  if_H6_survives: >
+    C-8 is promoted to supported on an uncontaminated, data-free, reviewer-reproducible
+    stream. The cap acts through the realized step, which means it matters through how often
+    it binds -- partially rehabilitating the binding-frequency reading C10M could not support.
+  if_H6_falsified: >
+    C-8 is retired. P stays the best available single parameterization despite its residual,
+    and the residual stays unexplained.
+  if_inconclusive: >
+    Report the ratio with no verdict and close the direction as unresolved. Do not re-fit,
+    do not switch criteria, do not seek another stream.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration reported as a recommended setting. Writes confined to results/research/c10t/.
