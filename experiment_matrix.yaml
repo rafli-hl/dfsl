@@ -1020,3 +1020,102 @@ amendments:
       would show up as a V3 or V4 difference. If the full-cap result is ever needed, it can be
       recovered by dropping the flag; the registered default is unchanged.
     authorized_by: user, in-session, after being shown the cost overrun and this option
+---
+# ===========================================================================
+# SEVENTH REGISTRATION -- direction C10C2 (correct V4, add a blind V6)
+# ===========================================================================
+direction: C10C2
+parent_direction: C10C
+branch: research/c10-q6
+registered_at_commit: f264f4f
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+provenance_disclosure: >
+  I have seen the complete C10C output: which acceptance tests passed, the criterion's
+  classifications on all three streams, and the per-configuration L_ratio and P_ratio values.
+  Respecifying a failed acceptance test in that state is exactly the situation in which a
+  respecification can be self-serving, so two things are stated plainly rather than glossed.
+  (1) The corrected V4 is expected to pass. Its outcome is largely determined by what I
+      already know, so re-running it is BOOKKEEPING -- it makes the suite correct for future
+      use of the instrument -- and is NOT new evidence that the criterion is sound.
+  (2) The evidential weight of this direction therefore rests on V6, which is new and which
+      the criterion has never been evaluated against. If only V4 were corrected, this
+      registration would be worth very little.
+  V1, V2, V3 and V5 were evaluated blind in C10C and passed; they are re-run unchanged for
+  completeness, and their passing here adds nothing to what C10C already established.
+
+# ---------------------------------------------------------------------------
+what_was_wrong_with_V4: >
+  V4 required that the criterion classify at least one capped configuration divergent and at
+  least one non-divergent ON EVERY STREAM. That is a property of the stream and the probe
+  grid, not of the instrument. On the synthetic stream no capped configuration diverges at
+  all -- independent ground truth confirms it, the largest iterate norm over the whole grid
+  being 160.6 against a blow-up threshold of 1e6 -- so a CORRECT criterion must return a
+  single class there, and V4 penalised it for being correct.
+
+V4_respecified: >
+  Non-vacuity is required only where it is meaningful, and applicability is decided by the
+  criterion-INDEPENDENT ground truth so the criterion cannot influence its own exemption.
+  For each stream: if the capped probe grid contains at least one run with max||w|| > 1e6,
+  then the criterion must classify at least one capped run divergent and at least one
+  non-divergent. If it contains none, the stream is reported NOT APPLICABLE -- explicitly,
+  never silently as a pass -- and the acceptance decision rests on the remaining streams.
+  Degeneracy in the whole-instrument sense is already covered elsewhere: an always-divergent
+  criterion fails V1 and an always-stable one fails V2.
+
+V6_new_and_blind: >
+  STABILITY UNDER STREAM TRUNCATION. The criterion has never been tested for sensitivity to
+  how long the stream is. This matters because the rolling window is T/10 and the peak
+  statistic is an extremum, both of which move with T, and because every threshold this
+  instrument will later locate is horizon-specific already.
+  Each capped configuration is classified on the full window and again on its first half.
+  Agreement is the fraction of configurations whose classification is unchanged.
+  The test is COMPARATIVE rather than absolute: halving T genuinely changes the algorithm's
+  trajectory, so some classifications SHOULD move and an absolute bar would be measuring the
+  algorithm rather than the criterion. The inherited Jane rule is subjected to the identical
+  truncation, and the new criterion must be no worse:
+      agreement_new  >=  agreement_jane - 0.05
+  on every stream. I do not know the outcome of this test.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1: unchanged -- zero and best-constant predictors never divergent
+  V2: unchanged -- 100% recall against max||w|| > 1e6
+  V3: unchanged -- no stable P above a divergent P on a ray
+  V4: respecified above, conditional on ground-truth blow-up existing in the capped grid
+  V5: unchanged -- <10% of classifications move across kappa in {5, 10, 20}
+  V6: new -- agreement_new >= agreement_jane - 0.05 under truncation to T/2
+
+overall_acceptance: >
+  ACCEPTED only if V1, V2, V3, V4, V5 and V6 all pass. On failure the criterion is REJECTED
+  and reported as such and is not patched within this session -- the same rule as C10C, which
+  is what forced this registration to exist rather than letting V4 be edited in place.
+  If the criterion is accepted, the acceptance is qualified in the report: V4 was corrected
+  with knowledge of the failure it was correcting, so the blind evidence is V1, V2, V3, V5
+  from C10C plus V6 from here.
+
+design:
+  streams: as C10C -- jane (3 windows, 40000 rows per amendment A1), crypto (3 windows,
+    6000 bars), synthetic (3 streams, T=20000, tail 1.5)
+  probe_grid: as C10C -- capped lr in [0.5,1,2,4,8] x M in [0.5,2,8,32]; blow-up probes
+    OGD and uncapped at lr in [0.01,0.1,1.0,4.0]
+  truncation_for_V6: first half of each window, same configurations
+  criterion_under_test: scripts/research_divergence.py, UNCHANGED -- no threshold, no kappa,
+    no clause and no rolling-window rule is touched by this registration. Only the acceptance
+    suite changes.
+
+instrumentation: >
+  Same gate: the tracked runner must reproduce anchor_perrow to 1e-9 weighted R2 on four
+  configurations before any classification is computed, or HALT.
+
+stopping_rule: >
+  One pass. V4's respecification and V6 are fixed as written above and are not adjusted after
+  seeing results. No threshold search is run in this session either.
+
+compute_budget:
+  estimated_wallclock: ~6 minutes -- roughly C10C's 222s plus the V6 half-length re-runs
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
+  C-9. Prior artifacts preserved: writes go to results/research/c10c2/ and overwrite nothing.
