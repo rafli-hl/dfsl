@@ -1119,3 +1119,100 @@ compute_budget:
 out_of_scope_this_session: >
   Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
   C-9. Prior artifacts preserved: writes go to results/research/c10c2/ and overwrite nothing.
+---
+# ===========================================================================
+# EIGHTH REGISTRATION -- direction C10C3 (drop V4; add blind V7 and V8)
+# ===========================================================================
+direction: C10C3
+parent_direction: C10C2
+branch: research/c10-q6
+registered_at_commit: aab7c64
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+provenance_disclosure: >
+  V4 is dropped on the USER'S EXPLICIT INSTRUCTION, given after I flagged that my own argument
+  for dropping it is exactly the argument a motivated author produces -- a clean case for a
+  change that also happens to make my instrument pass. The argument itself is in
+  results/research/c10c2/r_c10c2_summary.md and stands on its own: for capped methods the
+  iterates are provably bounded by thm:stability, so no criterion-INDEPENDENT ground truth of
+  divergence exists, and non-vacuity within the capped grid cannot be validated by any
+  construction. Degeneracy is already excluded by V1 (an always-divergent criterion flags the
+  zero predictor) and V2 (an always-stable one misses 20 genuine blow-ups), both anchored on
+  uncapped and OGD probes where the iterate norm genuinely is unbounded. A reader who thinks
+  the argument is self-serving should discount it; the decision to act on it was not mine.
+
+  CONSEQUENCE, STATED UP FRONT: with V4 gone and V1, V2, V3, V5, V6 all having passed in
+  C10C2, acceptance on those five is a FOREGONE CONCLUSION. Re-running them is bookkeeping.
+  This registration is worth running only because of V7 and V8 below, which are new, blind,
+  and which the criterion has never faced. V8 in particular tests the property C-10 exists
+  for, and the inherited criteria provably fail it.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1: unchanged -- zero and best-constant predictors never divergent
+  V2: unchanged -- 100% recall against max||w|| > 1e6 on the uncapped/OGD probes
+  V3: unchanged -- no stable P above a divergent P on a ray
+  V5: unchanged -- <10% of classifications move across kappa in {5, 10, 20}
+  V6: unchanged -- agreement_new >= agreement_jane - 0.05 under truncation to T/2
+  V8: NEW AND BLIND -- see below; part of acceptance
+  V4: DROPPED, per the disclosure above
+
+V8_scale_invariance: >
+  THE DEFINING PROPERTY OF C-10, AND THE ONE NEVER YET TESTED. The whole reason the inherited
+  criteria fail to transfer is that their thresholds carry units: Jane's 50 is a loss level
+  calibrated to standardized targets, crypto's 1e3 likewise. A criterion whose thresholds are
+  ratios should be exactly invariant when the units of the problem change.
+  Test, applied to the CRITERION FUNCTION directly rather than to the learner: take each
+  recorded run's (y, preds, wts) and multiply BOTH y and preds by c, for
+  c in {1e-3, 1, 1e3}. This is a pure change of units -- it rescales the learner's errors and
+  the reference's errors identically -- so a unit-free criterion must return an identical
+  classification for all three. Note this is NOT a claim that the ALGORITHM is equivariant to
+  rescaling the target; it is not, and no learner is re-run here.
+  PASS requires 100% identical classification across c, on every run, on every stream.
+  The inherited Jane rule is subjected to the same transformation and its rate is reported
+  for contrast; it is expected to fail, and if it does not, my account of why the inherited
+  criteria do not transfer is wrong and that must be reported.
+
+V7_clause_necessity: >
+  REGISTERED BLIND DIAGNOSTIC, NOT AN ACCEPTANCE GATE. The criterion has two clauses:
+  L_ratio >= 2 (aggregate) and P_ratio >= kappa (peak). The peak clause exists to catch
+  transient blow-ups the aggregate washes out, and it is the clause that replaced the broken
+  absolute threshold. Does it ever change a decision?
+  Report, per stream: the number of runs divergent by P_ratio only, by L_ratio only, and by
+  both. No threshold is attached, because "the peak clause is inert" is an observation about
+  the criterion's construction rather than a defect.
+  CONSEQUENCE, FIXED IN ADVANCE so it cannot be chosen after seeing the count: if NO run on
+  ANY stream is divergent by P_ratio only, the criterion is reducible to its single aggregate
+  clause on this evidence, and that is reported as such -- the peak machinery, and kappa with
+  it, would then be carrying no weight and V5 would be vacuous rather than passed. I do not
+  know the answer.
+
+overall_acceptance: >
+  ACCEPTED only if V1, V2, V3, V5, V6 and V8 all pass. On failure the criterion is REJECTED
+  and not patched in this session -- the same rule that produced C10C2 and this registration.
+  If ACCEPTED, the acceptance must be reported with its qualifications attached: V1/V2/V3/V5
+  were blind in C10C, V6 was blind in C10C2, V8 is blind here, and V4 was removed by user
+  decision rather than by evidence.
+
+design:
+  streams: as C10C2 -- jane (3 windows, 40000 rows per amendment A1), crypto (3 windows,
+    6000 bars), synthetic (3 streams, T=20000, tail 1.5)
+  probe_grid: as C10C2 -- capped lr in [0.5,1,2,4,8] x M in [0.5,2,8,32]; blow-up probes
+    OGD and uncapped at lr in [0.01,0.1,1.0,4.0]
+  criterion_under_test: scripts/research_divergence.py, UNCHANGED. No threshold, no kappa,
+    no clause, no rolling-window rule is touched. Only the suite moves.
+
+instrumentation: same gate -- tracked runner reproduces anchor_perrow to 1e-9, or HALT
+
+stopping_rule: >
+  One pass. V7 and V8 are fixed as written and are not adjusted after seeing results. No
+  threshold search is run in this session either.
+
+compute_budget:
+  estimated_wallclock: ~5 minutes -- C10C2's grid plus V8, which is pure post-processing on
+    already-computed predictions and costs essentially nothing
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
+  C-9. Writes go to results/research/c10c3/ and overwrite nothing.
