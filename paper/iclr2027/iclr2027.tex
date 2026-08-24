@@ -71,73 +71,70 @@
 
 \begin{abstract}
 We study online prediction on streams whose loss-gradient \emph{scale} is strongly
-nonstationary, using a large financial dataset as a testbed. At a fixed predictor the
-\emph{pooled} gradient-norm tail is genuinely heavy (Hill index $\hat\alpha\approx2.4$), but
-\emph{conditionally removable}: the \emph{causally scale-normalized} gradient---what a learner
-acts on---is markedly lighter ($\hat\alpha\approx2.9$--$3.7$). This is a property of
-\emph{serial dependence}, not the marginal: a marginal-preserving order-shuffle destroys it,
-while the same normalization is tail-index preserving on iid streams of known index. The heavy
-marginal is volatility clustering---a bounded drift cannot move a tail index
-\citep{breiman1965}, a predictable heavy-tailed scale can (Kesten/GARCH; \citealt{kesten1973}),
-and a GARCH surrogate with light innovations reproduces both the tail and its removal. In this
-regime plain OGD has no \emph{robust} learning rate---bounded rates underfit while competitive
-rates diverge on scale spikes---and clipping to a \emph{scale-dependent} threshold still
-inherits the drift. We propose \emph{Scale-Normalized OMD} (SN-OMD): divide the gradient by a
-predictable robust scale and cap it at a \emph{scale-free} constant $M$, so the per-step move
-is bounded by $M$ and the iterates provably cannot blow up ($O(\sqrt t)$ growth for any rate
-or realization; a stability, not convergence, guarantee). The predictable scale further buys a
-high-probability dynamic-regret bound at the per-regime rate $T^{1/p}$ ($p\in(1,2]$) under a
-finite $p$-th moment and a predictable scale-tracking condition. Empirically, a whole family of \emph{bounded scale-free} updates stays
-bounded and accurate where OGD and scale-dependent clipping diverge; across ten disjoint windows
-with frozen hyperparameters every finite-cap member stays bounded ($0/10$ divergences) while the
-uncapped endpoint and OGD do not, and the measurement and the stability partition both replicate
-on a second, independent market. Two limits we state rather than bury: the regret rate is
-\emph{per regime}, the measured scale drift entering it as a genuine $\sqrt T$ factor, and
-per-row SN-OMD's block-median scale \emph{ties} the best bounded baseline (momentum-normalized
-SGD) rather than beating it---the contribution is the measurement and the stability, not an
-accuracy win.
+nonstationary, on a large financial dataset. At a fixed predictor the \emph{pooled}
+gradient-norm tail is genuinely heavy (Hill index $\hat\alpha\approx2.4$) but
+\emph{conditionally removable}: the \emph{causally scale-normalized} gradient, the object a
+learner acts on, is markedly lighter ($\hat\alpha\approx2.9$--$3.7$). The lightening is a
+property of \emph{serial dependence}, not of the marginal. A marginal-preserving order-shuffle
+destroys it; the same normalization is tail-index preserving on iid streams of known index.
+The heavy marginal is volatility clustering: a bounded drift cannot move a tail index
+\citep{breiman1965}, a predictable heavy-tailed scale can (Kesten/GARCH;
+\citealt{kesten1973}), and a GARCH surrogate with light innovations reproduces both the tail
+and its removal. In this regime plain OGD has no \emph{robust} learning rate---bounded rates
+underfit, competitive rates diverge on scale spikes---and clipping to a \emph{scale-dependent}
+threshold still inherits the drift. We propose \emph{Scale-Normalized OMD} (SN-OMD): divide the
+gradient by a predictable robust scale, then cap it at a \emph{scale-free} constant $M$. The
+per-step move is bounded by $M$, so the iterates provably cannot blow up, growing as
+$O(\sqrt t)$ for any rate or realization---a stability, not a convergence, guarantee. The
+predictable scale further buys a high-probability dynamic-regret bound at the per-regime rate
+$T^{1/p}$ ($p\in(1,2]$), under a finite $p$-th moment and a predictable scale-tracking
+condition. Empirically a whole family of \emph{bounded scale-free} updates stays bounded and
+accurate where OGD and scale-dependent clipping diverge: across ten disjoint windows with
+frozen hyperparameters every finite-cap member stays bounded ($0/10$ divergences) while the
+uncapped endpoint and OGD do not, and both the measurement and the stability partition
+replicate on a second, independent market. Two limits we state rather than bury. The regret
+rate is \emph{per regime}, the measured scale drift entering it as a genuine $\sqrt T$ factor.
+And per-row SN-OMD's block-median scale \emph{ties} the best bounded baseline
+(momentum-normalized SGD) rather than beating it: the contribution is the measurement and the
+stability, not an accuracy win.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-Financial markets are a canonical source of heavy-tailed, distribution-free data:
-returns and microstructure signals exhibit power-law tails, occasional data errors
-act as adversarial contamination, and assumptions such as sub-Gaussianity are
-untenable. Sequential prediction on such streams therefore calls for
-\emph{distribution-free} guarantees that hold under weak moment assumptions only.
-A rich line of work in robust statistics shows that the empirical mean is a poor
-estimator under heavy tails, whereas estimators such as Catoni's M-estimator,
-median-of-means, and the trimmed mean achieve sub-Gaussian deviations assuming only a
-finite variance \citep{catoni2012,devroye2016,lugosi2019}; in optimization, gradient
-clipping is the corresponding algorithmic primitive for heavy-tailed gradient noise
-\citep{zhang2020clip,gorbunov2020,nguyen2023}.
+A heavy gradient tail is usually treated as a fixed property of the data---something a
+learner must survive, by clipping or by a robust estimator. On real market streams it is not
+fixed. The heaviness is largely \emph{manufactured} by a gradient \emph{scale} that drifts,
+and it is largely \emph{removed} by the one operation a learner can perform on that scale:
+dividing by a causally-tracked estimate of it. What remains is a nonstationarity problem
+rather than a tail problem, and it has a different algorithmic answer.
 
-This paper concerns a facet these lines mostly abstract away: on real streams the
-gradient \emph{scale} is strongly nonstationary, and this---more than an intrinsically
-heavy tail---is what breaks existing methods. Measuring the gradient of an online linear
-predictor on the Jane Street market dataset, we find (i) the gradient \emph{scale}
-drifts roughly $6\times$ across two months with overnight jumps; (ii) the \emph{pooled}
-gradient-norm tail is genuinely heavy ($\hat\alpha\approx2.4$)\footnote{Throughout, $\hat\alpha$
-is a Hill estimate of an \emph{observed marginal}'s tail index; the exponent $p$ of
-\cref{ass:moment} is the \emph{conditional} moment exponent the theory assumes finite. We report
-$\hat\alpha$ as evidence about $p$, not as an estimate of it.} but \emph{conditionally
-removable}---the \emph{causally scale-normalized} gradient $\norm{\gt}/s_t$, the object a learner's update
-acts on (characterized at the fixed optimum $w^\star$), is much lighter ($\hat\alpha\approx2.9$--$3.7$), and the
-lightening is a property of \emph{serial dependence}, not of the marginal; and (iii) the
-\emph{gradient} tail is heavier than either its feature or residual factor alone, an
-\emph{interaction} effect from their co-movement. What the learner faces is thus the
-\emph{predictable} part of a nonstationary scale. The
-heavy pooled marginal is a \emph{volatility-clustering} effect: the bounded $\approx6\times$
-drift cannot itself move a tail index \citep{breiman1965}, but a predictable scale with a
-heavy-tailed conditional law can (the Kesten/GARCH mechanism, \citealt{kesten1973})---the
-classical route to heavy tails in asset \emph{returns} (ARCH/GARCH and the near-Gaussianity
-of volatility-standardized returns; \cref{sec:related}). Our contribution is that it holds
-for the loss \emph{gradients} of an online learner---as a feature$\times$residual
-interaction---and that it has an exploitable algorithmic consequence, developed below. This regime---a drifting scale against a moving
-comparator---is exactly where existing distribution-free online learning results, which
-are either in expectation, on bounded domains, or against a static comparator
-\citep{liu2026oco,zhangcutkosky2022}, do not reach.
+Measuring the gradient of an online linear predictor on the Jane Street market dataset, we
+find three things. \emph{(i)} The gradient \emph{scale} drifts roughly $6\times$ across two
+months, with overnight jumps. \emph{(ii)} The \emph{pooled} gradient-norm tail is genuinely
+heavy ($\hat\alpha\approx2.4$)\footnote{Throughout, $\hat\alpha$ is a Hill estimate of an
+\emph{observed marginal}'s tail index; the exponent $p$ of \cref{ass:moment} is the
+\emph{conditional} moment exponent the theory assumes finite. We report $\hat\alpha$ as
+evidence about $p$, not as an estimate of it.} but \emph{conditionally removable}: the
+\emph{causally scale-normalized} gradient $\norm{\gt}/s_t$---the object the update acts on,
+characterized at the fixed optimum $w^\star$---is much lighter
+($\hat\alpha\approx2.9$--$3.7$), and the lightening is a property of \emph{serial dependence},
+not of the marginal. \emph{(iii)} The \emph{gradient} tail is heavier than either its feature
+or its residual factor alone, an \emph{interaction} effect from their co-movement. What the
+learner faces is therefore the \emph{predictable} part of a nonstationary scale.
+
+The mechanism is volatility clustering. A bounded $\approx6\times$ drift cannot by itself move
+a tail index \citep{breiman1965}; a predictable scale whose conditional law is heavy-tailed
+can---the Kesten/GARCH route \citep{kesten1973}, classical for asset \emph{returns} (ARCH/GARCH,
+and the near-Gaussianity of volatility-standardized returns; \cref{sec:related}). What is new
+here is that it holds for the loss \emph{gradients} of an online learner, as a
+feature$\times$residual interaction, and that it has an exploitable algorithmic consequence.
+
+Existing guarantees do not reach this regime. Robust estimation and gradient clipping
+\citep{catoni2012,devroye2016,lugosi2019,zhang2020clip,gorbunov2020,nguyen2023} treat the tail
+as intrinsic and the scale as given; distribution-free online results hold in expectation, on
+bounded domains, or against a static comparator \citep{liu2026oco,zhangcutkosky2022}. A
+drifting scale against a \emph{moving} comparator sits outside both.
 
 The consequences are sharp. Plain OGD has \emph{no robust} learning rate on such a
 stream: rates small enough to stay bounded underfit, while any rate large enough to be
@@ -164,35 +161,39 @@ convergence) that needs no moment assumption.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item \textbf{Heavy gradient tails are conditionally removable (\cref{sec:experiments}).}
+  \item \textbf{Heavy gradient tails are conditionally removable} (\cref{sec:experiments}).
   On a large market dataset the pooled gradient tail is genuinely heavy
-  ($\hat\alpha\approx2.4$) but a learner with a \emph{predictable} causal scale tracker
-  faces a much lighter one ($\hat\alpha\approx2.9$--$3.7$). Removability is a property of
-  \emph{serial dependence}: a marginal-preserving order-\emph{shuffle} abolishes it, and the
-  same normalization is tail-index preserving on iid streams of known index (so it is no
-  artifact). The heavy marginal is volatility clustering---a bounded drift cannot produce it
-  \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a GARCH
-  surrogate with light innovations reproduces both the tail and its removal. This is the
+  ($\hat\alpha\approx2.4$), but a learner with a \emph{predictable} causal scale tracker faces
+  a much lighter one ($\hat\alpha\approx2.9$--$3.7$). Removability is a property of
+  \emph{serial dependence}: a marginal-preserving order-\emph{shuffle} abolishes it, while the
+  same normalization is tail-index preserving on iid streams of known index, so it is no
+  estimator artifact. The heavy marginal is volatility clustering---a bounded drift cannot
+  produce it \citep{breiman1965}, a heavy-tailed predictable scale can (Kesten/GARCH), and a
+  GARCH surrogate with light innovations reproduces both the tail and its removal. This is the
   paper's central finding, and it replicates on a \emph{second} independent market
   (crypto; \cref{app:secondmarket}).
-  \item \textbf{Algorithm, stability, and a cap frontier (\cref{sec:method,sec:msweep}).}
-  We propose SN-OMD, prove its iterates cannot blow up ($O(\sqrt t)$ growth on $\R^d$,
-  bounded on a bounded domain; \cref{thm:stability}),
-  and show it is a one-parameter family in the cap $M$ interpolating normalized-GD
-  ($M\!\to\!0$) and uncapped scale-adaptive OGD ($M\!\to\!\infty$); a two-directional test
-  predicts \emph{when} the finite cap matters---non-divergence at large steps (against the
-  uncapped endpoint), and an
-  accuracy optimum only when the normalized tail is genuinely heavy.
-  \item \textbf{A protocol-careful study (\cref{sec:experiments}).}
-  Under causal standardization SN-OMD stays bounded and accurate---with a predictable
-  block-median scale it co-leads per-row across ten frozen windows (tied with a
-  normalize-and-clip baseline), and no single member dominates both protocols
-  (\cref{tab:replication})---where OGD and
-  scale-dependent clipping diverge; it is invariant to per-row vs.\ per-timestep updates
-  (no contemporaneous leakage) and its advantage vanishes on a genuinely stationary
-  control. A per-regime dynamic-regret bound (\cref{thm:regretbody}) is what the
-  \emph{predictable} scale buys, honest about a $\sqrt T$ drift factor; a tested implementation
-is provided as anonymized supplementary material.
+
+  \item \textbf{Capping a scale-normalized step makes divergence impossible}
+  (\cref{sec:method,sec:msweep}). SN-OMD divides by the tracked scale and caps at a
+  \emph{scale-free} constant, so its iterates cannot blow up: $O(\sqrt t)$ growth on $\R^d$,
+  bounded on a bounded domain, for any learning rate or realization and under no moment
+  assumption (\cref{thm:stability}). The cap makes SN-OMD a one-parameter family interpolating
+  normalized-GD ($M\!\to\!0$) and uncapped scale-adaptive OGD ($M\!\to\!\infty$), and a
+  two-directional test predicts \emph{when} a finite cap matters: for non-divergence against
+  the uncapped endpoint, but for \emph{accuracy} only when the normalized tail is genuinely
+  heavy.
+
+  \item \textbf{The accuracy is normalization's; what the predictable scale buys is the
+  guarantee} (\cref{sec:experiments}). Under causal standardization a whole family of bounded
+  scale-free updates stays bounded and accurate where OGD and scale-dependent clipping
+  diverge, and \emph{no single member dominates both protocols}: across ten frozen windows
+  SN-OMD with a predictable block-median scale co-leads per-row, tied with a normalize-and-clip
+  baseline rather than beating it (\cref{tab:replication}). What the predictable scale does add
+  is a per-regime dynamic-regret bound (\cref{thm:regretbody}), stated with its $\sqrt T$ drift
+  factor rather than around it. The study is protocol-careful: the result is invariant to
+  per-row vs.\ per-timestep updates (no contemporaneous leakage), and the advantage vanishes on
+  a genuinely stationary control. A tested implementation is provided as anonymized
+  supplementary material.
 \end{itemize}
 
 \section{Problem Setup}
@@ -223,8 +224,10 @@ is exactly the tail we estimate in \cref{sec:experiments}.)
 \end{assumption}
 No sub-Gaussianity, boundedness, or stationarity is assumed; \emph{distribution-free}
 here means the learner posits \emph{no parametric or sub-Gaussian noise law}, only the
-finite drifting $p$-th moment of \cref{ass:moment}. Two guarantees follow, at different
-knowledge costs. The unconditional \emph{stability} guarantee (\cref{thm:stability}) uses
+finite drifting $p$-th moment of \cref{ass:moment}.
+
+Two guarantees follow, at different knowledge costs. The unconditional \emph{stability}
+guarantee (\cref{thm:stability}) uses
 \emph{no} problem constant---not $\sigma_t$, $p_t$, $D$, or the comparator norm. The
 \emph{regret} guarantee (\cref{thm:regretbody}) is weaker in this respect: its tuned step is set
 from scale/path aggregates, of which $p$, the comparator norm, and the regime length are
@@ -338,7 +341,9 @@ concerns---with features standardized \emph{causally} (past-only; a full-sample 
 inflates $R^2$ by look-ahead). We report two granularities, \emph{per-row} and
 \emph{per-timestep} (predict the $(\text{date},\text{time})$ cross-section of $\sim\!9$
 symbols, then one aggregated update, carrying no contemporaneous cross-sectional
-information). \textbf{This is not the competition's protocol} (batched timesteps,
+information).
+
+\textbf{This is not the competition's protocol} (batched timesteps,
 day-lagged responders, held-out future window), so our $R^2$ is not comparable to
 leaderboard scores; we report it for cross-method comparison and the stability contrast.
 Tail measurements are learner-independent---gradients at the fixed $w^\star$, so the tail is
@@ -427,7 +432,9 @@ gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust
 (AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---are
 fragile: they stay bounded only to $\mathrm{lr}\approx10^{-2}$ and reach best
 $R^2\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
-(\cref{fig:mechanism}). The \emph{scale-invariant} family---normalized-GD, SN-OMD, uncapped
+(\cref{fig:mechanism}).
+
+The \emph{scale-invariant} family---normalized-GD, SN-OMD, uncapped
 scale-adaptive OGD, a constant-threshold fixed-$\tau$ clip, and AdaGrad-Norm---stays bounded
 far higher and reaches $R^2\approx0.08$--$0.38$ across the two protocols. Per-timestep batching
 does not manufacture SN-OMD's accuracy: aggregating the $\sim\!9$ correlated symbols per
@@ -456,8 +463,9 @@ does not tie, and it \emph{ties} the normalize-and-clip baseline at the top---on
 protocol only (intervals and window counts in \cref{app:tracker}). The two claims are
 distinct: \cref{thm:regretbody} needs predictability, which says nothing about how accurate any
 particular predictable tracker is, so the block median's co-lead is a property of \emph{that}
-tracker (\cref{sec:tracker}), not of predictability. \emph{(ii) The cap:} a
-finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
+tracker (\cref{sec:tracker}), not of predictability.
+
+\emph{(ii) The cap.} A finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
 distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{sharp} when the
 normalized tail is heavy, \emph{broad} when it is mild, as on Jane: there a finite cap still
@@ -475,8 +483,9 @@ uncapped endpoint's $0/10$ per-step is not batching conferring robustness but a 
 rate ($\mathrm{lr}{=}0.2$ vs.\ $0.5$ per-row), so it underfits ($0.10\!\pm\!.02$) instead of
 diverging; the finite cap is stable at every rate on \emph{both} protocols. Both halves of the
 stability claim therefore hold across the whole record, not merely on the reported window.
+
 \emph{(ii) No bounded member dominates, and which one is best is tracker- and
-protocol-dependent:} per-row two methods co-lead in a statistical
+protocol-dependent.} Per-row two methods co-lead in a statistical
 tie---the block-median SN-OMD ($0.28\!\pm\!0.09$) and the normalize-and-clip baseline of
 \citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; the paired contrast of \cref{app:tracker}---%
 $+0.004$, CI $[-0.014,+0.023]$, $6/10$---predates the cap
@@ -565,9 +574,10 @@ under heavy-tailed noise \citep{zhang2020clip,gorbunov2020,nguyen2023}. Closest 
 \citet{cutkoskymehta2021} \emph{normalize and clip} for high-probability non-convex
 convergence under $\mathbb{E}\norm{\gt}^p\!<\!\infty$; we differ in normalizing by a
 \emph{predictable} tracked scale (not a fixed clip of the current gradient) and in targeting
-\emph{dynamic} regret under a \emph{drifting} scale rather than static convergence. Run
-head-to-head across the ten frozen windows (tuned over its momentum coefficient), their method
-stays bounded ($0/10$) and \emph{co-leads} per-row, statistically tied with the block-median
+\emph{dynamic} regret under a \emph{drifting} scale rather than static convergence.
+
+We ran their method head-to-head across the ten frozen windows, tuned over its momentum
+coefficient. It stays bounded ($0/10$) and \emph{co-leads} per-row, statistically tied with the block-median
 SN-OMD (\cref{tab:replication,app:tracker}). That co-lead is bought by \emph{momentum}, not the
 clip: at $\beta{=}0$ CM reduces exactly to normalized-GD, and its per-row edge over it is almost
 all the $\beta{=}0.5$ momentum term, the clip idle on its plateau (\cref{app:tracker,tab:grid}).
@@ -585,7 +595,9 @@ open). Concurrently, \citet{aggarwal2026dynamic} attain parameter-free \emph{uni
 dynamic} regret under heavy tails \emph{in expectation}, via restarted-AdaGrad experts with
 a Hedge meta-algorithm and no clipping; we differ in targeting a \emph{drifting scale}
 through a predictable tracker and a hard cap, and in a \emph{high-probability} (not
-in-expectation) guarantee. A concurrent line sharpens the normalization-versus-clipping question for \emph{offline
+in-expectation) guarantee.
+
+A concurrent line sharpens the normalization-versus-clipping question for \emph{offline
 non-convex} SGD, proving normalization---with or without clipping---suffices for convergence
 under only a bounded $p$-th moment \citep{liuzhou2025nonconvex,hubler2025clipping,sun2024normalization}; we instead
 target \emph{online dynamic regret} under a \emph{drifting} scale, and add the measurement that
