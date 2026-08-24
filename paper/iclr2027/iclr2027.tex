@@ -14,6 +14,11 @@
 \usepackage{booktabs}
 \usepackage[hidelinks]{hyperref}  % clickable, no visible link borders (ICLR-clean)
 \usepackage{url}
+% A long Kaggle URL in the reference list otherwise stretches its entry to
+% badness 10000. Ragged-right removes inter-word stretching in the bibliography
+% only; body text justification is unchanged.
+\let\dfslbibliography\thebibliography
+\renewcommand{\thebibliography}[1]{\dfslbibliography{#1}\raggedright}
 
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
@@ -191,7 +196,7 @@ convergence) that needs no moment assumption.
   baseline rather than beating it (\cref{tab:replication}). What the predictable scale does add
   is a per-regime dynamic-regret bound (\cref{thm:regretbody}), stated with its $\sqrt T$ drift
   factor rather than around it. The study is protocol-careful: the result is invariant to
-  per-row vs.\ per-timestep updates (no contemporaneous leakage), and the advantage vanishes on
+  per-row vs.\ per-step updates (no contemporaneous leakage), and the advantage vanishes on
   a genuinely stationary control. A tested implementation is provided as anonymized
   supplementary material.
 \end{itemize}
@@ -298,7 +303,7 @@ that uses no moment assumption.
 This is the crucial contrast with scale-\emph{dependent} clipping, whose per-step move
 $\propto s_t$ is bounded only by the drifting scale. It is a \emph{family} property---any
 update whose step is capped by a scale-free constant satisfies it, including normalized-GD, a
-constant-threshold clip, and AdaGrad-Norm (\cref{tab:jane})---so it separates the bounded
+constant-threshold (fixed-$\tau$) clip, and AdaGrad-Norm (\cref{tab:jane})---so it separates the bounded
 scale-free family from the scale-dependent methods, and what singles out SN-OMD \emph{within}
 that family is taken up in \cref{sec:experiments}. Because the features are bounded, the
 loss-based divergence reported there moves in lockstep with $\norm{w_t}$, which
@@ -334,14 +339,14 @@ holds per \emph{fixed predictable} comparator, not the per-round minimizer (\cre
 \paragraph{Setup and protocol.} We use the Jane Street Real-Time Market Data Forecasting
 dataset \citep{janestreet2024}: $47{,}127{,}338$ rows over $1{,}699$ trading days, $79$
 features, $39$ symbols; target \texttt{responder\_6}; metric the sample-weighted zero-mean
-$R^2$. The stability sweeps (\cref{tab:jane},~\cref{fig:main}) stream a continuous
+$R^2$. The stability sweeps (\cref{tab:jane,fig:main}) stream a continuous
 $150{,}000$-row slice. We evaluate \emph{progressive online} prediction---each round the
 learner plays $w_t$, then observes $(x_t,y_t)$ and updates, the protocol our theory
 concerns---with features standardized \emph{causally} (past-only; a full-sample standardizer
-inflates $R^2$ by look-ahead). We report two granularities, \emph{per-row} and
-\emph{per-timestep} (predict the $(\text{date},\text{time})$ cross-section of $\sim\!9$
-symbols, then one aggregated update, carrying no contemporaneous cross-sectional
-information).
+inflates $R^2$ by look-ahead). We report two granularities: \emph{per-row}, and \emph{per-step}, where one
+step is a $(\text{date},\text{time})$ cross-section of $\sim\!9$ symbols predicted together
+and followed by a single aggregated update, carrying no contemporaneous cross-sectional
+information.
 
 \textbf{This is not the competition's protocol} (batched timesteps,
 day-lagged responders, held-out future window), so our $R^2$ is not comparable to
@@ -425,7 +430,7 @@ exploits---and vanishes under shuffling.}
 \label{fig:nullcontrol}
 \end{figure*}
 
-\paragraph{Scale-invariant updates dominate scale-dependent ones.} Streaming one learner
+\paragraph{Scale-free updates dominate scale-dependent ones.} Streaming one learner
 through the multi-regime window and sweeping the learning rate
 (\cref{tab:jane,fig:main}), the methods split cleanly by whether their step responds to the
 gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust clippers
@@ -434,17 +439,18 @@ fragile: they stay bounded only to $\mathrm{lr}\approx10^{-2}$ and reach best
 $R^2\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
 (\cref{fig:mechanism}).
 
-The \emph{scale-invariant} family---normalized-GD, SN-OMD, uncapped
-scale-adaptive OGD, a constant-threshold fixed-$\tau$ clip, and AdaGrad-Norm---stays bounded
-far higher and reaches $R^2\approx0.08$--$0.38$ across the two protocols. Per-timestep batching
-does not manufacture SN-OMD's accuracy: aggregating the $\sim\!9$ correlated symbols per
-timestep leaves SN-OMD essentially unchanged ($0.285\!\to\!0.307$), so no contemporaneous
+The \emph{scale-free} family---normalized-GD, SN-OMD, uncapped scale-adaptive OGD, the
+fixed-$\tau$ clip, and AdaGrad-Norm, none of whose step bounds move with the regime---stays
+bounded far higher and reaches $R^2\approx0.08$--$0.38$ across the two protocols. Batching to
+per-step does not manufacture SN-OMD's accuracy: aggregating the $\sim\!9$ correlated symbols
+of a step leaves SN-OMD essentially unchanged ($0.285\!\to\!0.307$), so no contemporaneous
 cross-sectional information is in play, while it lifts fragile OGD without fixing it and
 \emph{halves} the uncapped endpoint (\cref{tab:jane}).
 
 \paragraph{What the tracked scale and the cap buy---and what they do not.}
-A whole \emph{family} of bounded scale-free updates---SN-OMD, normalized-GD, a
-constant-threshold fixed-$\tau$ clip, and AdaGrad-Norm---closes the accuracy gap to the
+A whole \emph{family} of \emph{bounded} scale-free updates---the list above minus the
+\emph{uncapped} endpoint, which is scale-free but carries no bound at all: SN-OMD,
+normalized-GD, the fixed-$\tau$ clip, and AdaGrad-Norm---closes the accuracy gap to the
 divergent baselines, and \emph{no single member dominates}. On the reported window the two top
 entries use \emph{neither} a tracked scale nor a cap (fixed-$\tau$ clip per-step, AdaGrad-Norm
 per-row), but neither ranking survives replication (\cref{tab:replication} below): the winner
@@ -846,7 +852,7 @@ stream, \emph{causal} standardization, per-row; the across-window version is
 endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD), and
 SN-OMD ($M{=}5$). (a)~Weighted $R^2$ vs.\ learning rate: OGD cliffs above
 $\mathrm{lr}{=}10^{-2}$ (off-scale) and the uncapped endpoint diverges at large rates, while
-the scale-invariant methods climb to $R^2\approx0.2$--$0.3$ with overlapping intervals
+the scale-free methods climb to $R^2\approx0.2$--$0.3$ with overlapping intervals
 (\cref{tab:jane}). (b)~Peak rolling loss: the two scale-dependent curves explode
 ($10^2$--$10^{30}$); normalized-GD ($\approx5$) and SN-OMD ($\approx8$ at its top stable
 $\mathrm{lr}{=}2$) stay single-digit.}
@@ -909,7 +915,7 @@ horizon but not the exponent (\cref{rmk:tracker}); escaping the $\sqrt T$ needs 
 bound in the regime count, left open (\cref{app:bracket}). The most accurate per-row tracker
 on Jane is a block median; across the ten frozen windows it co-leads per-row
 ($0.29\!\pm\!.07$, tied with a normalize-and-clip baseline; both above normalized-GD's
-$0.18\!\pm\!.03$), while per-timestep no member leads---the accuracy verdict is
+$0.18\!\pm\!.03$), while per-step no member leads---the accuracy verdict is
 protocol-dependent (\cref{tab:replication,app:tracker}). Past
 the tuned range both trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
 
@@ -1573,8 +1579,8 @@ $W_s=O(V_\sigma^+)$. \emph{(2) The winsorized EMA} (deployed default) has no clo
 $W_s$ bound---\cref{prop:tracker} does not cover it, as its functional form is not the
 envelope's---only the empirical $W_s=60\,V_\sigma^+$ of \cref{tab:tracker}. \emph{(3) The
 block median} ($B{=}10^4\approx$ one day) is among the most accurate \emph{per-row} on our
-stream---tied with the normalize-and-clip baseline (\cref{tab:replication}), while per-timestep
-the constant-$\tau$ clip edges it on window~1 ($0.382$ vs.\ $0.351$; \cref{tab:jane})---yet
+stream---tied with the normalize-and-clip baseline (\cref{tab:replication}), while per-step
+the fixed-$\tau$ clip edges it on window~1 ($0.382$ vs.\ $0.351$; \cref{tab:jane})---yet
 the least analyzed: \cref{prop:tracker} does not cover it either, and we prove nothing about its
 $W_s$. So a best-performing tracker is again one with no guarantee; the gap between what we
 can \emph{prove} (envelope) and what we would \emph{deploy} (EMA, or block) is if anything
@@ -1609,7 +1615,7 @@ regime, exactly the variable the effect lives in. The result is not a tracker-\e
 artifact either: dropping window~1---on which the block median was chosen---leaves the
 significant gaps intact (EMA $+0.15$, $[+0.10,+0.21]$, $9/9$; normalized-GD $+0.10$, $9/9$) and
 the CM tie unchanged ($+0.000$, $[-0.018,+0.018]$, $5/9$). The picture is
-\emph{protocol-specific}: per-timestep the block tracker still does \emph{not} lead---it is
+\emph{protocol-specific}: per-step the block tracker still does \emph{not} lead---it is
 statistically tied with the fixed-$\tau$ clip ($-0.000$), AdaGrad-Norm ($+0.01$), and the EMA
 default ($+0.07$)---but it no longer trails normalized-GD. That method's window-1-optimal
 per-step rate overfits (\cref{app:grid}) and collapses across regimes, so block now \emph{beats}
@@ -1621,8 +1627,8 @@ normalized-GD ($0.18\!\pm\!.01$), and of the $+0.10$ lift to $0.29$ the $\beta{=
 supplies ${+}0.09$ and the clip only ${+}0.01$ (removing it, $\tau\!\to\!\infty$, costs
 ${<}0.03$ on any window; \texttt{research\_cap\_sweep\_jane.py}). What the block tracker matches
 with a \emph{predictable} scale, CM needs momentum to reach. Where block ties
-the clip per-step, the mechanism is substitution: per-timestep batching averages the $\sim\!9$
-correlated symbols per $(\text{date},\text{time})$ group, and that averaging is itself the
+the clip per-step, the mechanism is substitution: per-step batching averages the $\sim\!9$
+correlated symbols in each $(\text{date},\text{time})$ group, and that averaging is itself the
 variance reduction the smooth block scale supplies per-row, so the two do not compound---when
 the protocol already smooths the update, a smoother tracker adds nothing.
 
