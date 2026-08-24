@@ -179,7 +179,8 @@ convergence) that needs no moment assumption.
   (crypto; \cref{app:secondmarket}).
 
   \item \textbf{Capping a scale-normalized step makes divergence impossible}
-  (\cref{sec:method,sec:msweep}). SN-OMD divides by the tracked scale and caps at a
+  (\cref{sec:method}, with the cap frontier in \cref{sec:msweep}). SN-OMD divides by the
+  tracked scale and caps at a
   \emph{scale-free} constant, so its iterates cannot blow up: $O(\sqrt t)$ growth on $\R^d$,
   bounded on a bounded domain, for any learning rate or realization and under no moment
   assumption (\cref{thm:stability}). The cap makes SN-OMD a one-parameter family interpolating
@@ -743,9 +744,9 @@ reported at \emph{its own} tuned rate, so the same method can carry different ra
 different experiments. Normalized-GD's per-row optimum is $\mathrm{lr}{=}3$ on the baseline
 grid used for \cref{tab:jane} ($0.220\!\pm\!.037$), and $\mathrm{lr}{=}2$ on the cap-frontier
 grid where it is the $M\!\to\!0$ endpoint ($0.197\!\pm\!.024$; \cref{sec:msweep}). Both are
-that experiment's own optimum, not a duplicated or stale row. Interpretation of
-\cref{tab:jane}, and the block-median tracker variant, are in
-\cref{sec:experiments,sec:tracker}.
+that experiment's own optimum, not a duplicated or stale row. \cref{tab:jane} is
+interpreted in \cref{sec:experiments}, and its block-median tracker variant in
+\cref{sec:tracker}.
 
 \paragraph{Leakage controls in detail (\cref{tab:leakage}).} Permuting the $(y_t,\omega_t)$
 pairs drives every method to $R^2\le0$ (SN-OMD $-0.00$), so there is no label leakage. A static

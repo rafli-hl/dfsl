@@ -18,9 +18,9 @@ Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
-| Main text | **8.502pp** of a 9pp limit, ~0.50pp (27 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 after adopting the matched-budget table → 8.615 after the appendix relocation → 9.007 after promoting `fig:problem` → **8.502** after demoting `fig:main` |
-| Total | 28pp (statements, references, appendix do not count) |
-| Build | 0 undefined refs, 0 overfull, 0 `h` float-specifier warnings, 0 stray tabs. 5 underfull boxes remain |
+| Main text | **8.720pp** of a 9pp limit, ~0.28pp of margin. Trajectory: 8.885 pre-adoption → 9.007 (adopting the matched-budget table) → 8.615 (appendix relocation) → 9.007 (promoting `fig:problem`) → 8.502 (demoting `fig:main`) → **8.720** (publication pass) |
+| Total | 29pp (statements, references, appendix do not count) |
+| Build | 0 undefined refs, 0 overfull, 0 float-specifier warnings, 0 stray tabs. 6 underfull boxes, all float slack or one badness-1342 proof line — the two badness-10000 bibliography lines are fixed |
 | Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
 | Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
 
@@ -276,6 +276,34 @@ Final body inventory: **Figure 1** (the phenomenon), **Figure 2** (the null cont
 margin. The four `[h]` floats were promoted to `[htbp]` in the same pass, closing
 the last float-specifier warnings.
 
+## Publication-quality pass (2026-08-24)
+
+Four commits, `82e290b`..`(this one)`. Cost 0.218pp of the 0.498pp margin; main text
+8.502 → 8.720pp.
+
+| Brief § | What changed |
+|---|---|
+| 5 Introduction | Dropped the generic "Financial markets are a canonical source…" opening — eleven lines of background before the paper said anything of its own. Its six citations survive, compressed into a positioning paragraph. The 36-line two-paragraph opening is now four paragraphs with one job each. |
+| 6 Contributions | Two of three bold leads were topic labels, so the list read as a table of contents. Each lead is now the claim; item 3's states the honest result the old label buried. |
+| — Abstract | The audited 26-line slab: longest compound sentences broken, em-dash chains reduced, filler cut. Single paragraph, all ~8 claims kept in order. |
+| 4, 7, 11, 18 | Seven body paragraphs split at seams they already had. Cost 0.011pp — `\parskip` is ~0 here, so structure is nearly free. |
+| 21, 23 Terminology | "per-timestep" (6) vs "per-step" (28) unified on per-step, zero remaining. Two near-identical method lists under two names — they differ by exactly the uncapped endpoint, which is the paper's point — now say so. Three names for the fixed-τ baseline reduced to one plus a gloss. |
+| 16, 17 Captions | Five of seventeen float captions lacked a bold lead or a section reference; now uniform. `tab:jane`'s 19-line caption trimmed to 11, its self-correction note moved to `app:tables` prose. |
+| 19 Equations | All three body displays already punctuated as sentence parts and correctly introduced. No change needed. |
+| 21 Typography | One em-dash rendered "it— AdaGrad" from a source line break. Ragged-right bibliography fixes the visibly-stretched Jane Street entry (two badness-10000 lines). Two `\cref`s rendered "Sections B.1 and 3" — cleveref sorts appendix numbers first — split with explicit connectives. |
+| 22 Tone | Scanned for overclaiming: no "state-of-the-art", "outperforms", "dramatically", "we believe". The one "novel" is *"we claim no novelty for the mechanism"*. No change needed. |
+
+**One clarity repair found in passing.** The tail-diagnostics paragraph and `tab:residual`'s
+caption both quoted the GARCH surrogate's normalized index, as `3.9–4.5` and `4.1–4.8`.
+Both correct — different sweeps, one over assumed persistence and one over threshold — but
+nothing said so, and forty lines apart it reads as a discrepancy. The paragraph now gives the
+union with both axes named and defers to the table.
+
+**§25 no scientific regression, verified mechanically.** Diffing every numeric literal in the
+`.tex` against `5c8a9ad`: the only changes are that one reconciliation (`4.5`→`4.8`,
+`≈9`→`8–10`), both matching what `tab:residual` already prints. Everything else is
+identical, including all of `tab:replication`.
+
 ## Open items
 
 | # | Item | Blocked on |
@@ -337,4 +365,4 @@ drifted away from it.
 - [ ] §4 schedule sentence — decide
 - [x] `tab:replication` re-run at matched budget — corrected artifact in `results/research/c12/`
 - [x] Corrected `tab:replication` adopted (`de33ee0`), and every statement it invalidated repaired
-- [ ] Publication-quality pass §4–§19 (paragraph structure, introduction, figures, captions, typography) — funded by the 0.39pp the relocation freed, not started
+- [x] Publication-quality pass §4–§19 — introduction, abstract, contributions, paragraph structure, terminology, captions, cross-references, bibliography (below)
