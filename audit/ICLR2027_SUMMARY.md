@@ -18,7 +18,7 @@ Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
-| Main text | **8.720pp** of a 9pp limit, ~0.28pp of margin. Trajectory: 8.885 pre-adoption → 9.007 (adopting the matched-budget table) → 8.615 (appendix relocation) → 9.007 (promoting `fig:problem`) → 8.502 (demoting `fig:main`) → **8.720** (publication pass) |
+| Main text | **8.871pp** of a 9pp limit, ~0.13pp (7 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → **8.871** (§8–10) |
 | Total | 29pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull, 0 float-specifier warnings, 0 stray tabs. 6 underfull boxes, all float slack or one badness-1342 proof line — the two badness-10000 bibliography lines are fixed |
 | Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
@@ -292,6 +292,10 @@ Four commits, `82e290b`..`(this one)`. Cost 0.218pp of the 0.498pp margin; main 
 | 19 Equations | All three body displays already punctuated as sentence parts and correctly introduced. No change needed. |
 | 21 Typography | One em-dash rendered "it— AdaGrad" from a source line break. Ragged-right bibliography fixes the visibly-stretched Jane Street entry (two badness-10000 lines). Two `\cref`s rendered "Sections B.1 and 3" — cleveref sorts appendix numbers first — split with explicit connectives. |
 | 22 Tone | Scanned for overclaiming: no "state-of-the-art", "outperforms", "dramatically", "we believe". The one "novel" is *"we claim no novelty for the mechanism"*. No change needed. |
+| 8 Theory | Both formal statements mixed result with interpretation. Proposition 3.1 said "Hence … Hence …" and ended in three clauses of reading; it now states, and the reading follows in two paragraphs. Theorem 3.2's environment title was doing bibliographic work, and its hypotheses, tuning, comparator, horizon and probability all arrived in one sentence; hypotheses are now separate sentences, the pointer is prose, and the two costs are one paragraph each. |
+| 9 Tracker | Was a trailing clause at the end of the dense Algorithm paragraph — three names, no definitions — despite being what Assumption D.1 is about and where the paper's main honest limitation lives. Now its own paragraph, one line per tracker, gap stated up front. |
+| 10 Related Work | Had no map, and said "we differ in targeting dynamic regret under a drifting scale" three times. An orienting lead states the three literatures and the gap once; each paragraph keeps only its own delta. The Cutkosky–Mehta head-to-head (results, not related work) keeps the verdict and cites the decomposition. The dynamic/scale-free paragraph now answers the question its citation list left open: scale-freeness there is invariance to one *global* rescaling; the drift here is *within* a stream. |
+| — De-duplication | The SN-OMD update was written out three times in two pages (intro display, Section 3 prose, Algorithm 1); the prose copy goes. The "Further experiments" signpost summarised both appendix studies instead of pointing at them. The Conclusion's opening restated the abstract sentence for sentence; it now says what the result means. |
 
 **One clarity repair found in passing.** The tail-diagnostics paragraph and `tab:residual`'s
 caption both quoted the GARCH surrogate's normalized index, as `3.9–4.5` and `4.1–4.8`.
@@ -299,10 +303,13 @@ Both correct — different sweeps, one over assumed persistence and one over thr
 nothing said so, and forty lines apart it reads as a discrepancy. The paragraph now gives the
 union with both axes named and defers to the table.
 
-**§25 no scientific regression, verified mechanically.** Diffing every numeric literal in the
-`.tex` against `5c8a9ad`: the only changes are that one reconciliation (`4.5`→`4.8`,
-`≈9`→`8–10`), both matching what `tab:residual` already prints. Everything else is
-identical, including all of `tab:replication`.
+**§25 no scientific regression, verified mechanically.** Diffing every numeric literal in
+the `.tex` against `5c8a9ad`, the commit before the pass, over all seven commits: four
+changes total. Two are the deliberate GARCH-range reconciliation (`4.5`→`4.8`,
+`≈9`→`8–10`), both matching what `tab:residual` already prints. Two are a subscript index
+from a deleted duplicate equation and the `β=0.5` value in the Cutkosky–Mehta paragraph,
+whose full decomposition is stated in `app:tracker` and cited from the sentence that
+replaced it. Every reported result is identical, `tab:replication` included.
 
 ## Open items
 
