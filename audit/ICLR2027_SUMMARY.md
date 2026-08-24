@@ -4,7 +4,7 @@ Progress tracker for the SN-OMD paper targeting **ICLR 2027**. Detail on individ
 fixes lives in [`ICLR2027_REMEDIATION_LOG.md`](ICLR2027_REMEDIATION_LOG.md); this file
 is the top-level view: where the paper stands, what is settled, what is still open.
 
-Last verified: **2026-08-24**, commit `a506251` (branch `research/c10-q6`).
+Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c10-q6`).
 
 ---
 
@@ -17,11 +17,11 @@ Last verified: **2026-08-24**, commit `a506251` (branch `research/c10-q6`).
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
-| Canonical source | `paper/iclr2027/iclr2027.tex` (1841 lines) |
-| Main text | **8.878pp** of a 9pp limit (re-measured from the PDF 2026-08-23: 8.88–8.90pp, ~0.1pp headroom) |
+| Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
+| Main text | **8.615pp** of a 9pp limit. Adoption of the matched-budget table pushed it to 9.007pp (no headroom); moving the detailed diagnostics to the appendix brought it back to 8.615pp, **below** the 8.885pp pre-adoption baseline |
 | Total | 28pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull >10pt, 0 stray tabs |
-| Tests | **104 passed** (84 + 20 anon-exclusion guards) |
+| Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
 | Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
 
 `paper/icml2026/` is a **frozen ICML snapshot** (moved there from flat `paper/*` on
@@ -38,7 +38,7 @@ What the paper argues, and where each piece is measured:
 | Gradient heavy tails are a *predictable-scale artifact*, not intrinsic | pooled vs. normalized separation on Jane; interaction effect heavier than either factor alone | `fig:problem` |
 | Normalize by a predictable scale, then cap → bounded iterates | `thm:stability` (Prop. 3.1), measured √t envelope | `app:iternorm` |
 | Dynamic regret under a drifting scale, high probability | `thm:regret` (Thm. D.2), restated as `thm:regretbody` | proofs, App. D |
-| The cap `M` interpolates normalized-GD ↔ scale-adaptive OGD | M-sweep, optimum at `M=5` | `jane_msweep.csv` — **⚠ the sweep is at a single `lr=0.5`, not joint; at matched budget `M=2` wins (Phase 2)** |
+| The cap `M` interpolates normalized-GD ↔ scale-adaptive OGD | M-sweep, optimum at `M=5` | `jane_msweep.csv` — the single-`lr` sweep still stands as a *frontier* claim; `tab:replication` now tunes `(lr, M)` jointly and selects `M=2` (per-row EMA), `M=10` (per-row block), `M=0.5`/`M=2` per-step |
 | Stability is not unique to SN-OMD, but the *predictable* scale is | ten frozen windows, divergence partition | `tab:replication` — **⚠ confounded by unequal tuning budget; the ordering reverses when equalized (Phase 2)** |
 | The tracker is a documented choice, not a free win | block-median co-leads per-row; ties Cutkosky–Mehta | `app:tracker` |
 | RMSProp/Adam do **not** diverge — they are bounded-step | run head-to-head, not argued | `app:adaptive` |
@@ -201,11 +201,50 @@ Also established, and relevant to how `tab:replication` should be read:
 ordering should be re-run at matched budget before the paper is submitted, or the claim
 narrowed to what the current design supports. This is a **new blocker**, entered below.
 
+## Adoption of the matched-budget table, and what it invalidated
+
+`de33ee0` adopted the C12/C12B numbers into `tab:replication`. Adoption changed what the
+table *is* — the cap `M` is now a tuned parameter there, not a pinned one — and that
+invalidated statements elsewhere that the adoption commit did not catch. Repaired
+2026-08-24:
+
+| Where | Was | Now |
+|---|---|---|
+| `tab:replication` caption | "All *accuracy-relevant* optima are interior" | False as written: C12's own boundary flags put the **per-step SN-OMD row at both grid edges** (`lr=8` ceiling, `M=0.5` floor, collapsing toward the `M→0` normalized-GD endpoint). Caption and `app:grid` now record it. |
+| Limitations (§6) | "not fully tuning-free (setting-dependent rate; untuned `M`, decay, winsorization)" | `M` *is* tuned in the headline table, so the method carries **two** tuned parameters. The limitation got stronger, not weaker. |
+| `app:grid` cap paragraph | "The one axis we do *not* tune is SN-OMD's cap `M`, fixed at 5 a priori" | Scoped: `tab:jane`/`fig:main`/the cap sweeps pin `M=5`; `tab:replication` does not. |
+| `app:grid` ranking robustness | frozen block 0.29, EMA 0.14 | Scoped to the pinned `M=5` re-sweep, which is what that check actually varied; the matched-budget 0.24 is noted as reaching the same place from window 1 alone. |
+| `tab:grid` caption + footnote | "We do not tune `M` (fixed at 5 a priori) … does not enter any reported number" | Both false after adoption; rewritten. |
+
+One corroboration worth recording: the ten-window cap sweep says the block tracker's cap
+optimum is a plateau at `M=5–7` (0.29) with `M=10` falling back to 0.28. C12B, selecting
+`M=10` from **window 1 alone**, measures 0.2817 across the ten — an independent
+reproduction of that sweep to 0.002.
+
+## Detailed diagnostics moved to the appendix (2026-08-24)
+
+Main text 9.007pp → **8.615pp** (0.392pp freed, ≈21 typeset lines). Nothing was deleted:
+every moved number is either already stated in the appendix or was added there by the same
+edit, and a mechanical check confirms all 24 moved facts are present post-`\appendix`.
+
+| From | To |
+|---|---|
+| Estimator-by-estimator tail decomposition, the GARCH causal-estimation-cost argument, the rank-ACF/Ljung–Box statistics, the per-day Hill caveat, the null-control script name, the 200k-gradient provenance | new **"Tail diagnostics in detail"** paragraph in `app:tables`, beside `tab:residual` |
+| Crypto replication read out number-by-number | `app:secondmarket`, which already carried all of it |
+| Single-window error-bar audit (±.079 vs ±.037) | `app:tracker`, next to the variability finding it belongs to |
+| Block-median paired CIs (+0.15, +0.11, +0.004 …) | `app:tracker` |
+| Per-timestep batching numbers, learning-rate spans | `tab:jane` |
+| RMSProp/Adam boundedness derivation and peak-loss figures | `app:adaptive` |
+| Iterate-norm envelope detail | `app:iternorm` |
+
+The §4 tail paragraph was also split in two — it was a single 37-line block carrying the
+paper's central finding.
+
 ## Open items
 
 | # | Item | Blocked on |
 |---|---|---|
-| 1 | `tab:replication` rests on a confounded comparison. **A corrected artifact now exists** (C12, `results/research/c12/`): SN-OMD 0.1398 → 0.2359 per-row, 4th → 1st; every other row unchanged to 4 d.p.; reproduction gate 0.000000 on all ten checks; divergence partition unchanged. | Author decision only: adopt the regenerated table (and relabel the row `M` tuned), or narrow the claim. No longer blocked on measurement. |
+| 1 | ~~`tab:replication` rests on a confounded comparison.~~ **Closed 2026-08-24** — corrected table adopted at `de33ee0`, and the four appendix statements it invalidated repaired in the same working tree (below). | — |
 | 2 | Wall-clock runtime figure for the Reproducibility Statement | A timed full-suite run over the Jane parquet. Open across four rounds. |
 | 3 | §4 sentence noting the deployed anytime schedule is not the more accurate one | Author decision. The gate (a decomposition giving trustworthy numbers) is satisfied; the investigation showed the gap was grid-tuning, so if this goes in it stands on the schedule argument alone — not automatic. |
 | 4 | GitHub release | `gh` authenticated as `rafli07p`, repo owner is `rafli-hl`. |
@@ -226,7 +265,7 @@ python scripts/research_predictability_check.py   # the 2x2 decomposition
 python scripts/research_batched_check.py          # tab:jane, tab:replication
 python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
-python -m pytest -q                               # 104 tests
+python -m pytest -q                               # 106 tests
 python scripts/make_anon_release.py               # double-blind supplement (307 files)
 ```
 
@@ -250,9 +289,9 @@ drifted away from it.
 
 ## Submission checklist
 
-- [x] Main text within 9pp (8.878)
-- [x] 0 undefined refs, clean build
-- [x] Tests pass (104)
+- [x] Main text within 9pp (8.615, after the appendix relocation)
+- [x] 0 undefined refs, 0 overfull, clean build
+- [x] Tests pass (106)
 - [x] Tables regenerated from corrected code
 - [x] Anonymized supplement builds, 0 identity tokens (307 files, 2026-08-24)
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
@@ -261,4 +300,5 @@ drifted away from it.
 - [ ] Wall-clock runtime disclosed
 - [ ] §4 schedule sentence — decide
 - [x] `tab:replication` re-run at matched budget — corrected artifact in `results/research/c12/`
-- [ ] **Adopt the corrected `tab:replication`, or narrow the claim** — author decision (open item 1)
+- [x] Corrected `tab:replication` adopted (`de33ee0`), and every statement it invalidated repaired
+- [ ] Publication-quality pass §4–§19 (paragraph structure, introduction, figures, captions, typography) — funded by the 0.39pp the relocation freed, not started

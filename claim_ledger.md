@@ -377,6 +377,40 @@ favouritism.
 
 ---
 
+## C-17 — Adoption makes `M` a tuned parameter, and the per-step selection sits on two grid edges
+
+**Status: SUPPORTED (from C12's own boundary flags; found during adoption, 2026-08-24).**
+
+Adopting the matched-budget `tab:replication` changed the table's tuning protocol, not just
+its numbers. Two consequences that the adoption commit did not propagate into the manuscript:
+
+1. **`M` is no longer untuned.** The manuscript asserted in four places that the cap is fixed
+   at 5 a priori — Limitations, the `app:grid` cap paragraph, the `tab:grid` caption, and the
+   `tab:grid` footnote. All four were false after adoption. The honest restatement makes the
+   limitation *stronger*: the deployed method carries two tuned parameters, not one.
+
+2. **The per-step SN-OMD selection pins at both grid edges.** `c12_report.json` flags
+   `per-step/SN-OMD (M tuned)` with `lr=8 at edge` and `M=0.5 at edge <-- collapsed toward an
+   endpoint method`. The adopted caption said "All *accuracy-relevant* optima are interior",
+   which is contradicted by the run's own gate output. Per-step therefore wants a cap *toward*
+   the `M→0` normalized-GD endpoint, and how far toward is untested — the same preference the
+   window-1 sweep found at the floor of the narrower `[2,20]` range. This is a further reason
+   the per-step column separates no member of the bounded family, and it is recorded rather
+   than defended. The fact itself was not new — `research_state.md` open item 6 recorded the
+   same two-edge selection from C10/Q6. The defect was that the adopted caption asserted the
+   opposite, and neither the C12 summary nor the adoption commit caught the contradiction.
+
+**Corroboration found in passing.** The ten-window cap sweep (`research_cap_sweep_jane.py`)
+puts the block tracker's cap optimum on a plateau at `M=5–7` (0.29) with `M=10` at 0.28. C12B,
+selecting `M=10` from **window 1 alone**, measures 0.2817 across the ten — an independent
+reproduction of that sweep to 0.002.
+
+**What this does NOT establish.** Nothing about the stability partition, which is unchanged and
+cap-value-independent (`thm:stability` holds for any finite `M`). Nothing about the accuracy
+claim: block-median 0.28 still ties Cutkosky–Mehta 0.29, as [C-16](#c-16--matched-budget-is-not-uniformly-favourable) records.
+
+---
+
 ## Untouched this phase
 
 `UNTOUCHED` — not examined, status unchanged:
