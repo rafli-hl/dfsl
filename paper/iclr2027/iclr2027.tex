@@ -347,12 +347,12 @@ whose norm \cref{thm:stability}, not a tail assumption, governs.
 
 \paragraph{Leakage controls for the $R^2$ magnitude.} Because our prequential
 $R^2\approx0.28$ sits well above the competition's held-out leaderboard scores, we run a
-battery of look-ahead controls (\cref{tab:leakage} and \cref{app:tables}, all on the reported
-window): a shuffled-label null, static and per-day look-ahead ridge oracles, and a
-frozen-weights forward test. All are consistent with \emph{no} label leakage, and all three
-oracles fall short of the online score. The reported $R^2$ is thus a \emph{tracking} score on a
-fast-drifting stream, not a transferable static fit---itself evidence for the nonstationarity we
-study, and why it is not comparable to the competition's protocol.
+battery of look-ahead controls on the reported window---a shuffled-label null, static and
+per-day look-ahead ridge oracles, and a frozen-weights forward test. All are consistent with
+\emph{no} label leakage, and all three oracles fall short of the online score
+(\cref{tab:leakage,app:tables}). The reported $R^2$ is thus a \emph{tracking} score on a
+fast-drifting stream, not a transferable static fit---itself evidence for the nonstationarity
+we study.
 
 % tab:residual relocated to the appendix (\cref{app:tables}) for the ICLR 9-page budget.
 
@@ -396,15 +396,27 @@ figure, are in \cref{app:secondmarket}.
 
 \begin{figure*}[t]
 \centering
+\includegraphics[width=\textwidth]{fig1_problem.png}
+\caption{\textbf{The phenomenon: an \emph{interaction} tail, on a scale that drifts}
+(\cref{sec:experiments}). (a)~The \emph{pooled} gradient tail (Hill $\hat\alpha\approx2.43$) is
+heavier than either its residual or its feature factor ($\hat\alpha\approx4$), because extreme
+features and residuals co-occur. (b)~The daily gradient tail index drifts across the full
+$1{,}699$-day record; the per-day dips below $2$ are noisy single-day Hill estimates and we do
+not rely on them (\cref{app:tables}).}
+\label{fig:problem}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
 \includegraphics[width=0.9\textwidth]{fig7_nullcontrol.png}
-\caption{\textbf{The lightening is removability, not manufacture.} (a) Hill index before
-(open) and after (filled) causal scale-normalization, $k{=}0.01$. The \emph{same}
-operation lightens the real gradient tail ($2.43\!\to\!3.73$) and a light-innovation GARCH
-surrogate ($\approx2.3\!\to\!3.9$--$4.5$), but leaves an order-\emph{shuffle}, iid heavy
-streams of known index, and a bounded $6\times$ drift essentially unchanged
-($\Delta\!\approx\!0$)---what is removed is serial dependence, not the marginal, and it is no
-estimator artifact. (b) Rank autocorrelation of $\norm{\gt}$ decays slowly (the volatility
-clustering the tracker exploits) and vanishes under shuffling.}
+\caption{\textbf{The lightening is removability, not manufacture} (\cref{sec:experiments}).
+(a)~Hill index before (open) and after (filled) causal scale-normalization, $k{=}0.01$. The
+\emph{same} operation lightens the real gradient tail ($2.43\!\to\!3.73$) and a
+light-innovation GARCH surrogate, but leaves an order-\emph{shuffle}, iid heavy streams of
+known index, and a bounded $6\times$ drift essentially unchanged ($\Delta\!\approx\!0$): what
+is removed is serial dependence, not the marginal, and it is no estimator artifact.
+(b)~Rank autocorrelation of $\norm{\gt}$ decays slowly---the volatility clustering the tracker
+exploits---and vanishes under shuffling.}
 \label{fig:nullcontrol}
 \end{figure*}
 
@@ -441,10 +453,10 @@ through---normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and di
 magnitude every round. One \emph{predictable} instance, the block-median scale, also delivers
 \emph{co-leading} per-row accuracy: paired across the ten windows it beats every baseline it
 does not tie, and it \emph{ties} the normalize-and-clip baseline at the top---on this one
-protocol only (intervals and window counts in \cref{app:tracker}). These are distinct claims: predictability is
-what \cref{thm:regretbody} requires, and is in principle orthogonal to how accurate any
-particular predictable tracker is, so the block median's co-lead is an empirical property of
-\emph{that} tracker (\cref{sec:tracker}), not a consequence of predictability. \emph{(ii) The cap:} a
+protocol only (intervals and window counts in \cref{app:tracker}). The two claims are
+distinct: \cref{thm:regretbody} needs predictability, which says nothing about how accurate any
+particular predictable tracker is, so the block median's co-lead is a property of \emph{that}
+tracker (\cref{sec:tracker}), not of predictability. \emph{(ii) The cap:} a
 finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
 AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
 distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{sharp} when the
@@ -461,10 +473,10 @@ bounded on all ten windows ($0/10$ divergences), while the uncapped $M\!\to\!\in
 diverges on $7/10$ (per-row) and plain OGD's frozen rate diverges on $9/10$ (per-step). The
 uncapped endpoint's $0/10$ per-step is not batching conferring robustness but a lower frozen
 rate ($\mathrm{lr}{=}0.2$ vs.\ $0.5$ per-row), so it underfits ($0.10\!\pm\!.02$) instead of
-diverging; the finite cap is stable at every rate on \emph{both} protocols. So ``OGD
-has no robust rate'' and ``the cap buys unconditional stability'' hold
-across the whole record, not merely on the reported window. \emph{(ii) No bounded member dominates, and which
-one is best is tracker- and protocol-dependent:} per-row two methods co-lead in a statistical
+diverging; the finite cap is stable at every rate on \emph{both} protocols. Both halves of the
+stability claim therefore hold across the whole record, not merely on the reported window.
+\emph{(ii) No bounded member dominates, and which one is best is tracker- and
+protocol-dependent:} per-row two methods co-lead in a statistical
 tie---the block-median SN-OMD ($0.28\!\pm\!0.09$) and the normalize-and-clip baseline of
 \citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; the paired contrast of \cref{app:tracker}---%
 $+0.004$, CI $[-0.014,+0.023]$, $6/10$---predates the cap
@@ -483,15 +495,13 @@ the more accurate tracker is the one \emph{without} a proven $W_s$ bound
 (\cref{sec:experiments}; ten disjoint $150$k-row windows across the $1{,}699$-day record).
 Mean$\pm$std weighted $R^2$ and divergence count (a method ``diverges'' if its peak rolling loss
 blows up at the frozen rate). Every finite-cap bounded scale-free method stays bounded on all ten
-windows; the uncapped endpoint and plain OGD do not. \emph{No single member dominates across both
-protocols:} per-row the block-median SN-OMD and the normalize-and-clip method of
-\citet{cutkoskymehta2021} \emph{co-lead} in a statistical tie, both clear of the rest; per-step no
-member leads decisively (\cref{sec:experiments,app:tracker}). Each method is tuned over its own
-free parameters: both SN-OMD rows over $(\mathrm{lr},M)$, the same two-parameter budget
-fixed-$\tau$ gets over $(\mathrm{lr},\tau)$, and the threshold-free methods over $\mathrm{lr}$
-alone---their whole parameter space. Every selected optimum is interior except the per-step
-SN-OMD row, which pins at both grid edges (\cref{app:grid}). CM at $\beta{=}0$ \emph{is}
-normalized-GD, so their per-step cells are bit-identical rather than duplicated.}
+windows; the uncapped endpoint and plain OGD do not, and \emph{no single member dominates across
+both protocols} (\cref{sec:experiments,app:tracker}). Each method is tuned over its own free
+parameters: both SN-OMD rows over $(\mathrm{lr},M)$, the same two-parameter budget fixed-$\tau$
+gets over $(\mathrm{lr},\tau)$, and the threshold-free methods over $\mathrm{lr}$ alone---their
+whole parameter space. Every selected optimum is interior except the per-step SN-OMD row, which
+pins at both grid edges (\cref{app:grid}). CM at $\beta{=}0$ \emph{is} normalized-GD, so their
+per-step cells are bit-identical rather than duplicated.}
 \label{tab:replication}
 \centering
 \begin{small}
@@ -528,23 +538,23 @@ still has $\sim30\%$ within-day drift---so its lead there is expected).
 \centering
 \includegraphics[width=0.9\textwidth]{fig3_main.png}
 \caption{\textbf{Main result} (continuous multi-regime stream, \emph{causal}
-standardization, per-row). The cap family: OGD (scale-dependent) vs.\ the $M\!\to\!0$
-endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD),
-and SN-OMD ($M{=}5$). (a) Weighted $R^2$ vs.\ learning rate: OGD cliffs above
-$\mathrm{lr}=10^{-2}$ (off-scale), the scale-invariant methods climb to $R^2\approx0.2$--$0.3$
-(SN-OMD and normalized-GD comparable, intervals overlapping; \cref{tab:jane}), and uncapped
-scale-adaptive OGD diverges at large rates. (b) Peak rolling loss: OGD and uncapped
-scale-adaptive OGD explode ($10^2$--$10^{30}$), while normalized-GD ($\approx5$) and SN-OMD
-(single-digit, $\approx8$ at its top stable $\mathrm{lr}{=}2$) stay bounded.}
+standardization, per-row). The cap family: OGD (scale-dependent) against the $M\!\to\!0$
+endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD), and
+SN-OMD ($M{=}5$). (a)~Weighted $R^2$ vs.\ learning rate: OGD cliffs above
+$\mathrm{lr}{=}10^{-2}$ (off-scale) and the uncapped endpoint diverges at large rates, while
+the scale-invariant methods climb to $R^2\approx0.2$--$0.3$ with overlapping intervals
+(\cref{tab:jane}). (b)~Peak rolling loss: the two scale-dependent curves explode
+($10^2$--$10^{30}$); normalized-GD ($\approx5$) and SN-OMD ($\approx8$ at its top stable
+$\mathrm{lr}{=}2$) stay single-digit.}
 \label{fig:main}
 \end{figure*}
 
 \paragraph{Further experiments (deferred to \cref{app:further}).} Two supporting studies
-develop (i)~the \emph{cap frontier}---SN-OMD interpolates normalized-GD ($M\to0$) and uncapped
-scale-adaptive OGD ($M\to\infty$), and an $M$-sweep locates a \emph{sharp} interior accuracy
-optimum under an imposed heavy tail but a \emph{broad} one on Jane's milder residual; and
-(ii)~the empirical discharge of \cref{ass:track}, which measures the tracker's upward variation
-$W_s$ growing \emph{linearly} in $T$---the reason \cref{thm:regretbody}'s rate is per-regime.
+develop (i)~the \emph{cap frontier}---an $M$-sweep across the interpolation from normalized-GD
+($M\to0$) to uncapped scale-adaptive OGD ($M\to\infty$), with a \emph{sharp} interior optimum
+under an imposed heavy tail and a \emph{broad} one on Jane; and (ii)~the empirical discharge of
+\cref{ass:track}, which measures $W_s$ growing \emph{linearly} in $T$---the reason
+\cref{thm:regretbody}'s rate is per-regime.
 
 \section{Related Work}
 \label{sec:related}
@@ -715,7 +725,10 @@ $\approx0.16$ at lag $100$ and rank-based Ljung--Box $Q_{100}\approx7\!\times\!1
 are bounded, so the $\chi^2$ is valid; a shuffled control gives $\approx116$). The three null
 controls of \cref{fig:nullcontrol}---order-shuffle, iid streams of known index, and the
 light-innovation GARCH surrogate---are produced by
-\texttt{research\_null\_normalization.py} in the anonymized supplement. Finally, per-day
+\texttt{research\_null\_normalization.py} in the anonymized supplement. The shuffle control
+leaves the \emph{pooled} index exactly unchanged---an order-statistic identity, since a
+permutation does not touch the marginal---while abolishing the lightening, which is what makes
+it decisive. Finally, per-day
 $\hat\alpha$ dips below $2$ on a minority of days, but single-day Hill estimates are noisy and
 we do not rely on them; the per-regime budget heuristic of \cref{sec:lower} rests on exactly
 those days, which is why we keep it qualitative.
@@ -1314,22 +1327,6 @@ Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $7.9\times$ \\
 \end{tabular}
 \end{small}
 \end{table}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{fig1_problem.png}
-\caption{\textbf{The pooled tail is real, but conditionally removable} (\cref{sec:experiments}).
-(a) The \emph{pooled} gradient tail (Hill index $\hat\alpha\approx2.43$) is heavier than
-either its residual or feature factor ($\hat\alpha\approx4$)---an interaction effect from
-co-movement. (b) The daily gradient tail index across the full $1{,}699$-day record drifts;
-per-day estimates occasionally fall below $2$ but single-day Hill estimates are noisy.
-Dividing by a \emph{predictable} causally-tracked scale lightens the tail to
-$\hat\alpha\approx2.9$--$3.7$ (estimator-dependent; \cref{tab:residual}); a
-marginal-preserving order-shuffle leaves the pooled index unchanged (an order-statistic
-identity) yet abolishes the lightening, so what the tracker removes is serial dependence,
-not the marginal.}
-\label{fig:problem}
-\end{figure*}
 
 \subsection{Synthetic streams: known tail and the cap sweep}
 \label{sec:synthetic}\label{app:sweep}

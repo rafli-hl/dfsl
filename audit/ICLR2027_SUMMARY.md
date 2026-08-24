@@ -18,7 +18,7 @@ Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
-| Main text | **8.615pp** of a 9pp limit. Adoption of the matched-budget table pushed it to 9.007pp (no headroom); moving the detailed diagnostics to the appendix brought it back to 8.615pp, **below** the 8.885pp pre-adoption baseline |
+| Main text | **8.943pp** of a 9pp limit. Adoption pushed it to 9.007pp; the appendix relocation brought it to 8.615pp; promoting `fig:problem` into the body to fix the figure inversion spent 0.39pp of that back. **Margin is ~3 lines** |
 | Total | 28pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull >10pt, 0 stray tabs |
 | Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
@@ -240,6 +240,35 @@ edit, and a mechanical check confirms all 24 moved facts are present post-`\appe
 The §4 tail paragraph was also split in two — it was a single 37-line block carrying the
 paper's central finding.
 
+## Figure inversion fixed (2026-08-24)
+
+`fig:problem` carries the paper's central measurement — the interaction tail and the drifting
+scale — is cited three times from the main text and **only** from there, yet it typeset as
+**Figure 6, in the appendix**, while a validation figure was Figure 1. Promoted into the body,
+immediately before `fig:nullcontrol`, so the reader meets the phenomenon before the controls
+that validate it:
+
+| | before | after |
+|---|---|---|
+| Figure 1 | `fig:nullcontrol` (null controls) | **`fig:problem` (the phenomenon)** |
+| Figure 2 | `fig:main` (single-window sweep) | `fig:nullcontrol` |
+| Figure 3 | `fig:mechanism` (appendix) | `fig:main` |
+| Figure 6 | **`fig:problem` (appendix)** | `fig:tracker` |
+
+All appendix figures renumber down by one and every `\cref` resolves; 0 undefined refs.
+Its caption lost three sentences that restated the paragraph directly above it; the unique
+one — why an order-shuffle leaves the *pooled* index unchanged (an order-statistic identity)
+— moved into `app:tables`' tail-diagnostics paragraph. `fig:nullcontrol`'s caption lost the
+GARCH band, which now lives in that same paragraph.
+
+**Cost: 0.392pp**, i.e. exactly the margin the relocation had freed. Recovered ~0.06pp by
+trimming caption/prose restatement, leaving the main text at 8.943pp — compliant, with about
+three lines of slack. Getting real breathing room now needs a structural call: send one of the
+two remaining body figures to the appendix (`fig:main` is the candidate — it is a
+**single-window** sweep whose content `tab:jane` and `tab:replication` both carry numerically,
+and `app:tables` already collects the other single-window artifacts), or accept a thin margin
+and compress prose instead. **Open — author decision.**
+
 ## Open items
 
 | # | Item | Blocked on |
@@ -289,7 +318,7 @@ drifted away from it.
 
 ## Submission checklist
 
-- [x] Main text within 9pp (8.615, after the appendix relocation)
+- [x] Main text within 9pp (8.943, after promoting `fig:problem` into the body)
 - [x] 0 undefined refs, 0 overfull, clean build
 - [x] Tests pass (106)
 - [x] Tables regenerated from corrected code
