@@ -471,8 +471,8 @@ distinct: \cref{thm:regretbody} needs predictability, which says nothing about h
 particular predictable tracker is, so the block median's co-lead is a property of \emph{that}
 tracker (\cref{sec:tracker}), not of predictability.
 
-\emph{(ii) The cap.} A finite $M$ bounds the step directly, but non-divergence is \emph{not} unique to it---
-AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
+\emph{(ii) The cap.} A finite $M$ bounds the step directly, but non-divergence is not unique
+to it: AdaGrad-Norm stays bounded to a \emph{wider} $\mathrm{lr}\le10$ with no cap. What the cap
 distinctly buys is an interior accuracy optimum (\cref{sec:msweep})---\emph{sharp} when the
 normalized tail is heavy, \emph{broad} when it is mild, as on Jane: there a finite cap still
 beats full normalization by ${+}0.11$ per-row, though the mid-range caps sit within noise.
@@ -719,8 +719,9 @@ median), and the lightening is positive at every threshold and estimator (\cref{
 What remains is dominated by \emph{causal-estimation cost} rather than by a resolvable residual
 tail: the \emph{same} estimator run non-causally recovers only $\sim\!+0.3$, while on a GARCH
 surrogate with Gaussian innovations---\emph{zero} residual tail by construction---the same
-causal tracker still reads $\hat\alpha\approx3.9$--$4.5$ against a true-$\sigma_t$ oracle of
-$\approx9$. The real $3.73$ sits just \emph{below} that zero-residual band, by about the
+causal tracker still reads $\hat\alpha\approx3.9$--$4.8$, the spread running over both the
+threshold $k$ and the assumed persistence, against a true-$\sigma_t$ oracle of $\approx8$--$10$
+(\cref{tab:residual}). The real $3.73$ sits just \emph{below} that zero-residual band, by about the
 surrogate's own sensitivity to its persistence, so we cannot separate a genuine residual
 conditional tail from a scale merely less predictable than GARCH(1,1); either way the residual
 is dominated by estimation cost and $\hat\alpha\approx3.7$ leaves $p>2$. The serial dependence
@@ -736,6 +737,15 @@ it decisive. Finally, per-day
 $\hat\alpha$ dips below $2$ on a minority of days, but single-day Hill estimates are noisy and
 we do not rely on them; the per-regime budget heuristic of \cref{sec:lower} rests on exactly
 those days, which is why we keep it qualitative.
+
+\paragraph{Why one method can appear at two rates (\cref{tab:jane}).} Every method is
+reported at \emph{its own} tuned rate, so the same method can carry different rates in
+different experiments. Normalized-GD's per-row optimum is $\mathrm{lr}{=}3$ on the baseline
+grid used for \cref{tab:jane} ($0.220\!\pm\!.037$), and $\mathrm{lr}{=}2$ on the cap-frontier
+grid where it is the $M\!\to\!0$ endpoint ($0.197\!\pm\!.024$; \cref{sec:msweep}). Both are
+that experiment's own optimum, not a duplicated or stale row. Interpretation of
+\cref{tab:jane}, and the block-median tracker variant, are in
+\cref{sec:experiments,sec:tracker}.
 
 \paragraph{Leakage controls in detail (\cref{tab:leakage}).} Permuting the $(y_t,\omega_t)$
 pairs drives every method to $R^2\le0$ (SN-OMD $-0.00$), so there is no label leakage. A static
@@ -781,8 +791,8 @@ causal winsorized-EMA                    & $4.81$ & $4.48$ & $4.08$ \\
 \end{table}
 
 \begin{table}[htbp]
-\caption{\textbf{Leakage controls for the prequential $R^2$} (date$[0,120)$, $150$k rows,
-causal standardization). The headline $R^2\approx0.28$ survives a shuffled-label null and is
+\caption{\textbf{Leakage controls for the prequential $R^2$} (\cref{sec:experiments};
+date$[0,120)$, $150$k rows, causal standardization). The headline $R^2\approx0.28$ survives a shuffled-label null and is
 not a look-ahead artifact: it comes from within-day adaptation on a nonstationary stream, not
 from seeing the target or a transferable static fit.}
 \label{tab:leakage}
@@ -801,25 +811,17 @@ Frozen $w_T$, forward window              & $-1.7$      & tracking, not transfer
 \end{table}
 
 \begin{table}[htbp]
-\caption{Best weighted $R^2$ (each method at its own tuned rate) on the continuous Jane
-Street stream, \emph{causal} standardization, both round granularities, with the largest
-stable learning rate; each $R^2$ carries $\pm$one circular block-bootstrap standard error
-(block $\approx$ one trading day, $4000$ resamples). Scale-\emph{dependent} methods (top)
-are fragile (stable only to $\mathrm{lr}\!\approx\!10^{-2}$); the \emph{bounded scale-free}
-family (bottom)---SN-OMD, normalized-GD, a fixed-$\tau$ clip ($\tau{=}20$), and
-AdaGrad-Norm, all satisfying \cref{thm:stability}---stays bounded far higher and is far
-more accurate, with \emph{none} dominating. These are single-window tuned numbers: the
-per-protocol leaders here (fixed-$\tau$ clip per-step, AdaGrad-Norm per-row) do \emph{not}
-carry over as unique leaders across windows, where per-row the block-median SN-OMD and a
-normalize-and-clip baseline co-lead and per-step no member leads decisively---see
-\cref{tab:replication}. Interpretation, and the
-block-median tracker variant, are in \cref{sec:experiments,sec:tracker}. $R^2$ is not
-comparable to competition scores (different protocol). Because every method is at \emph{its own}
-tuned rate, one method can appear at different rates in different experiments: normalized-GD's
-per-row optimum is $\mathrm{lr}{=}3$ on the baseline grid used here ($0.220\!\pm\!.037$) and
-$\mathrm{lr}{=}2$ on the cap-frontier grid where it is the $M\!\to\!0$ endpoint
-($0.197\!\pm\!.024$; \cref{sec:msweep}). Both are that experiment's own optimum, not a
-duplicated or stale row.}
+\caption{\textbf{Single-window tuned comparison} (\cref{sec:experiments}; continuous Jane
+Street stream, \emph{causal} standardization, both granularities). Best weighted $R^2$ with
+each method at its own tuned rate, and its largest stable rate; each $R^2$ carries $\pm$one
+circular block-bootstrap standard error (block $\approx$ one trading day, $4000$ resamples).
+Scale-\emph{dependent} methods (top) are fragile, stable only to
+$\mathrm{lr}\!\approx\!10^{-2}$; the \emph{bounded scale-free} family (bottom)---SN-OMD,
+normalized-GD, a fixed-$\tau$ clip ($\tau{=}20$) and AdaGrad-Norm, all satisfying
+\cref{thm:stability}---stays bounded far higher and is far more accurate, with \emph{none}
+dominating. These are one window's numbers, and the per-protocol leaders here (fixed-$\tau$
+clip per-step, AdaGrad-Norm per-row) do \emph{not} carry over as unique leaders across windows
+(\cref{tab:replication}). $R^2$ is not comparable to competition scores.}
 \label{tab:jane}
 \centering
 \begin{small}
@@ -1330,8 +1332,8 @@ violates the bracket.}
 \end{figure}
 
 \begin{table}[t]
-\caption{Scale trackers on the real gradient-scale process (\cref{sec:tracker}). The
-two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
+\caption{\textbf{Scale trackers on the real gradient-scale process} (\cref{sec:tracker}).
+The two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
 variation $W_s$. $V_\sigma^+$ is the true upward scale drift.}
 \label{tab:tracker}
 \centering
@@ -1424,8 +1426,8 @@ of $6.6$ there.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.9\columnwidth]{fig7_crypto.png}
-\caption{\textbf{Second market (BTC/USDT 1h): mechanism and stability replicate.}
-(a) gradient-norm survival: the pooled tail ($\hat\alpha{=}1.81$) is lightened by the causal
+\caption{\textbf{Second market (BTC/USDT 1h): mechanism and stability replicate}
+(\cref{app:secondmarket}). (a)~Gradient-norm survival: the pooled tail ($\hat\alpha{=}1.81$) is lightened by the causal
 scale tracker ($2.26$), and a marginal-preserving order shuffle \emph{abolishes} the lightening
 ($1.80$)---removability is serial dependence. (b) peak rolling loss vs.\ learning rate on the
 turbulent 2022 window: the scale-dependent methods (OGD, uncapped $M\!\to\!\infty$) explode while
@@ -1460,8 +1462,8 @@ beats both the normalized-GD end ($M\to0$) and the uncapped scale-adaptive-OGD e
 \end{figure}
 
 \begin{table}[t]
-\caption{The scale drift is a genuine rate, but its \emph{constant} is controllable.
-Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
+\caption{\textbf{The scale drift is a genuine rate, but its constant is controllable}
+(\cref{sec:tracker}). Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
 median per block) on the $200{,}000$-round gradient-scale process. Restricting the
 $W_s\sim T^{\beta}$ fit to horizons with $\gtrsim\!50$ blocks gives $\beta\approx1.0$--$1.25$
 where reliably measurable ($B{=}100,10^3$), with no monotone trend; the naive full-range
