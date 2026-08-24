@@ -311,6 +311,38 @@ from a deleted duplicate equation and the `β=0.5` value in the Cutkosky–Mehta
 whose full decomposition is stated in `app:tracker` and cited from the sentence that
 replaced it. Every reported result is identical, `tab:replication` included.
 
+## Appendix QA, page by page (§26, 2026-08-24)
+
+The publication pass had worked the main text; this is the appendix read as a reader
+meets it -- in typeset order, with every float, heading, and relative reference checked
+against where it lands. Main text untouched at **8.871pp**; every reported number
+identical (numeric-literal multiset diff against `7f6b1ee`: **1078 = 1078**).
+
+| Finding | What it was | What it is now |
+|---|---|---|
+| **Eight pages of experiments filed under "Proofs"** | Synthetic streams, the crypto/image second market, trackers, grid adequacy and RMSProp/Adam typeset as §E.9–E.13, i.e. as subsections of Appendix E, running pp.21–28. A reader looking for the crypto replication found it inside a proofs appendix. | Their own top-level **Appendix F, "Scope and robustness"**, with a lead saying what the five studies are for: two ask whether the mechanism appears away from Jane, two ask whether our own choices (tracker, grid) carry the result, one runs the adaptive optimizers rather than arguing about them. Sectioning level only — no prose moved. |
+| **A cross-reference pointing at the wrong subsection** | *"removed by the strongly-adaptive wrapper of the preceding subsection"*, in the tracker subsection, resolved to *"A second market (crypto), and an image-model boundary"*. The wrapper is in "Reductions", four subsections earlier. | "Reductions" labelled `app:reductions`; both relative references replaced by `\cref`. |
+| **Two headings making the same promise** | *"Discharging the scale-tracking assumption"* appeared twice five pages apart — §B.2 (the measurement) and §E.8 (the bracket proposition). | Retitled in the paper's own terms: **"…: what we measure"** and **"…: what we can prove"**. |
+| **Five floats parked away from their prose** | `fig:tracker` and `tab:beta` are each cited exactly once, from §B.2 on p15, and were typeset on pp.20 and 22; `tab:tracker` sat in a subsection that never cites it; `fig:synthetic` and `fig:msweep` were sourced inside the crypto subsection but are cited only from the synthetic one. | All five moved next to the prose that reads them. Every appendix float now lands in the subsection that cites it, `tab:grid` (2 pages, float mechanics) excepted. |
+| **Nothing pointed at the new Appendix F, and Appendix B had no lead** | B opened straight into its first subsection. | One lead paragraph in B does both jobs: these are the two studies the main text promises, and the ones it does not are in `app:scope`. It is also what keeps B and F from reading as two appendices with the same title. |
+
+Checked and clean: no heading stranded at a page foot (font-size sweep over the typeset
+pages); no sentence appearing twice anywhere in the paper; no terminology the main-text
+pass unified drifting back in the appendix half; no hard-coded appendix letter that the
+promotion could falsify (every pointer goes through cleveref); no `\cref` rendering with an
+appendix number before a plain one; and no overclaiming or stale "tuning-free" language
+left over from the `M`-tuning adoption.
+
+Two things left deliberately. §E.2 *"The iterate norm obeys the stability bound
+(measured)"* is a measurement inside Proofs, kept there because it sits directly under the
+stability proof it checks. And one underfull `\hbox` (badness 1342) remains in the
+dynamic-regret proof, where a long unbreakable math atom ends the line; rewording a proof
+to fix one mildly loose line is not a trade worth making. The two badness-10000 pages the
+old structure produced are gone.
+
+Build after the pass: 29pp, exit 0, **0 overfull, 0 undefined refs**, underfull boxes
+6 → 4. 106 tests pass.
+
 ## Open items
 
 | # | Item | Blocked on |
@@ -373,3 +405,5 @@ drifted away from it.
 - [x] `tab:replication` re-run at matched budget — corrected artifact in `results/research/c12/`
 - [x] Corrected `tab:replication` adopted (`de33ee0`), and every statement it invalidated repaired
 - [x] Publication-quality pass §4–§19 — introduction, abstract, contributions, paragraph structure, terminology, captions, cross-references, bibliography (below)
+- [x] Publication-quality pass §8–§10 — the two formal statements, the tracker paragraph, Related Work
+- [x] §26 appendix QA page by page — experiments promoted out of "Proofs", one wrong cross-reference, two colliding headings, five mis-parked floats

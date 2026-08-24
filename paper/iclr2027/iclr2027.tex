@@ -884,6 +884,11 @@ regime onsets.}
 \section{Further experiments: the cap frontier and empirical tracker discharge}
 \label{app:further}
 
+These are the two studies the main text defers: what the cap $M$ buys as it sweeps between
+the two endpoint methods, and how closely a predictable tracker meets \cref{ass:track} on the
+real gradient-scale process. The studies the main text does \emph{not} promise---other
+streams, other trackers, other grids, other optimizers---are collected in \cref{app:scope}.
+
 \subsection{The cap $M$ interpolates normalized-GD and scale-adaptive OGD}
 \label{sec:msweep}
 
@@ -903,7 +908,7 @@ On synthetic streams with a \emph{known} Student-$t$ index, plain OGD's cumulati
 exponent climbs past $1$ (divergent) as the tail heavies while SN-OMD stays sublinear
 (\cref{app:sweep}), so the tail is the mechanism, not a learning-rate artifact.
 
-\subsection{Discharging the scale-tracking assumption}
+\subsection{Discharging the scale-tracking assumption: what we measure}
 \label{sec:tracker}
 
 The regret bound (\cref{thm:regret}) rests on \cref{ass:track}: a \emph{predictable} scale
@@ -930,6 +935,62 @@ on Jane is a block median; across the ten frozen windows it co-leads per-row
 $0.18\!\pm\!.03$), while per-step no member leads---the accuracy verdict is
 protocol-dependent (\cref{tab:replication,app:tracker}). Past
 the tuned range both trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_tracker.png}
+\caption{\textbf{Discharging \cref{ass:track}} (\cref{sec:tracker}). A two-timescale
+``peak-hold'' tracker on the real gradient-scale process (a)~holds the lower bracket
+$s_t\ge\tfrac12\sigma_t$ at every round while (b)~attaining the smallest upward variation
+$W_s/V_\sigma^+$; a fast trailing median churns ($60\times$), a slow one lags and
+violates the bracket.}
+\label{fig:tracker}
+\end{figure}
+
+\begin{table}[t]
+\caption{\textbf{Scale trackers on the real gradient-scale process} (\cref{sec:tracker}).
+The two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
+variation $W_s$. $V_\sigma^+$ is the true upward scale drift.}
+\label{tab:tracker}
+\centering
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Tracker & Lower bracket & $W_s$ & $W_s/V_\sigma^+$ \\
+\midrule
+Trailing median, fast ($W{=}64$)   & $0.93$ & $38.6\mathrm{k}$ & $60\times$ \\
+Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $7.9\times$ \\
+\textbf{Two-timescale envelope (ours)} & $\mathbf{1.00}$ & $\mathbf{4.2\mathrm{k}}$ & $\mathbf{6.6\times}$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{table}[t]
+\caption{\textbf{The scale drift is a genuine rate, but its constant is controllable}
+(\cref{sec:tracker}). Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
+median per block) on the $200{,}000$-round gradient-scale process. Restricting the
+$W_s\sim T^{\beta}$ fit to horizons with $\gtrsim\!50$ blocks gives $\beta\approx1.0$--$1.25$
+where reliably measurable ($B{=}100,10^3$), with no monotone trend; the naive full-range
+fit's decline (to $0.17$ at large $B$) is a finite-horizon artifact---$B{=}10^4$ has only
+$\sim\!20$ blocks and no $\ge\!50$-block horizon. What $B$ controls is the constant,
+shrinking $W_s$ by $\sim\!5$ orders of magnitude while roughly holding the lower bracket.
+Escaping the resulting $\sqrt T$ drift factor needs a switching bound in the regime count,
+left open.}
+\label{tab:beta}
+\centering
+\begin{small}
+\begin{tabular}{lccccc}
+\toprule
+block $B$              & $1$ & $100$ & $10^3$ & $3{\cdot}10^3$ & $10^4$ \\
+\midrule
+$W_s$ (full record)   & $1.8\mathrm{M}$ & $3216$ & $319$ & $108$ & $29$ \\
+$\beta$ ($\ge\!50$ blk) & --- & $1.03$ & $1.25$ & $0.73$ & n/a \\
+lower bracket         & $0.72$ & $0.97$ & $0.97$ & $0.92$ & $0.93$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
 
 \section{A per-regime budget heuristic}
 \label{sec:lower}
@@ -1304,6 +1365,7 @@ case ($\sigma_t\equiv\sigma$, $p=2$, no drift so $W_s=\sigma$) recovers
 $\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
 
 \subsection{Reductions}
+\label{app:reductions}
 \emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using
 that the bound is unimodal in $\log M$ with a flat optimum, removes this at a
 $\mathrm{polylog}(T)$ cost \citep{liu2026oco}. \emph{Unknown $\norm u$ / unbounded
@@ -1318,7 +1380,7 @@ per-regime transition cost $O(D\,N\,\mathrm{polylog}\,T^{1/p})$ is incurred whil
 scale tracker re-concentrates after each of the $N$ regime changes; it is dominated
 when regimes are macroscopic.
 
-\subsection{Discharging \texorpdfstring{\cref{ass:track}}{the scale-tracking assumption}: a bracket guarantee}
+\subsection{Discharging the scale-tracking assumption: what we can prove}
 \label{app:bracket}
 
 \cref{ass:track} posits a predictable scale that brackets $\sigma_t$. We sketch why it is
@@ -1330,35 +1392,16 @@ to ``the drift is piecewise slowly varying with a mixing scale,'' and the estima
 window-median step needs a blocking argument (below), which we state as an assumption rather
 than discharge.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{fig4_tracker.png}
-\caption{\textbf{Discharging \cref{ass:track}} (\cref{sec:tracker}). A two-timescale
-``peak-hold'' tracker on the real gradient-scale process (a)~holds the lower bracket
-$s_t\ge\tfrac12\sigma_t$ at every round while (b)~attaining the smallest upward variation
-$W_s/V_\sigma^+$; a fast trailing median churns ($60\times$), a slow one lags and
-violates the bracket.}
-\label{fig:tracker}
-\end{figure}
+\section{Scope and robustness}
+\label{app:scope}
 
-\begin{table}[t]
-\caption{\textbf{Scale trackers on the real gradient-scale process} (\cref{sec:tracker}).
-The two-timescale envelope holds the lower bracket at $100\%$ with the smallest upward
-variation $W_s$. $V_\sigma^+$ is the true upward scale drift.}
-\label{tab:tracker}
-\centering
-\begin{small}
-\begin{tabular}{lccc}
-\toprule
-Tracker & Lower bracket & $W_s$ & $W_s/V_\sigma^+$ \\
-\midrule
-Trailing median, fast ($W{=}64$)   & $0.93$ & $38.6\mathrm{k}$ & $60\times$ \\
-Trailing median, slow ($W{=}500$)  & $0.99$ & $5.0\mathrm{k}$  & $7.9\times$ \\
-\textbf{Two-timescale envelope (ours)} & $\mathbf{1.00}$ & $\mathbf{4.2\mathrm{k}}$ & $\mathbf{6.6\times}$ \\
-\bottomrule
-\end{tabular}
-\end{small}
-\end{table}
+Five studies ask whether the reading survives a change of stream, of tracker, of tuning
+grid, or of optimizer. Two of them (\cref{sec:synthetic,app:secondmarket}) ask whether the
+mechanism appears away from Jane---on a synthetic stream whose tail index we set, and on an
+independent market. Two (\cref{app:tracker,app:grid}) ask whether our own choices are
+carrying the result: which tracker we run, and whether the tuning grid is wide enough to
+have found each method's optimum. The last (\cref{app:adaptive}) runs the adaptive
+optimizers rather than arguing about them.
 
 \subsection{Synthetic streams: known tail and the cap sweep}
 \label{sec:synthetic}\label{app:sweep}
@@ -1387,6 +1430,24 @@ reading was too strong: the cap buys accuracy on Jane too, modestly and broadly 
 the synthetic stream's sharp peak, and \emph{stability unconditionally}: uncapped scale-adaptive
 OGD diverges at $\mathrm{lr}\ge2$ while SN-OMD does not.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_synthetic.png}
+\caption{\textbf{Known-tail synthetic} (\cref{sec:synthetic}). Cumulative regret vs.\ $T$
+at $p\in\{1.3,1.5,2.0\}$: OGD's exponent climbs past $1$ (divergent) as the tail heavies,
+while SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
+\label{fig:synthetic}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{fig6_msweep.png}
+\caption{\textbf{The cap has an interior optimum} (synthetic, $p=1.5$; \cref{sec:msweep}).
+Steady-state excess loss vs.\ $M$, each cap at its own tuned step: the finite-$M$ optimum
+beats both the normalized-GD end ($M\to0$) and the uncapped scale-adaptive-OGD end
+($M\to\infty$).}
+\label{fig:msweep}
+\end{figure}
 \subsection{A second market (crypto), and an image-model boundary}
 \label{app:secondmarket}
 \paragraph{Crypto: the mechanism replicates on an independent market.} We repeat the whole
@@ -1452,51 +1513,6 @@ is already light ($\hat\alpha\approx6$--$9$), so the heaviness is scale decay, n
 drift. This is a genuine boundary---training gradients need not carry the within-regime effect,
 which we establish on the two \emph{market} streams.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{fig5_synthetic.png}
-\caption{\textbf{Known-tail synthetic} (\cref{sec:synthetic}). Cumulative regret vs.\ $T$
-at $p\in\{1.3,1.5,2.0\}$: OGD's exponent climbs past $1$ (divergent) as the tail heavies,
-while SN-OMD stays sublinear and below the $T^{1/p}$ reference (dashed).}
-\label{fig:synthetic}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.72\columnwidth]{fig6_msweep.png}
-\caption{\textbf{The cap has an interior optimum} (synthetic, $p=1.5$; \cref{sec:msweep}).
-Steady-state excess loss vs.\ $M$, each cap at its own tuned step: the finite-$M$ optimum
-beats both the normalized-GD end ($M\to0$) and the uncapped scale-adaptive-OGD end
-($M\to\infty$).}
-\label{fig:msweep}
-\end{figure}
-
-\begin{table}[t]
-\caption{\textbf{The scale drift is a genuine rate, but its constant is controllable}
-(\cref{sec:tracker}). Upward variation $W_s$ vs.\ the tracker's update block length $B$ (predictable robust
-median per block) on the $200{,}000$-round gradient-scale process. Restricting the
-$W_s\sim T^{\beta}$ fit to horizons with $\gtrsim\!50$ blocks gives $\beta\approx1.0$--$1.25$
-where reliably measurable ($B{=}100,10^3$), with no monotone trend; the naive full-range
-fit's decline (to $0.17$ at large $B$) is a finite-horizon artifact---$B{=}10^4$ has only
-$\sim\!20$ blocks and no $\ge\!50$-block horizon. What $B$ controls is the constant,
-shrinking $W_s$ by $\sim\!5$ orders of magnitude while roughly holding the lower bracket.
-Escaping the resulting $\sqrt T$ drift factor needs a switching bound in the regime count,
-left open.}
-\label{tab:beta}
-\centering
-\begin{small}
-\begin{tabular}{lccccc}
-\toprule
-block $B$              & $1$ & $100$ & $10^3$ & $3{\cdot}10^3$ & $10^4$ \\
-\midrule
-$W_s$ (full record)   & $1.8\mathrm{M}$ & $3216$ & $319$ & $108$ & $29$ \\
-$\beta$ ($\ge\!50$ blk) & --- & $1.03$ & $1.25$ & $0.73$ & n/a \\
-lower bracket         & $0.72$ & $0.97$ & $0.97$ & $0.92$ & $0.93$ \\
-\bottomrule
-\end{tabular}
-\end{small}
-\end{table}
-
 \paragraph{Drift model.} Partition $[T]$ into $N$ regimes by change points
 $t_0<\dots<t_N$. \emph{Slow within-regime drift:} inside a regime the scale varies
 slowly, $\sigma_t/\sigma_{t-1}\in[1-\gamma,1+\gamma]$ with $\gamma W\le c_0$ for the
@@ -1552,9 +1568,9 @@ $W$ needed for concentration inflates with the mixing coefficient, and with it t
 exceptional set. The proposition therefore says something only for regimes long enough that
 $NW\ll T^{1/p}$ \emph{survives} this inflation; for short or rapidly-mixing regimes the lapse
 term is no longer dominated, and the guarantee degrades to the empirical discharge of
-\cref{sec:tracker}. The residual---the post-jump lapse---is an additive term already of the form isolated in
-the Reductions above, and making $\rho$ adaptive to an unknown $L$ is exactly the
-strongly-adaptive wrapper of that subsection.
+\cref{sec:tracker}. The residual---the post-jump lapse---is an additive term of the form
+isolated in \cref{app:reductions}, and making $\rho$ adaptive to an unknown $L$ is exactly
+that subsection's strongly-adaptive wrapper.
 
 \subsection{Trackers: guarantee versus accuracy}
 \label{app:tracker}
@@ -1703,7 +1719,7 @@ process: the winsorization already supplies the per-step cap the envelope gets f
 median, so what remains is to control the geometric-decay churn term $\rho\sum_t s_t$,
 exactly as in \cref{rmk:tracker}, with $\rho$ the EMA rate. The
 one residual modeling assumption---$\rho$ matched to an unknown regime length---is
-removed by the strongly-adaptive wrapper of the preceding subsection.
+removed by the strongly-adaptive wrapper of \cref{app:reductions}.
 
 \subsection{Grid adequacy: window-1 optima are interior}
 \label{app:grid}
