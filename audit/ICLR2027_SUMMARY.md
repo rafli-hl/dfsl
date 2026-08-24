@@ -18,9 +18,9 @@ Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
-| Main text | **8.943pp** of a 9pp limit. Adoption pushed it to 9.007pp; the appendix relocation brought it to 8.615pp; promoting `fig:problem` into the body to fix the figure inversion spent 0.39pp of that back. **Margin is ~3 lines** |
+| Main text | **8.502pp** of a 9pp limit, ~0.50pp (27 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 after adopting the matched-budget table → 8.615 after the appendix relocation → 9.007 after promoting `fig:problem` → **8.502** after demoting `fig:main` |
 | Total | 28pp (statements, references, appendix do not count) |
-| Build | 0 undefined refs, 0 overfull >10pt, 0 stray tabs |
+| Build | 0 undefined refs, 0 overfull, 0 `h` float-specifier warnings, 0 stray tabs. 5 underfull boxes remain |
 | Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
 | Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
 
@@ -250,10 +250,11 @@ that validate it:
 
 | | before | after |
 |---|---|---|
-| Figure 1 | `fig:nullcontrol` (null controls) | **`fig:problem` (the phenomenon)** |
-| Figure 2 | `fig:main` (single-window sweep) | `fig:nullcontrol` |
-| Figure 3 | `fig:mechanism` (appendix) | `fig:main` |
-| Figure 6 | **`fig:problem` (appendix)** | `fig:tracker` |
+| Figure 1 | `fig:nullcontrol` — body | **`fig:problem` — body** |
+| Figure 2 | `fig:main` — body | `fig:nullcontrol` — body |
+| Figure 3 | `fig:mechanism` — appendix | `fig:main` — **appendix** |
+| Figure 4 | `fig:iternorm` — appendix | `fig:mechanism` — appendix |
+| Figure 6 | **`fig:problem` — appendix** | `fig:tracker` — appendix |
 
 All appendix figures renumber down by one and every `\cref` resolves; 0 undefined refs.
 Its caption lost three sentences that restated the paragraph directly above it; the unique
@@ -262,12 +263,18 @@ one — why an order-shuffle leaves the *pooled* index unchanged (an order-stati
 GARCH band, which now lives in that same paragraph.
 
 **Cost: 0.392pp**, i.e. exactly the margin the relocation had freed. Recovered ~0.06pp by
-trimming caption/prose restatement, leaving the main text at 8.943pp — compliant, with about
-three lines of slack. Getting real breathing room now needs a structural call: send one of the
-two remaining body figures to the appendix (`fig:main` is the candidate — it is a
-**single-window** sweep whose content `tab:jane` and `tab:replication` both carry numerically,
-and `app:tables` already collects the other single-window artifacts), or accept a thin margin
-and compress prose instead. **Open — author decision.**
+trimming caption/prose restatement, then closed the gap structurally: **`fig:main` moved to
+`app:tables`**, beside the other single-window artifacts. It is a *single-window*
+learning-rate sweep; `tab:jane` carries its values and `tab:replication` carries the same
+dichotomy across ten windows and stays in the body, so nothing it shows leaves the main text's
+evidence base. Its caption title changed from "Main result" — never accurate for a
+single-window sweep, and misleading in an appendix — to "The stability dichotomy on the
+reported window".
+
+Final body inventory: **Figure 1** (the phenomenon), **Figure 2** (the null controls),
+**Table 1** (the ten-window replication), **Algorithm 1**. Main text **8.502pp**, ~0.50pp of
+margin. The four `[h]` floats were promoted to `[htbp]` in the same pass, closing
+the last float-specifier warnings.
 
 ## Open items
 
@@ -318,7 +325,7 @@ drifted away from it.
 
 ## Submission checklist
 
-- [x] Main text within 9pp (8.943, after promoting `fig:problem` into the body)
+- [x] Main text within 9pp (8.502, ~0.50pp margin)
 - [x] 0 undefined refs, 0 overfull, clean build
 - [x] Tests pass (106)
 - [x] Tables regenerated from corrected code

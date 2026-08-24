@@ -421,8 +421,8 @@ exploits---and vanishes under shuffling.}
 \end{figure*}
 
 \paragraph{Scale-invariant updates dominate scale-dependent ones.} Streaming one learner
-through the multi-regime window and sweeping the learning rate (\cref{fig:main},
-\cref{tab:jane}), the methods split cleanly by whether their step responds to the
+through the multi-regime window and sweeping the learning rate
+(\cref{tab:jane,fig:main}), the methods split cleanly by whether their step responds to the
 gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust clippers
 (AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---are
 fragile: they stay bounded only to $\mathrm{lr}\approx10^{-2}$ and reach best
@@ -533,21 +533,6 @@ stationarity can be enforced), tuned SN-OMD is if anything \emph{worse} than tun
 wrong way; both rates interior on their grids, \cref{app:grid}): the advantage disappears as the thesis
 predicts (a $100\mathrm{k}$-row Jane slice is \emph{not} a valid stationarity control---it
 still has $\sim30\%$ within-day drift---so its lead there is expected).
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.9\textwidth]{fig3_main.png}
-\caption{\textbf{Main result} (continuous multi-regime stream, \emph{causal}
-standardization, per-row). The cap family: OGD (scale-dependent) against the $M\!\to\!0$
-endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD), and
-SN-OMD ($M{=}5$). (a)~Weighted $R^2$ vs.\ learning rate: OGD cliffs above
-$\mathrm{lr}{=}10^{-2}$ (off-scale) and the uncapped endpoint diverges at large rates, while
-the scale-invariant methods climb to $R^2\approx0.2$--$0.3$ with overlapping intervals
-(\cref{tab:jane}). (b)~Peak rolling loss: the two scale-dependent curves explode
-($10^2$--$10^{30}$); normalized-GD ($\approx5$) and SN-OMD ($\approx8$ at its top stable
-$\mathrm{lr}{=}2$) stay single-digit.}
-\label{fig:main}
-\end{figure*}
 
 \paragraph{Further experiments (deferred to \cref{app:further}).} Two supporting studies
 develop (i)~the \emph{cap frontier}---an $M$-sweep across the interpolation from normalized-GD
@@ -700,8 +685,9 @@ hourly bars, and MNIST-CNN gradient norms (the latter two in \cref{app:secondmar
 
 \section{Additional experimental tables and figures}
 \label{app:tables}
-Collected here for space: the residual tail-index decomposition (\cref{tab:residual}), the
-leakage controls (\cref{tab:leakage}), the single-window tuned comparison (\cref{tab:jane}), and
+Collected here for space, all of it \emph{single-window} material: the residual tail-index
+decomposition (\cref{tab:residual}), the leakage controls (\cref{tab:leakage}), the tuned
+method comparison (\cref{tab:jane}), the learning-rate sweep behind it (\cref{fig:main}), and
 the scale-drift/clipping mechanism figure (\cref{fig:mechanism}). The ten-window replication
 (\cref{tab:replication}) and its reading remain in the body, since the across-window
 numbers---not the single-window tuning---carry the accuracy claims.
@@ -741,7 +727,7 @@ that no fixed-partition linear oracle matches. And the weights learned on this w
 unchanged to a disjoint later window, give $R^2=-1.7$, whereas that window's own prequential run
 gives $+0.22$---the score is tracking, not transfer.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \caption{\textbf{The lightening is order-one and estimator-stable; the residual is
 causal-estimation cost} (\cref{sec:experiments}). Hill $\hat\alpha$ of the normalized
 $\norm{\gt}$ at three tail fractions $k$ (larger $=$ lighter). The deployed causal tracker
@@ -776,7 +762,7 @@ causal winsorized-EMA                    & $4.81$ & $4.48$ & $4.08$ \\
 \end{small}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \caption{\textbf{Leakage controls for the prequential $R^2$} (date$[0,120)$, $150$k rows,
 causal standardization). The headline $R^2\approx0.28$ survives a shuffled-label null and is
 not a look-ahead artifact: it comes from within-day adaptation on a nonstationary stream, not
@@ -796,7 +782,7 @@ Frozen $w_T$, forward window              & $-1.7$      & tracking, not transfer
 \end{small}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \caption{Best weighted $R^2$ (each method at its own tuned rate) on the continuous Jane
 Street stream, \emph{causal} standardization, both round granularities, with the largest
 stable learning rate; each $R^2$ carries $\pm$one circular block-bootstrap standard error
@@ -839,7 +825,23 @@ AdaGrad-Norm                         & $\mathbf{0.329}{\scriptscriptstyle\pm.030
 \end{small}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig3_main.png}
+\caption{\textbf{The stability dichotomy on the reported window} (continuous multi-regime
+stream, \emph{causal} standardization, per-row; the across-window version is
+\cref{tab:replication}). The cap family: OGD (scale-dependent) against the $M\!\to\!0$
+endpoint (normalized-GD), the $M\!\to\!\infty$ endpoint (uncapped scale-adaptive OGD), and
+SN-OMD ($M{=}5$). (a)~Weighted $R^2$ vs.\ learning rate: OGD cliffs above
+$\mathrm{lr}{=}10^{-2}$ (off-scale) and the uncapped endpoint diverges at large rates, while
+the scale-invariant methods climb to $R^2\approx0.2$--$0.3$ with overlapping intervals
+(\cref{tab:jane}). (b)~Peak rolling loss: the two scale-dependent curves explode
+($10^2$--$10^{30}$); normalized-GD ($\approx5$) and SN-OMD ($\approx8$ at its top stable
+$\mathrm{lr}{=}2$) stay single-digit.}
+\label{fig:main}
+\end{figure*}
+
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig2_mechanism.png}
 \caption{\textbf{Why scale-dependent clipping fails} (\cref{sec:experiments}). (a) The gradient
