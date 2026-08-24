@@ -654,9 +654,12 @@ tuned parameters (the tracker's decay and winsorization are left untuned). The $
 \cref{sec:tracker}). Our
 \emph{positive} evidence is from two financial streams, with the MNIST probe a negative boundary
 (\cref{app:secondmarket}), so the mechanism is domain-general in principle but validated on
-markets only. Finally, the normalized residual tail is dominated by
+markets only. The normalized residual tail is dominated by
 \emph{causal-estimation cost} ($\hat\alpha\approx3.73$; \cref{tab:residual}), so with $p>2$ the
-cap is for stability alone.
+cap is for stability alone. Finally, the anytime $\eta/\sqrt t$ schedule we deploy is not the
+more accurate one: on window~1 at a shared rate grid, SN-OMD scores $0.52$ under a
+\emph{constant} rate against $0.25$ under the schedule (\cref{app:adaptive})---what the anytime
+$O(\sqrt t)$ envelope costs, and we do not claim it back.
 
 \section*{Ethics Statement}
 This work studies online prediction on public financial-market and cryptocurrency data and
@@ -678,10 +681,22 @@ public competition data (Kaggle-gated), as disclosed in \cref{sec:experiments}. 
 market numbers are deterministic---a single streaming pass over the pinned input, with no
 seed averaging---so their reported uncertainty comes only from the seeded block bootstrap
 (\cref{tab:jane}, \cref{sec:tracker}) and, for the synthetic experiments, the stated seed
-counts (e.g.\ the $400$-seed and five-seed runs). All experiments run on a single commodity
+counts (e.g.\ the $400$-seed and five-seed runs).
+What a reviewer \emph{without} the competition data can still run is the whole Jane code path
+on a seeded mini-slice in the same schema (\texttt{research\_jane\_mini.py}): on that stream
+the bounded scale-free updates stay bounded at every rate we sweep while the scale-dependent
+and uncapped ones diverge, and causal normalization lightens the pooled Hill index from
+$2.83$ to $3.75$. Those are not the paper's numbers---the stream's drift is ours to set---but
+they exercise the loader, the predictable tracker, the cap and the evaluation, and they
+reproduce the qualitative dichotomy the paper's reading rests on. All experiments run on a single commodity
 CPU with no accelerator required: the only neural component (MNIST-CNN gradient norms,
 \cref{app:secondmarket}) trains a small network that runs on CPU and is cached, so the full
-figure-and-table suite reproduces without a GPU.
+figure-and-table suite reproduces without a GPU. It takes about 3~hours of wall-clock to do
+so. \texttt{research\_runtime\_suite.py} times a defined set---every script named in this
+paper, plus those that generate its tables (29 in all, one fresh interpreter each)---and
+records the per-script breakdown; nearly half the total is the two matched-budget ten-window
+runs behind \cref{tab:replication}. The part that needs no Kaggle-gated data, which is
+everything a reviewer without a competition account can run, takes about 3~minutes.
 
 \section*{Use of Large Language Models}
 Large language models were used as assistive tools during this project: for prose editing and
@@ -708,6 +723,10 @@ the projected-gradient form the mirror step takes under the Euclidean regularize
 reproduce every figure and number, including \cref{tab:residual}'s real-data rows
 (\texttt{research\_review2\_checks.py}) and its GARCH-surrogate rows
 (\texttt{research\_residual\_surrogate.py}, fully synthetic---runnable without any market data).
+Because the competition data cannot be redistributed, \texttt{research\_jane\_mini.py} ships a
+seeded mini-slice in the Jane schema that drives the \emph{same} loader, update harness and
+evaluation with no market data at all, and the same script hashes the real canonical slice so a
+reviewer holding their own download can confirm it matches ours before spending the compute.
 Data: the public Jane Street Real-Time Market Data Forecasting competition, Binance BTC/USDT
 hourly bars, and MNIST-CNN gradient norms (the latter two in \cref{app:secondmarket}).
 
@@ -764,6 +783,25 @@ $0.18$, both below online SN-OMD's $0.28$: the accuracy is carried by fast withi
 that no fixed-partition linear oracle matches. And the weights learned on this window, applied
 unchanged to a disjoint later window, give $R^2=-1.7$, whereas that window's own prequential run
 gives $+0.22$---the score is tracking, not transfer.
+
+\paragraph{Is the one-day bootstrap block long enough (\cref{tab:jane})?} A block should
+span the serial dependence it is there to respect, and this stream's rank autocorrelation is
+still ${\approx}0.16$ at lag $100$, so one trading day may be too short---which would \emph{understate}
+every standard error in \cref{tab:jane}. We re-bootstrapped each row at its own tuned setting
+with blocks of one, three, five and ten trading days
+(\texttt{research\_block\_length.py}). At the three-day block the standard errors do not move
+(ratios $0.88$--$1.18$ across the twelve series), so at that scale the one-day block is not
+understating them. Past three days they \emph{shrink}---which is not evidence that the
+dependence is absent. The slice is $20$ trading days, so a three-day block leaves 7 blocks per
+resample and a ten-day block leaves 2, and a moving-block bootstrap assembled from a handful of
+long contiguous stretches collapses toward the original series. Those columns measure the record
+length, not the dependence, and settling the question at longer horizons needs a longer slice.
+What we can say is that every reading we take from \cref{tab:jane} holds at every block length
+tried: the per-step SN-OMD and normalized-GD intervals overlap throughout, SN-OMD and
+AdaGrad-Norm overlap per-row throughout, and the separation from scale-dependent OGD is disjoint
+throughout. The accuracy claims in any case do not rest on this bootstrap but on the paired
+across-window bootstrap of \cref{app:tracker}, which resamples at a granularity that absorbs
+within-window dependence outright.
 
 \begin{table}[htbp]
 \caption{\textbf{The lightening is order-one and estimator-stable; the residual is
@@ -1166,7 +1204,7 @@ $1.8$) and \emph{never} breaches the envelope $\norm{w_1}+2M\eta\sqrt t$ ($0/150
 steps), with a log--log growth exponent $-0.31$ (sub-$\sqrt t$). At the same rate the
 uncapped endpoint ($M\!\to\!\infty$) grows to $\norm{w_t}\approx1.4\times10^6$ and plain
 OGD to $>10^{150}$ (\cref{fig:iternorm})---the loss divergence of \cref{sec:experiments},
-now visible in the object the theorem bounds. Generated by \texttt{research\_iterate\_norm.py}.
+now visible in the object the theorem bounds. Generated by \texttt{research\_iterate\_norm.py --lr 8}.
 
 \begin{figure}[t]
 \centering
@@ -1619,10 +1657,11 @@ block-median tracker lifts SN-OMD's per-row mean from $0.24$ to the co-leading $
 negative on any window. The across-window variability therefore tracks the cap setting rather
 than the tracker, and the deploy question is sharpened rather than settled: the tracker that is
 most accurate is exactly the one we cannot yet bound. This also resolves a single-window
-observation: SN-OMD's per-row error bar in \cref{tab:jane} runs about twice normalized-GD's
-($\pm.079$ vs.\ $\pm.037$, and no wider per-step), which the replication does \emph{not} trace
-to the EMA tracker---once the cap is tuned alongside the rate the EMA is the \emph{tighter} of
-the two SN-OMD rows across windows.
+observation. SN-OMD's per-row error bar in \cref{tab:jane} is the \emph{widest} in that
+column---$\pm.080$, about twice normalized-GD's $\pm.037$ and $3.3\times$ the tightest bar
+there---though it is no wider than normalized-GD's per-step. The replication does \emph{not}
+trace that width to the EMA tracker: once the cap is tuned alongside the rate, the EMA is the
+\emph{tighter} of the two SN-OMD rows across windows.
 
 The accuracy gaps are easy to over-read, so we test them across regimes: the ten frozen
 windows (\cref{tab:replication}) are the instrument that varies the hypothesized variable, so

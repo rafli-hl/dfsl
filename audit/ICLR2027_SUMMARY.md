@@ -400,15 +400,74 @@ build, reproducible tables, anonymized supplement. What remains open is not writ
 
 ## Open items
 
-| # | Item | Blocked on |
+| # | Item | Status |
 |---|---|---|
-| 1 | ~~`tab:replication` rests on a confounded comparison.~~ **Closed 2026-08-24** — corrected table adopted at `de33ee0`, and the four appendix statements it invalidated repaired in the same working tree (below). | — |
-| 2 | Wall-clock runtime figure for the Reproducibility Statement | A timed full-suite run over the Jane parquet. Open across four rounds. |
-| 3 | §4 sentence noting the deployed anytime schedule is not the more accurate one | Author decision. The gate (a decomposition giving trustworthy numbers) is satisfied; the investigation showed the gap was grid-tuning, so if this goes in it stands on the schedule argument alone — not automatic. |
-| 4 | GitHub release | `gh` authenticated as `rafli07p`, repo owner is `rafli-hl`. |
-| 5 | Audit finding 10 — bootstrap block-length sensitivity | A re-run of the block bootstrap at 3-day and 5-day blocks. Compute, not a text fix. |
-| 6 | Audit finding 6 — Jane numbers not reviewer-reproducible | Partly mitigated (crypto auto-downloads, synthetic suite is data-free); a seeded Jane mini-slice is still not shipped. |
-| 7 | Audit finding 3 residual — the "$3\times$" SE claim names no comparator | Author call: ~3.3x against the family's tightest per-row SE, 2.2x against normalized-GD, and per-step SN-OMD's SE is *lower* than normalized-GD's. |
+| 1 | ~~`tab:replication` rests on a confounded comparison.~~ | **Closed 2026-08-24** — corrected table adopted at `de33ee0`, and the four appendix statements it invalidated repaired. |
+| 2 | ~~Wall-clock runtime figure for the Reproducibility Statement.~~ | **Closed** — `research_runtime_suite.py` times a defined set (every script the paper names, plus the ones that generate the tables it prints), one fresh interpreter each, writing `results/research/runtime_suite.csv` incrementally. Measured: **3.0 h** over 29 scripts on one commodity CPU, of which the **Kaggle-free** subset — everything a reviewer without a competition account can run — is **3 min** across 5 scripts. Slowest three: `research_c12b_blockmed.py` 50 min, `research_c12_matched_table.py` 37 min, `research_grid_adequacy.py` 15 min; the two C12 runs alone are 49% of the total. One caveat on the measurement: rows 17–24 of the CSV overlapped for part of their run with one other single-threaded job on this 12-core machine, so those eight figures are upper bounds by a small margin. The total is robust to it — even a 10% inflation on all eight moves 177 min by 4 — and the rest of the CSV was measured with nothing else running. |
+| 3 | ~~§4 sentence on the deployed schedule.~~ | **Closed** — placed in **Limitations**, not §4: it is one window on one shared grid, weaker evidence than anything in §4, and Limitations is where the paper already concedes its tuned parameters. It stands on the schedule argument alone, as required — the paired bootstrap attributes the $0.285$-vs-$0.247$ difference to the grid, but the $0.52$-vs-$0.25$ gap is the schedule. |
+| 4 | GitHub release | **Not done, deliberately.** Two reasons. `gh` is authenticated as `rafli07p` and `gh repo view` reports `viewerPermission: READ` on `rafli-hl/dfsl`, so it cannot be done from here. More importantly that repo is **public** and the paper is under double-blind review: a release under the author's account on a repo bearing the author's name would deanonymize the submission, which is what `make_anon_release.py` exists to avoid. Hold until after reviews regardless of credentials. |
+| 5 | ~~Audit finding 10 — bootstrap block-length sensitivity.~~ | **Closed, and the answer is not the one the objection expected.** See below. |
+| 6 | ~~Audit finding 6 — Jane numbers not reviewer-reproducible.~~ | **Closed** — `research_jane_mini.py` closes it from both ends: a seeded mini-slice in the Jane schema drives the same loader, harness and evaluation with no market data, and the same script pins the sha256 of the real canonical slice so a reviewer with their own download can confirm it matches before spending the compute. Covered by `tests/test_jane_mini.py`. |
+| 7 | ~~Audit finding 3 residual — the SE claim names no comparator.~~ | **Closed** — and it was two defects. The prose said `±.079` where the table prints `±.080`, the same prose-versus-table disagreement finding 3 was about, recurring; and "about twice normalized-GD's" picked the flattering comparator when SN-OMD's is the *widest* bar in that column. Both fixed, and both halves now pinned to the source CSV by new `PAPER_CLAIMS` guards. |
+
+
+### Finding 10, measured: the block-length objection does not reproduce
+
+The audit expected a one-day block to be too short for the dependence and therefore to
+*understate* the standard errors in `tab:jane`. Re-bootstrapping every row at its own tuned
+setting with blocks of 1, 3, 5 and 10 trading days (`research_block_length.py`,
+`block_length_sensitivity.csv`) says otherwise, in two parts.
+
+At the three-day block the audit itself proposed, the standard errors do not move — ratios
+**0.88–1.18** across all twelve series. So at that scale the one-day block is not
+understating them.
+
+Past three days they **shrink**, and that is an artifact rather than a result. The slice is
+20 trading days, so a three-day block leaves 7 blocks per resample and a ten-day block
+leaves 2; a moving-block bootstrap assembled from a handful of long contiguous stretches
+collapses toward the original series, and its spread goes to zero. Those columns measure the
+record length, not the dependence. Settling the question at longer horizons needs a longer
+slice, and that limitation is now stated in the paper rather than left implicit.
+
+Every reading the paper takes from `tab:jane` survives at every block length tried: the
+per-step SN-OMD/normalized-GD intervals overlap throughout, SN-OMD and AdaGrad-Norm overlap
+per-row throughout, and the separation from scale-dependent OGD is disjoint throughout. And
+the accuracy claims do not rest on this bootstrap in the first place — they rest on the
+paired across-window bootstrap over ten frozen windows, which resamples at a granularity
+that absorbs within-window dependence outright.
+
+
+### The timing run doubled as a full reproduction, and found one trap
+
+Timing the suite meant re-running every script, which regenerates every artifact -- so the
+`git status` afterwards is a reproduction report. Reading it:
+
+**The heavy tables reproduce exactly.** `research_c12_matched_table.py` and
+`research_c12b_blockmed.py` -- 37 and 50 minutes, together half the suite, and the source of
+`tab:replication` -- came back with `repro_gate_pass: true` and identical tuned
+configurations and R^2 values. The only fields that moved were wall-clock timings.
+`tracker_a1.csv` was identical. `synthetic_regret.csv` differed in the sixteenth
+significant digit (max relative difference `6.6e-15`), which is floating-point reduction
+order, not a change.
+
+**One artifact came back different, and the fault was in the instruction.**
+`iterate_norm.csv` changed substantially: SN-OMD's peak `||w||` read `6.63` where
+`app:iternorm` reports `40.6`. The cause is that `research_iterate_norm.py` defaults to
+`--lr 2` while the appendix reports the run at the shared competitive rate `eta=8`, and the
+suite ran every script bare. Re-running it with `--lr 8` reproduces the committed CSV
+**byte-for-byte** -- peak `40.6`, final `1.78`, `0/150000` envelope breaches, log-log
+exponent `-0.307` -- so the measurement was never in doubt.
+
+What was wrong is that the paper named the script without the flag, so a reviewer following
+it would have run a different experiment and silently overwritten the artifact with it. The
+paper now names `research_iterate_norm.py --lr 8`, the tracker's reproducing list carries
+the flag with a warning that it is not the default, and `research_runtime_suite.py` holds an
+`ARGS` table so the suite reproduces the paper's configuration rather than each script's
+own defaults. Of the 29 scripts this is the only one whose defaults disagree with the
+paper; the rest were checked.
+
+Every regenerated artifact was restored to its committed state, so the tree still holds
+exactly what the paper was built from.
 
 **Decided, not open.** RMSProp/Adam do *not* get ten-window rows — the schedule control
 is a single window at each method's own tuned rate, and `app:adaptive` says so. Whether
@@ -425,6 +484,11 @@ python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
 python -m pytest -q                               # 106 tests
 python scripts/make_anon_release.py               # double-blind supplement (307 files)
+python scripts/research_iterate_norm.py --lr 8   # fig:iternorm -- the flag is NOT the default
+python scripts/research_runtime_suite.py          # wall-clock for the whole suite
+python scripts/research_block_length.py           # bootstrap block-length sensitivity
+python scripts/research_jane_mini.py --build --run   # the Jane path with no market data
+python scripts/research_jane_mini.py --verify        # hash-check a real Kaggle download
 ```
 
 Phase-2 research (branch `research/c10-q6`, preregistered in `experiment_matrix.yaml`):
@@ -455,8 +519,8 @@ drifted away from it.
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
 - [x] Prior-venue material excluded from the supplement — exclusion glob repaired 2026-08-24 after the `paper/` move silently un-matched it; pinned by `tests/test_anon_exclusions.py`
 - [x] Tag on the submission commit (`c32db71`) — deliberately NOT moved onto the research branch
-- [ ] Wall-clock runtime disclosed
-- [ ] §4 schedule sentence — decide
+- [x] Wall-clock runtime disclosed — ~3 h for the whole suite, ~3 min for the Kaggle-free part
+- [x] §4 schedule sentence — decided: it goes in **Limitations**, not §4
 - [x] `tab:replication` re-run at matched budget — corrected artifact in `results/research/c12/`
 - [x] Corrected `tab:replication` adopted (`de33ee0`), and every statement it invalidated repaired
 - [x] Publication-quality pass §4–§19 — introduction, abstract, contributions, paragraph structure, terminology, captions, cross-references, bibliography (below)

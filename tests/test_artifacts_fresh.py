@@ -237,6 +237,22 @@ PAPER_CLAIMS = [
         [(1, "per-row", "mean", 2), (2, "per-row", "std", 2),
          (3, "per-step", "mean", 2), (4, "per-step", "std", 2)],
     ),
+    # The prose SE comparison in app:tracker. Audit finding 3 was exactly this sentence
+    # quoting a superseded CSV, and it recurred once more as a last-digit disagreement with
+    # the table it cites. Both halves are now pinned to the CSV the table itself is built
+    # from, so the next reword has to keep them true.
+    (
+        "app:tracker prose: SN-OMD's per-row error bar",
+        r"column---\$\\pm(\.\d+)\$, about twice normalized-GD's",
+        "baselines_jane.csv", {"method": "SN-OMD M=5 (anchor)"},
+        [(1, "per-row", "se", 3)],
+    ),
+    (
+        "app:tracker prose: the normalized-GD bar it is compared against",
+        r"about twice normalized-GD's \$\\pm(\.\d+)\$",
+        "baselines_jane.csv", {"method": "normalized-GD (anchor)"},
+        [(1, "per-row", "se", 3)],
+    ),
     (
         "app:tracker Bonferroni: per-step block-vs-EMA gap and uncorrected CI",
         r"the gap over the EMA default,\s*\$\+([\d.]+)\$ \(\$\[\+([\d.]+),\+([\d.]+)\]\$",

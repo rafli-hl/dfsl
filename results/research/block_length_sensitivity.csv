@@ -1,0 +1,49 @@
+protocol,method,block_days,block_rows,r2,se
+per-row,OGD,1,7500,0.018,0.0059
+per-row,OGD,3,22500,0.018,0.006
+per-row,OGD,5,37500,0.018,0.0064
+per-row,OGD,10,75000,0.018,0.0063
+per-row,Scale-adaptive OGD (M->inf),1,7500,0.1593,0.0238
+per-row,Scale-adaptive OGD (M->inf),3,22500,0.1593,0.0221
+per-row,Scale-adaptive OGD (M->inf),5,37500,0.1593,0.0193
+per-row,Scale-adaptive OGD (M->inf),10,75000,0.1593,0.0105
+per-row,Normalized-GD (M->0),1,7500,0.2205,0.0363
+per-row,Normalized-GD (M->0),3,22500,0.2205,0.0375
+per-row,Normalized-GD (M->0),5,37500,0.2205,0.0367
+per-row,Normalized-GD (M->0),10,75000,0.2205,0.0211
+per-row,SN-OMD (M=5),1,7500,0.2846,0.0817
+per-row,SN-OMD (M=5),3,22500,0.2846,0.0793
+per-row,SN-OMD (M=5),5,37500,0.2846,0.074
+per-row,SN-OMD (M=5),10,75000,0.2846,0.0564
+per-row,Fixed-tau clip,1,7500,0.2463,0.0478
+per-row,Fixed-tau clip,3,22500,0.2463,0.0499
+per-row,Fixed-tau clip,5,37500,0.2463,0.0486
+per-row,Fixed-tau clip,10,75000,0.2463,0.0329
+per-row,AdaGrad-Norm,1,7500,0.3286,0.0297
+per-row,AdaGrad-Norm,3,22500,0.3286,0.0308
+per-row,AdaGrad-Norm,5,37500,0.3286,0.0245
+per-row,AdaGrad-Norm,10,75000,0.3286,0.0227
+per-step,OGD,1,7500,0.1392,0.0119
+per-step,OGD,3,22500,0.1392,0.0112
+per-step,OGD,5,37500,0.1392,0.0099
+per-step,OGD,10,75000,0.1392,0.0053
+per-step,Scale-adaptive OGD (M->inf),1,7500,0.0804,0.0127
+per-step,Scale-adaptive OGD (M->inf),3,22500,0.0804,0.015
+per-step,Scale-adaptive OGD (M->inf),5,37500,0.0804,0.015
+per-step,Scale-adaptive OGD (M->inf),10,75000,0.0804,0.0128
+per-step,Normalized-GD (M->0),1,7500,0.3712,0.0769
+per-step,Normalized-GD (M->0),3,22500,0.3712,0.0794
+per-step,Normalized-GD (M->0),5,37500,0.3712,0.0767
+per-step,Normalized-GD (M->0),10,75000,0.3712,0.0655
+per-step,SN-OMD (M=5),1,7500,0.3066,0.0591
+per-step,SN-OMD (M=5),3,22500,0.3066,0.0614
+per-step,SN-OMD (M=5),5,37500,0.3066,0.055
+per-step,SN-OMD (M=5),10,75000,0.3066,0.0453
+per-step,Fixed-tau clip,1,7500,0.3821,0.0473
+per-step,Fixed-tau clip,3,22500,0.3821,0.0478
+per-step,Fixed-tau clip,5,37500,0.3821,0.0444
+per-step,Fixed-tau clip,10,75000,0.3821,0.0367
+per-step,AdaGrad-Norm,1,7500,0.2189,0.0138
+per-step,AdaGrad-Norm,3,22500,0.2189,0.0121
+per-step,AdaGrad-Norm,5,37500,0.2189,0.0095
+per-step,AdaGrad-Norm,10,75000,0.2189,0.0064

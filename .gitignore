@@ -45,3 +45,6 @@ data/mnist/
 
 # stray latex out dir
 out/
+
+# Runtime-suite console logs (the timing CSV next to them is the artifact)
+results/research/runtime_logs/
