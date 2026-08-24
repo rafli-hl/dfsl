@@ -4,7 +4,7 @@ Progress tracker for the SN-OMD paper targeting **ICLR 2027**. Detail on individ
 fixes lives in [`ICLR2027_REMEDIATION_LOG.md`](ICLR2027_REMEDIATION_LOG.md); this file
 is the top-level view: where the paper stands, what is settled, what is still open.
 
-Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c10-q6`).
+Last verified: **2026-08-24**, commit `b44999d` (branch `research/c10-q6`).
 
 ---
 
@@ -12,12 +12,12 @@ Last verified: **2026-08-24**, commit `de33ee0`+working tree (branch `research/c
 
 | | |
 |---|---|
-| Branch | `research/c10-q6`, **26 commits ahead of `origin/master`** (Phase-2 research; unmerged, unpushed) |
+| Branch | `research/c10-q6`, **48 commits ahead of `origin/master`** (Phase-2 research; unmerged, unpushed) |
 | Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
 | `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
-| Canonical source | `paper/iclr2027/iclr2027.tex` (1868 lines) |
+| Canonical source | `paper/iclr2027/iclr2027.tex` (1913 lines) |
 | Main text | **8.871pp** of a 9pp limit, ~0.13pp (7 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → **8.871** (§8–10) |
 | Total | 29pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull, 0 float-specifier warnings, 0 stray tabs. 6 underfull boxes, all float slack or one badness-1342 proof line — the two badness-10000 bibliography lines are fixed |
@@ -342,6 +342,61 @@ old structure produced are gone.
 
 Build after the pass: 29pp, exit 0, **0 overfull, 0 undefined refs**, underfull boxes
 6 → 4. 106 tests pass.
+
+## Publication pass: closing report (§28)
+
+Nine commits, `82e290b`..`b44999d`, over the brief's §4–§30. Three earlier commits paid
+for them structurally: `3af12c6` (detailed diagnostics to the appendix), `fb276ce` (the
+figure inversion — the paper's central measurement was typesetting as Figure 6 in the
+appendix while a validation figure was Figure 1), and `5c8a9ad` (`fig:main` demoted).
+
+**What actually changed.** Almost none of it was typographic. In order of how much a
+reviewer would notice:
+
+1. *The paper now opens on its own claim.* The Introduction spent eleven lines on
+   generic background before saying anything of its own. It now opens on the finding
+   itself — a heavy gradient tail is largely manufactured by a drifting scale, and largely
+   removed by dividing by a causal estimate of it — with the background compressed into a
+   positioning paragraph that keeps all six citations.
+2. *The contributions read as claims rather than as a table of contents.* Two of three
+   bold leads were topic labels; item 3's lead now states the honest result the label
+   buried.
+3. *The two formal statements state, and the reading follows.* Proposition 3.1 ended in
+   three clauses of interpretation; Theorem 3.2's environment title was doing
+   bibliographic work and its hypotheses all arrived in one sentence.
+4. *The scale tracker got its own paragraph.* It had been a trailing clause — three names,
+   no definitions — despite being what \cref{ass:track} is about and where the paper's
+   main honest limitation lives.
+5. *Related Work got a map.* Three literatures, the gap stated once instead of three
+   times, each paragraph keeping only its own delta.
+6. *The appendix stopped filing eight pages of experiments under "Proofs"* (§26 above),
+   and five floats went back to the prose that reads them.
+7. *One clarity repair found in passing*: two GARCH ranges forty lines apart read as a
+   discrepancy; both were correct, over different sweeps, and now say so.
+
+**What was verified, and how.**
+
+| Check | Result |
+|---|---|
+| §25 no scientific regression | Numeric-literal multiset diffed at every commit. Over the whole pass: `0.5`,`4.5` out; `1`,`10`,`4.8` in. Two are the deliberate GARCH reconciliation, one the subscript of a deleted duplicate equation, one the `β=0.5` whose decomposition is stated in `app:tracker` and cited from the sentence that replaced it. Every reported result identical, `tab:replication` included. |
+| §27 page budget | Main text **8.871pp** of 9. Measured from the PDF by line-gutter geometry, not by page count. |
+| Build | 29pp, exit 0, **0 overfull**, **0 undefined references**, 4 underfull boxes (float slack plus one badness-1342 proof line). |
+| Cross-references | Every `\cref` resolves; no multi-target reference rendering an appendix number before a plain one; no hard-coded appendix letter anywhere. |
+| Floats | Figures 1–9 and Tables 1–7 sequential; every appendix float in the subsection that cites it, `tab:grid` excepted (2 pages, float mechanics). |
+| Prose | No sentence appearing twice anywhere; terminology unified across body and appendix; no overclaiming vocabulary; no stale "tuning-free" language after the `M`-tuning adoption. |
+| Tests | 106 pass. |
+| Anonymity | 0 identity tokens in the manuscript. |
+
+**What was deliberately left alone.** No experiment, dataset, or number was invented or
+changed. No limitation was softened — the Limitations restatement makes one *stronger*,
+recording that the deployed method now carries two tuned parameters. No underperforming
+method was dropped, and the GARCH and null controls stay. Nothing was fitted into the page
+budget by shrinking a font, a margin, or a float; the 0.14pp the pass cost came out of
+redundancy — the SN-OMD update had been written out three times in two pages, a signpost
+summarised what it should have pointed at, and the Conclusion restated the abstract.
+
+**Where the paper stands.** The manuscript is submission-shaped: within budget, clean
+build, reproducible tables, anonymized supplement. What remains open is not writing.
 
 ## Open items
 
