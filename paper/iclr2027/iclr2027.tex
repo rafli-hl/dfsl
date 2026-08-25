@@ -502,9 +502,9 @@ stability claim therefore hold across the whole record, not merely on the report
 \emph{(ii) No bounded member dominates, and which one is best is tracker- and
 protocol-dependent.} Per-row two methods co-lead in a statistical
 tie---the block-median SN-OMD ($0.28\!\pm\!0.09$) and the normalize-and-clip baseline of
-\citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; the paired contrast of \cref{app:tracker}---%
-$+0.004$, CI $[-0.014,+0.023]$, $6/10$---predates the cap
-tuning)---both clear of the rest (fixed-$\tau$ $0.21$,
+\citet{cutkoskymehta2021} ($0.29\!\pm\!0.04$; the paired contrast of \cref{app:tracker},
+re-run at the matched budget, puts them at $-0.005$, CI $[-0.036,+0.025]$, $6/10$)---both
+clear of the rest (fixed-$\tau$ $0.21$,
 AdaGrad-Norm $0.20$, normalized-GD $0.18$), among which the per-window winner rotates between the
 clip and AdaGrad. Per-step the ordering reshuffles without separating the pack (block $0.24$,
 SN-OMD $0.21$, clip $0.20$, AdaGrad-Norm $0.19$, all within one standard deviation); normalized-GD and CM collapse to $0.09\!\pm\!0.21$,
@@ -522,8 +522,9 @@ blows up at the frozen rate). Every finite-cap bounded scale-free method stays b
 windows; the uncapped endpoint and plain OGD do not, and \emph{no single member dominates across
 both protocols} (\cref{sec:experiments,app:tracker}). Each method is tuned over its own free
 parameters: both SN-OMD rows over $(\mathrm{lr},M)$, the same two-parameter budget fixed-$\tau$
-gets over $(\mathrm{lr},\tau)$, and the threshold-free methods over $\mathrm{lr}$ alone---their
-whole parameter space. Every selected optimum is interior except the per-step SN-OMD row, which
+gets over $(\mathrm{lr},\tau)$, the threshold-free methods over $\mathrm{lr}$ alone---their
+whole parameter space---and CM over $(\mathrm{lr},\tau,\beta)$, which is \emph{three} and the
+largest budget in the table (\cref{app:grid}). Every selected optimum is interior except the per-step SN-OMD row, which
 pins at both grid edges (\cref{app:grid}). CM at $\beta{=}0$ \emph{is} normalized-GD, so their
 per-step cells are bit-identical rather than duplicated.}
 \label{tab:replication}
@@ -969,7 +970,7 @@ factor). A regime-timescale tracker shrinks the \emph{constant} by $\sim\!250\ti
 horizon but not the exponent (\cref{rmk:tracker}); escaping the $\sqrt T$ needs a switching
 bound in the regime count, left open (\cref{app:bracket}). The most accurate per-row tracker
 on Jane is a block median; across the ten frozen windows it co-leads per-row
-($0.29\!\pm\!.07$, tied with a normalize-and-clip baseline; both above normalized-GD's
+($0.28\!\pm\!.09$, tied with a normalize-and-clip baseline; both above normalized-GD's
 $0.18\!\pm\!.03$), while per-step no member leads---the accuracy verdict is
 protocol-dependent (\cref{tab:replication,app:tracker}). Past
 the tuned range both trackers degrade without diverging ($O(\sqrt t)$ bound; \cref{app:tracker}).
@@ -1667,26 +1668,35 @@ The accuracy gaps are easy to over-read, so we test them across regimes: the ten
 windows (\cref{tab:replication}) are the instrument that varies the hypothesized variable, so
 we pair the block median against the EMA default and each baseline \emph{by window} and
 bootstrap the paired difference over the ten windows
-(\texttt{research\_tracker\_bootstrap.py}). Resampling at the \emph{window} granularity
+(\texttt{research\_c13\_matched\_bootstrap.py}, which recomputes
+\texttt{research\_tracker\_bootstrap.py}'s statistic on the adopted matched-budget rows).
+Resampling at the \emph{window} granularity
 absorbs the within-window serial dependence (volatility clustering); the only residual
 assumption is that the ten paired differences are exchangeable across windows, which the
 pairing de-risks by cancelling any regime effect common to both methods. Per-row the block
-tracker beats every method
-\emph{except one}, with a paired $95\%$ CI clear of zero and $10/10$ window wins---the EMA
-default by $+0.15$ ($[+0.10,+0.20]$), normalized-GD by $+0.11$ ($[+0.08,+0.15]$), the
-fixed-$\tau$ clip by $+0.085$, AdaGrad-Norm by $+0.093$---but only \emph{ties} the
-normalize-and-clip Cutkosky--Mehta baseline ($+0.004$, CI $[-0.014,+0.023]$, $6/10$), which
-co-leads. The paired instrument \emph{supersedes} the single-window block-bootstrap gap of
+tracker beats every method \emph{except one}, each with a paired $95\%$ CI clear of
+zero---normalized-GD by $+0.103$ ($[+0.058,+0.148]$, $10/10$), AdaGrad-Norm by $+0.084$
+($8/10$), the fixed-$\tau$ clip by $+0.075$ ($9/10$), and the EMA default by $+0.046$
+($[+0.016,+0.076]$, $8/10$)---but only \emph{ties} the normalize-and-clip Cutkosky--Mehta
+baseline ($-0.005$, CI $[-0.036,+0.025]$, $6/10$), which co-leads and is now the nominal
+leader. Tuning the cap alongside the rate cut the margin over the EMA by roughly two thirds
+(it was $+0.15$ when the cap was pinned at $M{=}5$), which is the same lesson \cref{app:grid}
+draws: the spread an earlier draft charged to the tracker belonged to the pinned cap. The paired instrument \emph{supersedes} the single-window block-bootstrap gap of
 $+0.10$ (CI $[-0.04,+0.23]$) we reported in earlier drafts: that instrument \emph{fixes} the
 regime, exactly the variable the effect lives in. The result is not a tracker-\emph{selection}
 artifact either: dropping window~1---on which the block median was chosen---leaves the
-significant gaps intact (EMA $+0.15$, $[+0.10,+0.21]$, $9/9$; normalized-GD $+0.10$, $9/9$) and
-the CM tie unchanged ($+0.000$, $[-0.018,+0.018]$, $5/9$). The picture is
-\emph{protocol-specific}: per-step the block tracker still does \emph{not} lead---it is
-statistically tied with the fixed-$\tau$ clip ($-0.000$), AdaGrad-Norm ($+0.01$), and the EMA
-default ($+0.07$)---but it no longer trails normalized-GD. That method's window-1-optimal
-per-step rate overfits (\cref{app:grid}) and collapses across regimes, so block now \emph{beats}
-it ($+0.11$, $[+0.05,+0.17]$, $8/10$), as it does the likewise-collapsed CM---which per-step
+significant gaps intact (EMA $+0.039$, $[+0.010,+0.067]$, $7/9$; normalized-GD $+0.092$,
+$9/9$) and the CM tie unchanged ($-0.013$, $[-0.042,+0.017]$, $5/9$). The picture is
+\emph{protocol-specific}, and at the matched budget per-step is where the block tracker looks
+strongest: it clears zero against the EMA default ($+0.028$, $[+0.017,+0.039]$, $10/10$) and
+the fixed-$\tau$ clip ($+0.040$, $10/10$), where the pinned-cap run had tied both, and ties only
+AdaGrad-Norm ($+0.054$, $[-0.021,+0.129]$, $7/10$). Two cautions on reading that. The per-step
+SN-OMD row is selected at \emph{both} grid edges (\cref{app:grid}), so it is a truncated
+comparator rather than a tuned one, and the gap over it is correspondingly a lower bound on how
+well a properly interior EMA row would do. And normalized-GD's window-1-optimal per-step rate
+overfits (\cref{app:grid}) and collapses across regimes, so the $+0.148$ ($10/10$) over it
+measures that collapse rather than the tracker---as it does for the likewise-collapsed CM,
+which per-step
 \emph{is} normalized-GD (clipping only rescales $\gt$, so at its no-momentum optimum $\beta{=}0$
 the two are bit-identical, $0.09\!\pm\!.21$; \texttt{research\_cm\_normgd\_equiv.py}). Per-row,
 CM's tie with the block tracker is almost all momentum: at $\beta{=}0$ it again reduces to
@@ -1702,21 +1712,37 @@ the protocol already smooths the update, a smoother tracker adds nothing.
 \paragraph{Multiple comparisons.} The CIs above are uncorrected across the $14$ paired tests in
 this subsection (seven baselines $\times$ two protocols; the drop-window-1 set re-analyses the
 same comparisons rather than adding new ones). A Bonferroni correction at
-$\alpha/14$ ($t_9$ critical value $3.91$ instead of $2.26$) changes two verdicts, both
-\emph{per-step} and both already marginal: the gap over the uncapped scale-adaptive endpoint,
-$+0.106$ with uncorrected CI $[+0.005,+0.208]$, becomes inconclusive ($[-0.069,+0.281]$), and so
-does the gap over the EMA default, $+0.079$ ($[+0.004,+0.154]$ becoming $[-0.051,+0.208]$).
-Neither is load-bearing: the tracker claim we make is the \emph{per-row} one. Every gap the paper's claims rest on
-survives---per-row over the EMA default $+0.151$ ($[+0.065,+0.238]$), normalized-GD $+0.113$
-($[+0.056,+0.170]$), the fixed-$\tau$ clip $+0.085$, AdaGrad-Norm $+0.093$, OGD $+0.290$, and
-per-step over normalized-GD/CM $+0.107$ (marginally, $[+0.001,+0.213]$)---and every tie stays a
-tie, the Cutkosky--Mehta co-lead ($+0.004$, $[-0.028,+0.036]$ corrected) included. We therefore
-report uncorrected intervals and flag the two borderline results as suggestive.
+$\alpha/14$ ($t_9$ critical value $3.91$ instead of $2.26$) changes two verdicts, and at the
+matched budget one of them is the \emph{per-row} tracker gap this subsection exists to report:
+block over the EMA default, $+0.046$, goes from $[+0.016,+0.076]$ to $[-0.006,+0.098]$ and is no
+longer separable from zero. The other is the per-step gap over the uncapped scale-adaptive
+endpoint, $+0.147$, becoming $[-0.007,+0.301]$. We state the first plainly rather than lean on
+the uncorrected interval: \emph{under correction for the fourteen tests, the block median is not
+shown to beat the deployed EMA per-row.} What survives correction is the separation from the
+rest of the family---normalized-GD $+0.103$ ($[+0.026,+0.180]$), AdaGrad-Norm $+0.084$
+($[+0.017,+0.150]$), the fixed-$\tau$ clip $+0.075$ ($[+0.002,+0.149]$), OGD $+0.281$---together
+with the per-step gaps over the EMA ($+0.028$, $[+0.009,+0.047]$) and the clip ($+0.040$,
+$[+0.011,+0.070]$). Every tie stays a tie, the Cutkosky--Mehta co-lead ($-0.005$,
+$[-0.058,+0.048]$ corrected) included. We report uncorrected intervals throughout and flag the
+corrected verdicts here.
+
+\paragraph{What predictability itself costs.} The claim that the predictable scale buys the
+\emph{guarantee} rather than accuracy is measurable, and we measure it rather than assert it.
+Normalizing by the \emph{post}-update scale $s_t$---which already contains $\norm{\gt}$, so it is
+not $\mathcal F_{t-1}$-measurable and breaks the analysis---against the predictable $s_{t-1}$
+\cref{alg:snomd} requires, on the same rows and the same grid with a paired block bootstrap
+(\texttt{research\_predictability\_check.py}), moves the window-1 per-row score by
+$+0.0001$ (CI $[-0.0017,+0.0018]$) at $\mathrm{lr}{=}2$ and $+0.0009$
+($[+0.0007,+0.0012]$) at $\mathrm{lr}{=}1$. Enforcing measurability is therefore close to free
+in accuracy here, which is what our framing predicts: predictability is what the
+high-probability argument needs, not what the score rewards. This is one window and one method,
+so it supports the framing rather than isolating the claim in general.
 
 \paragraph{Which tracker we report, and why.} We therefore report the block median as a
 per-row \emph{co-optimal} tracker---it \emph{ties} the normalize-and-clip baseline at the top of
-the ten-window ranking ($+0.004$, n.s.) and significantly beats the EMA default and the
-remaining bounded baselines ($+0.08$ to $+0.15$, $10/10$)---while
+the ten-window ranking ($-0.005$, n.s.) and beats the remaining bounded baselines
+($+0.075$ to $+0.103$ per-row, all clearing zero under correction), though its margin over the
+deployed EMA default ($+0.046$) does \emph{not} survive that correction---while
 being explicit that it is the plug-in with \emph{no} proven $W_s$ bound (\cref{prop:tracker}
 covers only the envelope). SN-OMD's contribution is the normalize-and-cap update, stable for
 \emph{any} predictable $s_t$ (\cref{thm:stability}); the tracker is a documented choice with a
@@ -1810,6 +1836,18 @@ record this rather than defend it. It is the same per-step preference for a smal
 window-1 sweep found on the narrower range $[2,20]$ (footnote to \cref{tab:grid}), and it is a
 further reason to read the per-step column as separating no member of the bounded family. That
 same ten-window sweep re-derives the cap's mechanism test on Jane (\cref{app:sweep}).
+
+\paragraph{One budget we did \emph{not} match: Cutkosky--Mehta.} The matched-budget rework
+above equalized SN-OMD against the fixed-$\tau$ clip at $70$ configurations each. It did not
+touch CM, which is tuned over its whole space $(\mathrm{lr},\tau,\beta)$---$9\times6\times4=216$
+configurations on window~1, roughly three times the budget either capped method receives. We
+leave it that way and disclose it rather than trimming CM's grid, for two reasons. Tuning a
+method over its own free parameters is the principle the rest of the table follows, and CM
+genuinely has three. And the asymmetry runs \emph{against} this paper: a larger window-1 budget
+is more opportunity to overfit the tuning window, so if it biases the comparison it flatters CM,
+which is the row we report ourselves as merely tying ($-0.005$, n.s.; \cref{app:tracker}). A
+reader who wants the strictly matched comparison should read our tie as conservative. What we
+cannot say from these runs is how CM would place at $70$ configurations, and we do not claim it.
 
 \paragraph{The negative control is not a grid artifact.} The stationary control of
 \cref{sec:experiments} tunes both learners over their own rate grids

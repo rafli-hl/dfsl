@@ -1,0 +1,29 @@
+protocol,window_set,comparison,mean_diff,se,t95_lo,t95_hi,boot95_lo,boot95_hi,n_windows,wins,significant_t95,bonf_lo,bonf_hi,significant_bonf
+per-row,all 10 windows,"block - EMA (SN-OMD, M tuned)",0.04583,0.01324,0.01589,0.07578,0.02195,0.07027,10,8,true,-0.00594,0.0976,false
+per-row,all 10 windows,block - Normalized-GD,0.103,0.01973,0.05838,0.14762,0.06719,0.14009,10,10,true,0.02586,0.18014,true
+per-row,all 10 windows,block - Fixed-tau clip,0.07526,0.01878,0.03278,0.11775,0.04174,0.11092,10,9,true,0.00183,0.14869,true
+per-row,all 10 windows,block - AdaGrad-Norm,0.08368,0.01702,0.04519,0.12217,0.05008,0.11232,10,8,true,0.01713,0.15023,true
+per-row,all 10 windows,block - Cutkosky-Mehta,-0.0054,0.01355,-0.03604,0.02524,-0.03074,0.01903,10,6,false,-0.05838,0.04758,false
+per-row,all 10 windows,block - OGD,0.28071,0.02434,0.22566,0.33576,0.236,0.32469,10,10,true,0.18554,0.37588,true
+per-row,all 10 windows,block - Scale-adaptive OGD,0.89611,0.1726,0.50568,1.28655,0.55637,1.18604,10,9,true,0.22124,1.57098,true
+per-row,drop window 1,"block - EMA (SN-OMD, M tuned)",0.03867,0.01245,0.00997,0.06737,0.01575,0.06265,9,7,true,,,
+per-row,drop window 1,block - Normalized-GD,0.09166,0.01805,0.05004,0.13329,0.05875,0.12616,9,9,true,,,
+per-row,drop window 1,block - Fixed-tau clip,0.06372,0.01656,0.02552,0.10192,0.03373,0.09398,9,8,true,,,
+per-row,drop window 1,block - AdaGrad-Norm,0.08221,0.01895,0.03851,0.12592,0.04592,0.11425,9,7,true,,,
+per-row,drop window 1,block - Cutkosky-Mehta,-0.0127,0.01276,-0.04212,0.01673,-0.03629,0.01061,9,5,false,,,
+per-row,drop window 1,block - OGD,0.26667,0.02223,0.21542,0.31793,0.22438,0.30636,9,9,true,,,
+per-row,drop window 1,block - Scale-adaptive OGD,0.96611,0.1764,0.55934,1.37288,0.58904,1.25534,9,8,true,,,
+per-step,all 10 windows,"block - EMA (SN-OMD, M tuned)",0.02821,0.00486,0.01722,0.03921,0.0195,0.03724,10,10,true,0.00921,0.04721,true
+per-step,all 10 windows,block - Normalized-GD,0.14786,0.03179,0.07595,0.21978,0.08999,0.2078,10,10,true,0.02356,0.27216,true
+per-step,all 10 windows,block - Fixed-tau clip,0.04041,0.00764,0.02314,0.05769,0.02682,0.05478,10,10,true,0.01054,0.07028,true
+per-step,all 10 windows,block - AdaGrad-Norm,0.05376,0.03306,-0.02102,0.12855,-0.00905,0.11273,10,7,false,-0.0755,0.18302,false
+per-step,all 10 windows,block - Cutkosky-Mehta,0.14786,0.03179,0.07595,0.21978,0.09131,0.20808,10,10,true,0.02356,0.27216,true
+per-step,all 10 windows,block - OGD,1.12805,0.101,0.89959,1.35652,0.91691,1.26943,10,10,true,0.73314,1.52296,true
+per-step,all 10 windows,block - Scale-adaptive OGD,0.14695,0.03937,0.0579,0.23599,0.07342,0.21906,10,8,true,-0.00699,0.30089,false
+per-step,drop window 1,"block - EMA (SN-OMD, M tuned)",0.02973,0.00516,0.01782,0.04164,0.02042,0.0391,9,9,true,,,
+per-step,drop window 1,block - Normalized-GD,0.16128,0.03222,0.08697,0.23559,0.10443,0.22157,9,9,true,,,
+per-step,drop window 1,block - Fixed-tau clip,0.0431,0.00799,0.02467,0.06153,0.02904,0.05817,9,9,true,,,
+per-step,drop window 1,block - AdaGrad-Norm,0.03981,0.03351,-0.03747,0.11708,-0.02353,0.09946,9,6,false,,,
+per-step,drop window 1,block - Cutkosky-Mehta,0.16128,0.03222,0.08697,0.23559,0.10357,0.22059,9,9,true,,,
+per-step,drop window 1,block - OGD,1.22461,0.03316,1.14815,1.30106,1.16316,1.28508,9,9,true,,,
+per-step,drop window 1,block - Scale-adaptive OGD,0.12796,0.03855,0.03906,0.21686,0.05642,0.19798,9,7,true,,,

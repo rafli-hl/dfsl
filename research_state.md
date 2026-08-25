@@ -303,6 +303,41 @@ must be stated whenever the matched-budget result is presented.
 honest headline survives: block-median 0.28 vs CM 0.29 still ties rather than beats, exactly as
 the abstract says.
 
+## Session 12 — C13, the paired contrast re-run at matched budget (complete)
+
+Prompted by an external revision assessment, not by our own guards. That is the process
+finding: `tab:replication` adopted the C12/C12B rows in Session 10/11, but the paired
+across-window bootstrap behind `app:tracker` was never re-run, so the appendix asserted a
+`+0.15` block-over-EMA gap against a table whose own cells differ by `+0.05`. Three passages
+carried stale numbers for two sessions.
+
+**The re-run needed no new compute.** `c12_matched.csv` and `c12b_blockmed.csv` already hold
+per-window values for every adopted row, and `windows_cm.csv` holds CM's, on identical window
+definitions. `research_c13_matched_bootstrap.py` recomputes
+`research_tracker_bootstrap.py`'s statistic on them — same floor, same pairing, same t and
+percentile intervals — so only the input changes.
+
+**The tie holds; the tracker claim does not.** Block over CM per-row: `+0.004 → −0.005`,
+CI `[−0.036,+0.025]`, 6/10. The nominal lead flips to CM and the interval still straddles zero,
+so the abstract's tie language stands as written — this was the open question and it resolved
+in the paper's favour. Block over the EMA default per-row: `+0.152 → +0.046`, still clearing
+zero uncorrected but **failing the subsection's own Bonferroni correction**
+(`[−0.006,+0.098]`). That is the per-row tracker claim, which the previous text called
+load-bearing while dismissing two per-step failures as not. Ledger C-18.
+
+**Per-step strengthened**, block now clearing zero against both the EMA and the clip where the
+pinned-cap run tied both — recorded with the caveat that the per-step SN-OMD row sits at two
+grid edges (C-17), so it is a truncated comparator.
+
+**Two things found while checking, neither in the assessment.** CM's 216-config budget is
+undisclosed in the `tab:replication` caption though deliberate in the research record (C-19),
+and `research_predictability_check.py`'s measurability arm is a direct measurement of what
+predictability costs in accuracy (`+0.0001` to `+0.0009`) — the paper's own framing claim,
+until now asserted rather than shown. Both are now in the manuscript.
+
+**Guards.** No `PAPER_CLAIMS` entry covered the per-row figures, which is why the drift went
+unnoticed; three now do. The one guard that did cover a reworded sentence failed correctly.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak
@@ -329,9 +364,12 @@ the abstract says.
 6. **Per-step grid adequacy.** The matched per-step arm selected at two grid edges
    (`lr=8.0`, `M=0.5`); its optimum is unresolved. A widened per-step grid would be a
    separate, explicitly post-hoc run.
-7. **Re-run the full ten-window table at matched budget.** Only three arms were re-run.
-   Normalized-GD, AdaGrad-Norm, OGD and the uncapped endpoint were not, and their
-   published tuning budgets have not been audited.
+7. ~~**Re-run the full ten-window table at matched budget.**~~ **Closed 2026-08-26 on
+   inspection, not by a re-run.** The premise was wrong: `c12_matched.csv` carries all six
+   non-CM methods, each with the `n_configs` it was tuned over (OGD 5, AdaGrad-Norm 8,
+   normalized-GD and the uncapped endpoint 10, fixed-τ and SN-OMD 70). The smaller budgets
+   are each method's whole parameter space, so there is nothing to equalize. CM's 216 is the
+   one genuine asymmetry and is now disclosed in the paper (ledger C-19).
 
 ## Directions not taken
 

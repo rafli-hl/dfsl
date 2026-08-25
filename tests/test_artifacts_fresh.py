@@ -253,13 +253,33 @@ PAPER_CLAIMS = [
         "baselines_jane.csv", {"method": "normalized-GD (anchor)"},
         [(1, "per-row", "se", 3)],
     ),
+    # The paired contrast behind app:tracker. These replace a guard that pointed at
+    # tracker_bootstrap.csv, whose rows were computed with SN-OMD's cap pinned at M=5 --
+    # superseded once tab:replication adopted the matched-budget rows. The guard did its
+    # job: rewriting the sentence made it fail rather than letting the stale number sit.
     (
-        "app:tracker Bonferroni: per-step block-vs-EMA gap and uncorrected CI",
-        r"the gap over the EMA default,\s*\$\+([\d.]+)\$ \(\$\[\+([\d.]+),\+([\d.]+)\]\$",
-        "tracker_bootstrap.csv",
-        {"comparison": "block - EMA (SN-OMD default)", "window_set": "all 10 windows"},
-        [(1, "per-step", "mean_diff", 3), (2, "per-step", "t95_lo", 3),
-         (3, "per-step", "t95_hi", 3)],
+        "app:tracker per-row block-vs-EMA gap, matched budget",
+        r"the EMA default by \$\+([\d.]+)\$\s*\n?\(\$\[\+([\d.]+),\+([\d.]+)\]\$",
+        "c13_matched_bootstrap.csv",
+        {"comparison": "block - EMA (SN-OMD, M tuned)", "window_set": "all 10 windows"},
+        [(1, "per-row", "mean_diff", 3), (2, "per-row", "t95_lo", 3),
+         (3, "per-row", "t95_hi", 3)],
+    ),
+    (
+        "app:tracker per-row Cutkosky-Mehta tie, matched budget",
+        r"baseline \(\$-([\d.]+)\$, CI \$\[-([\d.]+),\+([\d.]+)\]\$",
+        "c13_matched_bootstrap.csv",
+        {"comparison": "block - Cutkosky-Mehta", "window_set": "all 10 windows"},
+        [(1, "per-row", "mean_diff", 3, -1), (2, "per-row", "t95_lo", 3, -1),
+         (3, "per-row", "t95_hi", 3)],
+    ),
+    (
+        "app:tracker Bonferroni: per-step block-vs-EMA, corrected interval",
+        r"the per-step gaps over the EMA \(\$\+([\d.]+)\$, \$\[\+([\d.]+),\+([\d.]+)\]\$\)",
+        "c13_matched_bootstrap.csv",
+        {"comparison": "block - EMA (SN-OMD, M tuned)", "window_set": "all 10 windows"},
+        [(1, "per-step", "mean_diff", 3), (2, "per-step", "bonf_lo", 3),
+         (3, "per-step", "bonf_hi", 3)],
     ),
 ]
 
@@ -283,7 +303,11 @@ def test_paper_number_matches_its_csv(
 
     df = pl.read_csv(PROJECT_ROOT / "results" / "research" / csv_name)
     mismatches = []
-    for gi, protocol, col, decimals in checks:
+    for check in checks:
+        # An optional 5th element is a sign multiplier, for a value the paper prints as a
+        # magnitude after a literal minus (LaTeX "$-0.005$") while the CSV stores -0.005.
+        gi, protocol, col, decimals = check[:4]
+        sign = check[4] if len(check) > 4 else 1
         sel = df.filter(pl.col("protocol") == protocol)
         for k, v in where.items():
             sel = sel.filter(pl.col(k) == v)
@@ -291,7 +315,7 @@ def test_paper_number_matches_its_csv(
             f"{label}: selector {where} + protocol={protocol!r} matched {sel.height} "
             f"rows in {csv_name}, expected 1"
         )
-        printed = float(groups[gi - 1])
+        printed = sign * float(groups[gi - 1])
         measured = float(sel[col][0])
         # The printed figure must be A correct rounding of the measurement to the
         # precision it is printed at. Half-way values (0.2205 at 3 d.p.) have two

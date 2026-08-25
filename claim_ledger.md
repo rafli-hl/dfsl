@@ -65,7 +65,15 @@ defect found is in comparison design, not arithmetic.
 
 ## C-5 — "Why does a constant scale beat a tracked one?" (the C10/Q6 question as posed)
 
-**Status: DISSOLVED — false premise.** At matched budget it does not. Replaced by C-6.
+**Status: DISSOLVED ON JANE — false premise there; UNTESTED IN SYNTHETIC.**
+On Jane at matched budget it does not: the constant-threshold advantage was a pinned-cap
+artifact, and the premise fails. Replaced by C-6 for the Jane mechanism question.
+
+**Scope limit, added 2026-08-26.** The dissolution is real-data only and does not transfer
+by construction. The synthetic instance of the same question sweeps no cap at all, so
+"matched budget" has no meaning there and the Jane result cannot dissolve it. Whether the
+synthetic instance dissolves the same way is a separate, cheap confirmation and is *open*.
+Do not read C-5 as closing the question in general.
 
 ## C-6 — Mechanism: why does `M=2` at `lr=3` transfer across windows when `M=5` at `lr=2` does not?
 
@@ -424,3 +432,64 @@ claim: block-median 0.28 still ties Cutkosky–Mehta 0.29, as [C-16](#c-16--matc
 - RMSProp/Adam bounded-step finding (`app:adaptive`).
 - The tracker bootstrap and Bonferroni analysis (`app:tracker`).
 - Every crypto, synthetic, MNIST and GARCH-surrogate result.
+
+## C-18 — The paired tracker contrast, re-run at matched budget: the tie holds, the EMA gap does not
+
+**Status: SUPPORTED (C13, `results/research/c13_matched_bootstrap.csv`, 2026-08-26).**
+
+`tab:replication` adopted the C12/C12B matched-budget rows, but the paired across-window
+bootstrap behind `app:tracker` was never re-run, so the appendix asserted a `+0.15`
+block-over-EMA gap against a table whose own cells differ by `+0.05`. Re-running the identical
+statistic on the adopted rows moves three things, and they do not all move the same way.
+
+1. **The block-over-EMA per-row gap falls by roughly two thirds**, `+0.152 → +0.046`
+   (`[+0.016,+0.076]`, 8/10). It still clears zero uncorrected.
+
+2. **It no longer survives Bonferroni.** At `α/14` the interval becomes `[−0.006,+0.098]`.
+   This is the *per-row* tracker claim — the one the previous text explicitly called
+   load-bearing while dismissing two per-step failures as not. That sentence was inverted in
+   the manuscript rather than softened: under correction, the block median is **not shown** to
+   beat the deployed EMA per-row.
+
+3. **The Cutkosky–Mehta tie survives, which was the open question.** `+0.004 → −0.005`
+   (`[−0.036,+0.025]`, 6/10). The nominal lead flips to CM; the interval still straddles zero,
+   so the abstract's tie language stands as written and needed no weakening.
+
+Per-step the comparisons *strengthen* — block now clears zero against both the EMA (`+0.028`)
+and the fixed-τ clip (`+0.040`), where the pinned-cap run tied both. Recorded with the caveat
+it needs: the per-step SN-OMD row is selected at two grid edges (C-17), so it is a truncated
+comparator and the gap over it is a lower bound, not a clean measurement.
+
+**Process note.** The stale numbers were caught by an external review, not by the project's own
+guards, because no `PAPER_CLAIMS` entry covered the per-row figures. Three guards now do, and
+the one guard that did cover the reworded sentence failed correctly when the text changed.
+
+## C-19 — CM's larger budget was a recorded decision, but an undisclosed one
+
+**Status: SUPPORTED — and narrower than first written (corrected 2026-08-26).**
+
+CM is tuned over `(lr, τ, β)` = `9 × 6 × 4 = 216` configurations on window 1, roughly **three
+times** the 70 that C12 equalized SN-OMD and the fixed-τ clip at.
+
+**This was not an oversight, and an earlier draft of this entry wrongly implied it was.**
+`research_state.md` Session 11 records the decision at the time — *"CM untouched (its 216-config
+grid over three genuinely free parameters is correct treatment)"* — with the same reasoning
+given below. The research record made the call deliberately.
+
+The real defect is narrower and lives only in the manuscript: the `tab:replication` caption
+enumerated every method's budget — SN-OMD and fixed-τ at two parameters, "the threshold-free
+methods over lr alone" — and silently omitted the one row fitting neither category, which
+happens to be the co-leader. A reviewer auditing the fairness argument would find the gap in
+the caption, not in the research.
+
+The decision stands and is now disclosed rather than reversed:
+
+- tuning each method over its own free parameters is the principle the rest of the table
+  follows, and CM genuinely has three; and
+- the asymmetry runs *against* this paper. A larger window-1 budget is more opportunity to
+  overfit the tuning window, so if it biases anything it flatters CM — the row we report
+  ourselves as merely tying. The tie should be read as conservative.
+
+What cannot be said from these runs is where CM would place at 70 configurations. That is not
+claimed. This is the same defect class as C10/Q6 pointing the other way, and it is the reason
+C-18's tie result should not be over-read in either direction.
