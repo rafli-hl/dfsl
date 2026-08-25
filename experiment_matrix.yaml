@@ -1475,3 +1475,90 @@ artifact_policy: >
   windows_replication*.csv remain the artifacts the manuscript cites.
 
 out_of_scope: no manuscript edit in this direction; the table adoption is a separate step
+
+---
+# ===========================================================================
+# TWELFTH REGISTRATION -- D1B (the switching bound, the object D1 actually left open)
+# ===========================================================================
+direction: D1B
+parent_direction: D1/T1 (FAILED against its registered criteria, session 9)
+branch: master
+kind: THEORY
+status: REGISTERED_BEFORE_EXECUTION
+
+why: >
+  An external revision assessment ranks "D1 -- T1, variation-adaptive bound" as the highest-value
+  next action, on the grounds that the new introduction now promises a nonstationarity result the
+  theory does not deliver. The premise is right and the naming is not. Ledger C-13 and
+  theory_notes.md establish that the variation-adaptive bound ALREADY EXISTS: thm:regret carries
+  the tracker's upward variation W_s and the scale-weighted path P_T^s as explicit inputs, and
+  W_s ~ 6.6 V_sigma+ is measured. There is nothing left to derive there. The genuinely open
+  object is the one Remark D.3 names -- a switching bound in the regime count N -- whose target
+  rate D1 already derived and verified.
+
+what_D1_left: >
+  Target rate R_T = Otilde(N^(1-1/p) * T^(1/p)), Holder-verified over 20000 random splits, both
+  limits correct (N=1 -> T^(1/p); N=T -> vacuous T). Obstruction located: the step schedule is
+  global and never re-expands, so each regime pays the FULL horizon initialization and naive
+  segmentation gives O(N sqrt(T)). Three sub-problems marked GAP: (1) a per-interval bound from
+  an arbitrary entry state, (2) a union bound over the O(T log T) intervals a strongly-adaptive
+  wrapper maintains, (3) re-deriving the clipping-bias term when M is tuned to the horizon.
+
+step_0_premise_check: >
+  THE BINDING CHECK, AND IT COMES FIRST. The target rate is non-vacuous only if N is SUBLINEAR
+  in T; N proportional to T gives N^(1-1/p) T^(1/p) = Theta(T), which is exactly the vacuous
+  bound the direction exists to escape. The paper measures W_s = Theta(T) on the real scale
+  process. If regime changes arrive at a constant rate then N grows linearly too, and NO
+  switching bound rescues the theorem at the measured drift -- the limitation would be intrinsic
+  to the data rather than a gap in the proof.
+  Measure N(T) directly on the committed gradient-scale process
+  (results/research/gradnorm_at_wstar.npy, 200000 norms at w*), using the paper's OWN definition
+  of a regime -- a horizon over which the tracker's upward variation is O(1). Greedily segment
+  the tracker path, closing a segment when its accumulated upward variation exceeds a threshold
+  c, and fit the growth exponent of N(T). Sweep c and the tracker so the answer is not an
+  artifact of either. Report the exponent whatever it is.
+
+decision_rule_on_step_0: >
+  If N(T) grows with exponent indistinguishable from 1 (linear), the derivation is NOT attempted:
+  the finding is that the switching bound cannot help at the measured drift rate, which CLOSES
+  Remark D.3's open question in the negative rather than leaving it open, and is reported as the
+  result of this direction. If the exponent is materially below 1, proceed to the derivation with
+  the three GAP sub-problems, under the same anti-fabrication commitment as D1.
+
+success_criteria: >
+  This direction succeeds if EITHER:
+  (a) step 0 returns a linear exponent and the negative result is established -- measured on at
+      least two trackers and a sweep of c, with the sensitivity reported, and the consequence for
+      Remark D.3 and the manuscript stated; OR
+  (b) step 0 returns a sublinear exponent AND a stated theorem with a COMPLETE proof written out
+      (not a sketch) closes sub-problems 1-3, sublinear in T at p=2, reducing to the per-regime
+      bound at N=1.
+  A sublinear exponent followed by an incomplete proof is a FAILURE, reported as such, exactly as
+  D1 was.
+
+anti_fabrication_commitment: >
+  Inherited verbatim from D1 and binding here. No theorem is asserted without a proof written out
+  and checked line by line. A derivation strategy with a located obstruction is NOT a result. Any
+  step not justified is marked GAP and the outcome is reported incomplete. The manuscript already
+  carries one honestly-labelled sketch; a second dressed as a theorem is the worst available
+  outcome.
+
+known_confound_to_report: >
+  N is defined relative to a threshold c on accumulated upward variation, so N(T) is a function of
+  c and of the tracker. An exponent that moves with c is not a property of the data. The sweep is
+  part of the result, not a robustness afterthought.
+
+deliverable:
+  - a script committed BEFORE its run, per project convention
+  - theory_notes.md extended with the step-0 measurement and whichever branch follows
+  - ledger and state updates
+  - manuscript edit ONLY if a result is established; no edit on failure
+
+out_of_scope: >
+  No manuscript claim is strengthened on the basis of this direction unless a complete proof
+  exists. No empirical result is removed, no tie softened. Remark D.3's wording is not changed
+  unless step 0 settles it.
+
+stopping_rule: >
+  Step 0 is one measurement with its sweep. If it says linear, stop and report -- do not search
+  for a definition of regime under which the exponent becomes favourable.
