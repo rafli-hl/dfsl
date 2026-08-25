@@ -12,10 +12,10 @@ Last verified: **2026-08-24**, commit `b44999d` (branch `research/c10-q6`).
 
 | | |
 |---|---|
-| Branch | `research/c10-q6` at `fde0db9`, **pushed 2026-08-25** to `origin/research/c10-q6`. 50 commits ahead of `origin/master`, unmerged — open a PR to land it. |
+| Branch | `research/c10-q6` at `e893688`, **merged into `master` 2026-08-25** via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (merge commit `041906e`, 106 files, +15,981/−526). Merged rather than squashed: the preregistration trail is the point. |
 | Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
-| `master` | `212d32c`, the PR #7 merge — **contains all Pass V work**. Phase-2 research is not on it |
+| `master` | `041906e`, the PR #8 merge — contains Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1913 lines) |
 | Main text | **8.871pp** of a 9pp limit, ~0.13pp (7 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → **8.871** (§8–10) |
