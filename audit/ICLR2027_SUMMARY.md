@@ -4,7 +4,7 @@ Progress tracker for the SN-OMD paper targeting **ICLR 2027**. Detail on individ
 fixes lives in [`ICLR2027_REMEDIATION_LOG.md`](ICLR2027_REMEDIATION_LOG.md); this file
 is the top-level view: where the paper stands, what is settled, what is still open.
 
-Last verified: **2026-08-24**, commit `b44999d` (branch `research/c10-q6`).
+Last verified: **2026-08-25**, commit `cea62ef`, merged to `master` via PRs [#8](https://github.com/rafli-hl/dfsl/pull/8)–[#11](https://github.com/rafli-hl/dfsl/pull/11).
 
 ---
 
@@ -15,14 +15,14 @@ Last verified: **2026-08-24**, commit `b44999d` (branch `research/c10-q6`).
 | Branch | `research/c10-q6` at `e893688`, **merged into `master` 2026-08-25** via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (merge commit `041906e`, 106 files, +15,981/−526). Merged rather than squashed: the preregistration trail is the point. |
 | Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
-| `master` | `041906e`, the PR #8 merge — contains Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items |
+| `master` | Carries Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items — landed by [PR #8](https://github.com/rafli-hl/dfsl/pull/8) on 2026-08-25 |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1952 lines) |
 | Main text | **8.907pp** of a 9pp limit, ~0.09pp (5 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → 8.871 (§8–10) → **8.907** (the Limitations schedule sentence, open item 3 — the only open-items text that lands inside the counted region) |
 | Total | 29pp (statements, references, appendix do not count) |
-| Build | 0 undefined refs, 0 overfull, 0 float-specifier warnings, 0 stray tabs. 6 underfull boxes, all float slack or one badness-1342 proof line — the two badness-10000 bibliography lines are fixed |
+| Build | 29pp, exit 0. **0 undefined refs, 0 overfull**, 0 float-specifier warnings, 0 stray tabs. 5 underfull boxes — four are float slack, one is a badness-1342 line in the dynamic-regret proof where a long unbreakable math atom ends the line. The two badness-10000 pages the old appendix structure produced are gone |
 | Tests | **113 passed** (106 + 5 data-free Jane-path guards + 2 SE-prose guards) |
-| Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
+| Anon supplement | Builds clean with **0 identity tokens**; 336 files at the 2026-08-25 rebuild. Prior-venue material excluded, pinned by `tests/test_anon_exclusions.py` |
 
 `paper/icml2026/` is a **frozen ICML snapshot** (moved there from flat `paper/*` on
 2026-08-24). It is not back-synced, and it is excluded from the anonymized supplement.
