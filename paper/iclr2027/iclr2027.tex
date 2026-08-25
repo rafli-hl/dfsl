@@ -240,7 +240,8 @@ from scale/path aggregates, of which $p$, the comparator norm, and the regime le
 discharged by standard doubling/parameter-free wrappers (\cref{app:proofs}), while the
 scale-path quantities $W_s,P_T^s,S_1$ enter as honest inputs rather than known constants. The
 regret analysis also requires a \emph{predictable} scale tracker (\cref{ass:track}), which we
-do not treat as free but discharge under a mild drift model (\cref{prop:tracker}).
+do not treat as free: \cref{prop:tracker} discharges it under a drift model whose domination
+condition we then \emph{measure to fail} on our own data (\cref{app:regimecount}).
 
 \paragraph{Dynamic regret.} Performance is measured against a moving comparator
 $u_{1:T}$ with path length $P_T=\sum_{t}\norm{u_t-u_{t-1}}$,
@@ -964,7 +965,10 @@ trailing median cannot do both (a fast window churns on spikes, a slow one lags 
 onsets), whereas a two-timescale ``peak-hold'' envelope---react up on a short robust median,
 release down geometrically---holds the lower bracket at \emph{$100\%$} of rounds at the
 \emph{smallest} upward variation, $W_s\approx6.6\,V_\sigma^+$, at the benign cost of a $24\%$
-over-estimate. So the stability-critical half of \cref{ass:track} is discharged.
+over-estimate. So the stability-critical half of \cref{ass:track} is discharged
+\emph{empirically}. The analytical route to the same conclusion, \cref{prop:tracker}, is not
+free at this drift rate: its exceptional-set term is not dominated here
+(\cref{app:regimecount}).
 
 \paragraph{The drift is a genuine rate; the tracker controls only its constant.} $W_s$ grows
 \emph{linearly} in $T$ (\cref{tab:beta}), so $\sqrt{W_s}\sim\sqrt T$ is genuine and
@@ -1569,8 +1573,11 @@ which we establish on the two \emph{market} streams.
 $t_0<\dots<t_N$. \emph{Slow within-regime drift:} inside a regime the scale varies
 slowly, $\sigma_t/\sigma_{t-1}\in[1-\gamma,1+\gamma]$ with $\gamma W\le c_0$ for the
 window $W$. \emph{Arbitrary jumps:} at the $N$ change points $\sigma_t$ may jump by any
-factor. This is the piecewise-slowly-varying picture the measured gradient scale fits
-($\sim\!30\%$ within-day drift, occasional $3\times$ overnight jumps; \cref{sec:experiments}).
+factor. This is the picture the measured gradient scale fits \emph{locally}
+($\sim\!30\%$ within-day drift, occasional $3\times$ overnight jumps; \cref{sec:experiments}),
+but not globally in the sense the proposition needs: at every tracker resolution that holds the
+lower bracket, change points arrive at a constant \emph{rate} rather than being rare, so $N$
+scales with $T$ (\cref{app:regimecount}).
 
 \paragraph{Tracker.} The envelope $s_t=\max\{c\,\widehat m_t,\,(1-\rho)s_{t-1}\}$, where
 $\widehat m_t=\mathrm{median}(\norm{g_{t-W}},\dots,\norm{g_{t-1}})$ is the predictable
@@ -1817,22 +1824,45 @@ which is exactly the ``piecewise-slow variation plus arbitrary jumps'' model of
 \cref{app:bracket}.
 
 Across the deployed winsorized EMA and the two-timescale envelope, and $c$ swept over
-$\{0.5,1,2,5,10\}$ median scales, $N$ grows with exponent $1.16$--$1.24$ in $T$. We apply
+$\{0.5,1,2,5,10\}$ median scales, $N$ grows with an exponent of \emph{at least} $1$ in $T$
+(fitted $1.16$--$1.24$; $N\le T$ by construction, so a fitted value above $1$ is a
+finite-horizon artifact and the claim we make is the lower bound). We apply
 \cref{tab:beta}'s reliability rule---an exponent needs ${\gtrsim}50$ segments to mean
 anything---which discards $7$ of the $15$ combinations, including every block-median one, where
 the coarse $B{=}10^4$ update leaves one to three segments over the whole record. Note the
 direction: that rule removes the only combinations whose exponent looked sublinear, so it makes
 the conclusion harder to reach, not easier. Over the eight that survive it, the exponent never
 falls below $1.15$; an exponent above $1$ cannot persist ($N\le T$), so the honest reading is
-\emph{at least linear}. It agrees with \cref{tab:beta}'s independently measured
-$\beta\approx1.0$--$1.25$ for $W_s$, which is the coherence check one wants: regimes and upward
-variation accumulate at the same rate.
+\emph{at least linear}. \cref{tab:beta}'s $\beta\approx1.0$--$1.25$ for $W_s$ agrees, which we
+report as an internal consistency check and not as corroboration: $W_s$ counts upward moves and
+$N$ counts the boundaries those same moves induce, so the two are close to the same measurement
+twice.
 
 At $N=\Theta(T)$ the switching rate is $N^{1-1/p}T^{1/p}=\Theta(T)$ for every $p$. The switching
 bound is therefore not an open lemma on this data but an unavailable one, and the $\sqrt T$ that
 makes \cref{thm:regret} per-regime is a property of the measured drift rather than of our proof.
 What this does \emph{not} rule out is a bound in some other nonstationarity functional, or a
 different stream on which regimes are rarer.
+
+\paragraph{The same count empties \cref{prop:tracker}'s discharge.} \cref{prop:tracker} buys the
+lower bracket at one added term $O(D\,N\,W\sup_t\sigma_t)$, ``dominated whenever $NW\ll
+T^{1/p}$''. Both factors are now measured. $N$ is at least linear, as above. And $W$ is not free:
+the blocking step needs ${\asymp}W/\ell$ near-independent blocks of length $\ell$ at least the
+mixing time, and the scale process's rank autocorrelation is still $0.069$ at lag $2000$, so
+$\ell\gtrsim2000$ and $W\gtrsim2\!\times\!10^4$. Asymptotically $NW/T^{1/p}$ grows like
+$T^{1-1/p}$ even taking $N=\Theta(T)$ exactly rather than the fitted exponent, so it diverges at
+every $p\in(1,2]$. At our own horizon, at $p{=}2$---the only value \cref{ass:moment} admits given
+the measured normalized index---the ratio is $12$--$46$ using the tracker's own $W{=}64$, and
+$3.8\!\times\!10^3$--$1.4\!\times\!10^4$ at the $W$ the proof requires. The two settings at which
+the term \emph{is} dominated ($0.89$ and $0.46$) both need $p{=}1.3$, a heavier tail than we
+measure, \emph{and} $W{=}64$, a shorter window than the blocking argument permits.
+
+So \cref{prop:tracker} is not wrong; it is empty here. Its guarantee is real for a process with
+macroscopic regimes and this process does not have them, which is why \cref{sec:tracker}'s
+empirical discharge---$100\%$ lower-bracket coverage, measured---is what the paper actually
+leans on. Coarsening the tracker does not escape either: at \cref{tab:beta}'s $B{=}10^4$ the
+bracket holds at $0.93$, and charging the remaining $7\%$ of rounds trivially at
+$O(D\sup_t\sigma_t)$ is $\Theta(T)$---the same wall reached by a different route.
 
 \subsection{Grid adequacy: window-1 optima are interior}
 \label{app:grid}

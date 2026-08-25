@@ -1,0 +1,75 @@
+﻿==================================================================================================
+D1C -- is Prop F.1's added term O(D N W sup sigma) dominated at the measured N?
+  domination condition: N*W << T^(1/p);  T = 200000
+==================================================================================================
+
+### the window W the blocking argument requires
+  rank autocorrelation of the scale process:
+    lag     1: +0.1803
+    lag    50: +0.1778
+    lag   100: +0.1640
+    lag   250: +0.1197
+    lag   500: +0.1037
+    lag  1000: +0.1104
+    lag  2000: +0.0686
+  never falls below 0.05 within the lags tested -> l >= 2000
+  blocking needs ~10 blocks of length >= l, so W >= 20000
+  reporting both W = 64 (the tracker's own window, which IGNORES this and
+  is therefore the most favourable value available) and W = 20000
+
+### (a) asymptotic:  N*W / T^(1/p) ~ W * T^(beta - 1/p),  evaluated at beta = 1
+      p     1/p   beta - 1/p   verdict
+    1.3   0.769        0.231   DIVERGES -- term is never dominated
+    1.5   0.667        0.333   DIVERGES -- term is never dominated
+    2.0   0.500        0.500   DIVERGES -- term is never dominated
+  (at the fitted beta = 1.16-1.21 the exponent is only larger; beta = 1 is the
+   conservative reading and the conclusion does not depend on the fit)
+
+### (b) at the measured horizon T = 200000, envelope tracker
+      c       N  measurable     NW/T^1/1.3     NW/T^1/1.5     NW/T^1/2.0   W
+    0.5     321        True            1.7            6.0           45.9   tracker
+      1     167        True            0.9            3.1           23.9   tracker
+      2      86        True            0.5            1.6           12.3   tracker
+      5      35       False            0.2            0.7            5.0   tracker
+     10      18       False            0.1            0.3            2.6   tracker
+    0.5     321        True          536.8         1877.2        14355.6   blocking
+      1     167        True          279.3          976.6         7468.5   blocking
+      2      86        True          143.8          502.9         3846.0   blocking
+      5      35       False           58.5          204.7         1565.2   blocking
+     10      18       False           30.1          105.3          805.0   blocking
+
+### S1 -- tracker-free segmentation (non-causal block medians, no filter in loop)
+    block b  #blocks     N(c=0.5)     N(c=1.0)     N(c=2.0)
+         50     4000          770          485          282
+        100     2000          394          254          145
+        250      800          163          106           62
+        500      400           84           54           31
+       1000      200           42           27           15
+  N per unit time (N / n_blocks) is the scale-free reading:
+    c=0.5: b=50:0.193  b=100:0.197  b=250:0.204  b=500:0.210  b=1000:0.210
+    c=1.0: b=50:0.121  b=100:0.127  b=250:0.133  b=500:0.135  b=1000:0.135
+    c=2.0: b=50:0.070  b=100:0.072  b=250:0.077  b=500:0.077  b=1000:0.075
+  a roughly constant fraction across b means boundaries arrive at a constant
+  RATE, i.e. N grows in proportion to T with no tracker in the loop.
+
+### S3 -- the coarsening defence, costed rather than asserted
+  tab:beta: the B=10^4 block tracker holds the lower bracket at 0.93, not 0.
+    bracket 0.93 -> 7% of rounds violate; charged trivially
+      at O(D sup sigma) per round that is 0.07*T = 14,000 rounds at T=200,000 -- Theta(T), the same wall.
+    bracket 0.97 -> 3% of rounds violate; charged trivially
+      at O(D sup sigma) per round that is 0.03*T = 6,000 rounds at T=200,000 -- Theta(T), the same wall.
+    bracket 0.99 -> 1% of rounds violate; charged trivially
+      at O(D sup sigma) per round that is 0.01*T = 2,000 rounds at T=200,000 -- Theta(T), the same wall.
+  So coarsening does not escape: it trades the O(NW) lapse set for an O(T) violation
+  set. The binary claim 'a coarse tracker fails the bracket' was overstated; the
+  accounting reaches the same conclusion and is checkable.
+
+[saved results\research\d1c_propf1.csv]
+--------------------------------------------------------------------------------------------------
+H_D1C FALSIFIED IN PART -- dominated in 2 of 18 measurable
+  combinations. The favourable outcome; report which and do not generalise:
+    c=1.0 W=64 (tracker) p=1.3: ratio 0.894
+    c=2.0 W=64 (tracker) p=1.3: ratio 0.460
+
+What this does NOT establish: anything about Prop F.1's correctness, about
+  Prop 3.1 (unconditional, no drift model), or about the divergence partition.
