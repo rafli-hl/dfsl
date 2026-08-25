@@ -12,11 +12,11 @@ Last verified: **2026-08-25**, commit `cea62ef`, merged to `master` via PRs [#8]
 
 | | |
 |---|---|
-| Branch | `research/c10-q6` at `e893688`, **merged into `master` 2026-08-25** via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (merge commit `041906e`, 106 files, +15,981/−526). Merged rather than squashed: the preregistration trail is the point. |
+| Branches | **One: `master`.** `research/c10-q6` landed via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (106 files, +15,981/−526) plus three tracker follow-ups ([#9](https://github.com/rafli-hl/dfsl/pull/9)–[#11](https://github.com/rafli-hl/dfsl/pull/11)), then was deleted local and remote once every commit was contained in `master`. `paper-submission` deleted too (stale, remote gone, 0 unique commits). Merged rather than squashed: the preregistration trail is the point. |
 | Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
 | `master` | Carries Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items — landed by [PR #8](https://github.com/rafli-hl/dfsl/pull/8) on 2026-08-25 |
-| Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
+| Tags | Two, both annotated and pushed. `iclr2027-submission` → `c32db71` marks the **submitted** state (84 tests, 28pp, 246-file supplement) and is deliberately **not** moved — moving it would destroy the record of what was actually submitted. `iclr2027-phase2` → `a0f1516` marks the state after Phase-2, the publication pass and the closed open items |
 | Canonical source | `paper/iclr2027/iclr2027.tex` (1952 lines) |
 | Main text | **8.907pp** of a 9pp limit, ~0.09pp (5 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → 8.871 (§8–10) → **8.907** (the Limitations schedule sentence, open item 3 — the only open-items text that lands inside the counted region) |
 | Total | 29pp (statements, references, appendix do not count) |
@@ -405,11 +405,49 @@ build, reproducible tables, anonymized supplement. What remains open is not writ
 | 1 | ~~`tab:replication` rests on a confounded comparison.~~ | **Closed 2026-08-24** — corrected table adopted at `de33ee0`, and the four appendix statements it invalidated repaired. |
 | 2 | ~~Wall-clock runtime figure for the Reproducibility Statement.~~ | **Closed** — `research_runtime_suite.py` times a defined set (every script the paper names, plus the ones that generate the tables it prints), one fresh interpreter each, writing `results/research/runtime_suite.csv` incrementally. Measured: **3.0 h** over 29 scripts on one commodity CPU, of which the **Kaggle-free** subset — everything a reviewer without a competition account can run — is **3 min** across 5 scripts. Slowest three: `research_c12b_blockmed.py` 50 min, `research_c12_matched_table.py` 37 min, `research_grid_adequacy.py` 15 min; the two C12 runs alone are 49% of the total. One caveat on the measurement: rows 17–24 of the CSV overlapped for part of their run with one other single-threaded job on this 12-core machine, so those eight figures are upper bounds by a small margin. The total is robust to it — even a 10% inflation on all eight moves 177 min by 4 — and the rest of the CSV was measured with nothing else running. |
 | 3 | ~~§4 sentence on the deployed schedule.~~ | **Closed** — placed in **Limitations**, not §4: it is one window on one shared grid, weaker evidence than anything in §4, and Limitations is where the paper already concedes its tuned parameters. It stands on the schedule argument alone, as required — the paired bootstrap attributes the $0.285$-vs-$0.247$ difference to the grid, but the $0.52$-vs-$0.25$ gap is the schedule. |
-| 4 | GitHub release | **Still open, and the reason narrowed.** The permission half was wrong: `gh repo view` reports `viewerPermission: READ`, but git push works — `research/c10-q6` was pushed to `origin` at `fde0db9` on 2026-08-25. So a release is mechanically possible. What remains is the judgement call: `rafli-hl/dfsl` is **public** and a tagged release is a publicising act during double-blind review, which a branch push to a repo that already carries the manuscript is not. Author's call, best made after reviews. |
+| 4 | GitHub release | **Decided and staged; one command short of done.** The judgement call was put to the author, who chose to proceed. Everything the release needs exists: the `iclr2027-phase2` tag is pushed, the notes are written, and the PDF asset is verified clean. It is blocked on the two-identity problem below — not, as this row previously claimed, merely a judgement call. See **The two GitHub identities** below. |
 | 5 | ~~Audit finding 10 — bootstrap block-length sensitivity.~~ | **Closed, and the answer is not the one the objection expected.** See below. |
 | 6 | ~~Audit finding 6 — Jane numbers not reviewer-reproducible.~~ | **Closed** — `research_jane_mini.py` closes it from both ends: a seeded mini-slice in the Jane schema drives the same loader, harness and evaluation with no market data, and the same script pins the sha256 of the real canonical slice so a reviewer with their own download can confirm it matches before spending the compute. Covered by `tests/test_jane_mini.py`. |
 | 7 | ~~Audit finding 3 residual — the SE claim names no comparator.~~ | **Closed** — and it was two defects. The prose said `±.079` where the table prints `±.080`, the same prose-versus-table disagreement finding 3 was about, recurring; and "about twice normalized-GD's" picked the flattering comparator when SN-OMD's is the *widest* bar in that column. Both fixed, and both halves now pinned to the source CSV by new `PAPER_CLAIMS` guards. |
 
+
+### The two GitHub identities, and the misleading error they produce
+
+This cost several rounds and will cost more later, so it is written down.
+
+**There are two GitHub accounts in play on this machine, and they are not the same one.**
+
+| | account | on `rafli-hl/dfsl` |
+|---|---|---|
+| `git` (Windows Credential Manager) | **`rafli-hl`** | writes fine — pushed branches, tags and four PR merges |
+| `gh` CLI (keyring) | **`rafli07p`** | `{"admin":false,"maintain":false,"pull":true,"push":false,"triage":false}` |
+
+Because git works, everything git-shaped succeeded and nothing hinted at a problem. Every
+`gh` **write** fails, and the errors do not name the cause:
+
+- `gh pr create` → `must be a collaborator` (accurate, but does not say which account)
+- `gh release create` → `"workflow" scope may be required` — **wrong**. That token already
+  carries `workflow`; the real cause is `push: false`. Following the error's own advice
+  (`gh auth refresh -s workflow`) would not have fixed it.
+
+An earlier version of open item 4 recorded `viewerPermission: READ` as a hard blocker and
+was corrected to "the permission half was wrong" once the push succeeded. Both statements
+were half right and neither named the split: the *permission* claim was true of `gh`'s
+token and false of git's.
+
+**The fix is one command**, which re-points `gh` at the credential git already uses:
+
+```
+printf "protocol=https\nhost=github.com\n\n" | git credential fill \
+  | sed -n 's/^password=//p' | gh auth login --hostname github.com --with-token
+```
+
+Afterwards `gh auth switch --user rafli07p` restores the old account if it is wanted for
+other work, and the GCM token's scopes are worth checking — they may be narrower than the
+`gist, read:org, repo, workflow` the current one carries.
+
+Until then, `gh` reads work and `gh` writes do not. PRs #8–#11 were created by passing the
+git credential explicitly, which is why they succeeded where the plain command failed.
 
 ### Finding 10, measured: the block-length objection does not reproduce
 
@@ -475,6 +513,35 @@ to add a non-finance result is a scope decision, deferred deliberately.
 
 ---
 
+### Release: what is staged, and the one step left
+
+`iclr2027-phase2` is an **annotated** tag at `a0f1516`, pushed to `origin`. Its message
+records the Phase-2 result, the five directions that failed or came back void, the
+publication pass, and the closed open items.
+
+Prepared and checked, waiting on the auth fix above:
+
+| piece | state |
+|---|---|
+| Tag | `iclr2027-phase2` → `a0f1516`, annotated, pushed |
+| Notes | Markdown release notes written (`--notes-from-tag` is the fallback, so the notes file is not load-bearing) |
+| PDF asset | `paper/iclr2027/iclr2027.pdf` — **0 identity tokens** in the extracted text, `/Author` and `/Title` metadata **empty**, only MiKTeX's producer string. The three "ICML" hits are bibliography venue names (Cutkosky 2020, Daniely 2015, Zinkevich 2003), not prior-venue self-disclosure. 29pp, newer than the `.tex`, working tree clean at `a0f1516` — so the asset corresponds exactly to the tagged tree |
+
+The command, once `gh` is authenticated as `rafli-hl`:
+
+```
+gh release create iclr2027-phase2 --repo rafli-hl/dfsl \
+  --title "Phase-2 research, the corrected table, and the publication pass" \
+  --notes-from-tag --verify-tag \
+  "paper/iclr2027/iclr2027.pdf#SN-OMD paper (29pp, main text 8.907pp)"
+```
+
+**Why the manuscript being public is not a new exposure.** `paper/iclr2027/iclr2027.tex`
+was already on the public `origin/master` before any of this, as were `paper/icml2026.tex`
+and its PDF. The push updated a manuscript that was already there. A *tagged release* is
+still a publicising act in a way a branch push is not, which is why it was put to the
+author rather than done silently.
+
 ## Reproducing
 
 ```
@@ -483,7 +550,7 @@ python scripts/research_batched_check.py          # tab:jane, tab:replication
 python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
 python -m pytest -q                               # 113 tests
-python scripts/make_anon_release.py               # double-blind supplement (307 files)
+python scripts/make_anon_release.py               # double-blind supplement (336 files)
 python scripts/research_iterate_norm.py --lr 8   # fig:iternorm -- the flag is NOT the default
 python scripts/research_runtime_suite.py          # wall-clock for the whole suite
 python scripts/research_block_length.py           # bootstrap block-length sensitivity
@@ -491,7 +558,7 @@ python scripts/research_jane_mini.py --build --run   # the Jane path with no mar
 python scripts/research_jane_mini.py --verify        # hash-check a real Kaggle download
 ```
 
-Phase-2 research (branch `research/c10-q6`, preregistered in `experiment_matrix.yaml`):
+Phase-2 research (preregistered in `experiment_matrix.yaml`; merged to `master`, the branch is deleted):
 
 ```
 python scripts/research_c10_budget_match.py       # C10/Q6  matched-budget ten windows
@@ -511,11 +578,11 @@ drifted away from it.
 
 ## Submission checklist
 
-- [x] Main text within 9pp (8.502, ~0.50pp margin)
+- [x] Main text within 9pp (**8.907**, ~0.09pp margin)
 - [x] 0 undefined refs, 0 overfull, clean build
 - [x] Tests pass (113)
 - [x] Tables regenerated from corrected code
-- [x] Anonymized supplement builds, 0 identity tokens (307 files, 2026-08-24)
+- [x] Anonymized supplement builds, 0 identity tokens (336 files, 2026-08-25)
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
 - [x] Prior-venue material excluded from the supplement — exclusion glob repaired 2026-08-24 after the `paper/` move silently un-matched it; pinned by `tests/test_anon_exclusions.py`
 - [x] Tag on the submission commit (`c32db71`) — deliberately NOT moved onto the research branch
@@ -526,3 +593,10 @@ drifted away from it.
 - [x] Publication-quality pass §4–§19 — introduction, abstract, contributions, paragraph structure, terminology, captions, cross-references, bibliography (below)
 - [x] Publication-quality pass §8–§10 — the two formal statements, the tracker paragraph, Related Work
 - [x] §26 appendix QA page by page — experiments promoted out of "Proofs", one wrong cross-reference, two colliding headings, five mis-parked floats
+- [x] Audit finding 10 — bootstrap block-length sensitivity measured; the objection does not reproduce
+- [x] Audit finding 6 — a data-free Jane path ships (`research_jane_mini.py`), plus a sha256 pin on the real slice
+- [x] Audit finding 3 residual — the SE claim names both comparators and is pinned to its CSV by two new guards
+- [x] Phase-2 research merged to `master` (PRs #8–#11); branches cleaned up, one branch remains
+- [x] `iclr2027-phase2` tag pushed at `a0f1516`; `iclr2027-submission` deliberately left where it is
+- [ ] GitHub release published — staged, blocked on the `gh` identity (see above)
+- [ ] `gh` CLI authenticated as `rafli-hl` rather than `rafli07p`
