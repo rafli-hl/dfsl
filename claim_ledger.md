@@ -493,3 +493,38 @@ The decision stands and is now disclosed rather than reversed:
 What cannot be said from these runs is where CM would place at 70 configurations. That is not
 claimed. This is the same defect class as C10/Q6 pointing the other way, and it is the reason
 C-18's tie result should not be over-read in either direction.
+
+## C-20 — The switching bound is unavailable on this data, not merely underived
+
+**Status: SUPPORTED (D1B, `results/research/d1b_regime_count.csv`, 2026-08-26). Closes the
+open question C-13 left, in the negative.**
+
+C-13 recorded that the genuinely open theory object is Remark D.3's switching bound in the
+regime count, with target rate `Õ(N^{1−1/p}·T^{1/p})` derived and verified. D1B checked that
+rate's precondition before attacking its three GAP sub-problems, and the precondition fails.
+
+The rate is non-vacuous only if `N` is **sublinear in `T`**; at `N = Θ(T)` it is `Θ(T)` for every
+`p`. Measured on the committed scale process by the paper's own definition of a regime, `N` grows
+with exponent **1.155–1.240** across two trackers and five per-regime budgets — at least linear,
+and coherent with Table 6's independently measured `β ≈ 1.0–1.25` for `W_s`.
+
+Three things make this a claim rather than an impression:
+
+1. **The reliability rule is pre-existing.** Table 6 already requires `≳50` blocks for the
+   analogous `W_s` fit. Applying it here discards 7 of 15 combinations — and every one it
+   discards is a *sublinear* one, i.e. it removes the only evidence that would have licensed
+   proceeding to the derivation. The filter cuts against the conclusion it supports.
+2. **The coherence check passes.** `N` and `W_s` grow at the same measured rate, which is what
+   two views of one drift process should do.
+3. **The escape is blocked.** A tracker coarse enough to report few regimes (block median,
+   `B=10⁴`, 1–3 segments) fails Assumption D.1's lower bracket, so coarsening the tracker to
+   recover sublinearity is not available.
+
+**Consequence, stated against our own interest.** The residual `√T` making `thm:regret`
+per-regime is a property of the measured drift, not a gap in the proof — stronger than "left
+open" and less flattering. It also closes the route by which the introduction's nonstationarity
+reframe could have been redeemed theoretically, which Limitations now says.
+
+**Not closed:** a bound in a different nonstationarity functional, or a stream with rarer
+regimes. D1's three GAP sub-problems remain unproven and are now unmotivated on this data.
+

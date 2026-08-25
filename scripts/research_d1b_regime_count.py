@@ -113,12 +113,26 @@ def upward_variation(s):
     return float(d[d > 0].sum())
 
 
+# A growth exponent cannot be fitted from a handful of segments. Table 6 already imposes
+# exactly this rule on the corresponding W_s ~ T^beta fit -- it restricts to horizons with
+# >~50 blocks and calls the decline at large B "a finite-horizon artifact -- B=10^4 has only
+# ~20 blocks". The same rule is applied here, and note which way it cuts: it DISQUALIFIES the
+# only tracker whose exponent looks sublinear, so it makes proceeding to a derivation harder,
+# not easier.
+MIN_SEGMENTS = 50
+
+
 def fit_exponent(Ts, Ns):
     """Slope of log N against log T; 1.0 means N grows in proportion to T."""
     m = (np.array(Ns) > 0)
     if m.sum() < 3:
         return float("nan")
     return float(np.polyfit(np.log(np.array(Ts)[m]), np.log(np.array(Ns)[m]), 1)[0])
+
+
+def measurable(Ns):
+    """Is there enough resolution for the exponent to mean anything?"""
+    return max(Ns) >= MIN_SEGMENTS
 
 
 def run() -> int:
@@ -150,23 +164,41 @@ def run() -> int:
                 Ts.append(T)
                 Ns.append(N)
             beta = fit_exponent(Ts, Ns)
-            flag = "  <-- LINEAR" if beta >= 0.95 else ("  <-- sublinear" if beta < 0.9 else "")
+            ok = measurable(Ns)
+            if not ok:
+                flag = f"  <-- only {max(Ns)} segments; exponent NOT MEASURABLE"
+            elif beta >= 0.95:
+                flag = "  <-- LINEAR"
+            elif beta < 0.9:
+                flag = "  <-- sublinear"
+            else:
+                flag = ""
             print(f"  {c_units:12g} " + " ".join(f"{N:8d}" for N in Ns)
                   + f"   {beta:.3f}{flag}")
             for T, N in zip(Ts, Ns):
                 rows.append({"tracker": tname, "c_units_of_median": c_units,
-                             "T": T, "N": N, "exponent": round(beta, 4)})
+                             "T": T, "N": N, "exponent": round(beta, 4),
+                             "measurable": ok, "max_segments": int(max(Ns))})
 
     out = RES / "d1b_regime_count.csv"
     pl.DataFrame(rows).write_csv(out)
     print(f"\n[saved {out.relative_to(ROOT)}]")
 
     # ------------------------------------------------------------------ the verdict
-    betas = sorted({(r["tracker"], r["c_units_of_median"], r["exponent"]) for r in rows},
-                   key=lambda x: x[2])
-    lo, hi = betas[0][2], betas[-1][2]
+    combos = {(r["tracker"], r["c_units_of_median"], r["exponent"], r["measurable"])
+              for r in rows}
+    good = sorted([c for c in combos if c[3]], key=lambda x: x[2])
+    dropped = sorted([c for c in combos if not c[3]], key=lambda x: x[2])
     print("-" * 96)
-    print(f"exponent of N(T) across {len(betas)} tracker x c combinations: "
+    print(f"{len(dropped)} of {len(combos)} combinations have fewer than {MIN_SEGMENTS} "
+          f"segments and are not measurable:")
+    for t, c, b, _ in dropped:
+        print(f"    {t:34s} c={c:<5g} exponent {b:.3f} -- discarded")
+    if not good:
+        print("\nVERDICT: NOTHING IS MEASURABLE at this horizon. No claim follows.")
+        return 0
+    lo, hi = good[0][2], good[-1][2]
+    print(f"\nexponent of N(T) over the {len(good)} measurable combinations: "
           f"{lo:.3f} to {hi:.3f}")
     if lo >= 0.95:
         print("\nVERDICT: LINEAR everywhere tested.")

@@ -1,0 +1,151 @@
+tracker,c_units_of_median,T,N,exponent,measurable,max_segments
+winsorized EMA (deployed),0.5,10000,47,1.2332,true,1825
+winsorized EMA (deployed),0.5,15000,78,1.2332,true,1825
+winsorized EMA (deployed),0.5,20000,110,1.2332,true,1825
+winsorized EMA (deployed),0.5,30000,173,1.2332,true,1825
+winsorized EMA (deployed),0.5,40000,237,1.2332,true,1825
+winsorized EMA (deployed),0.5,60000,342,1.2332,true,1825
+winsorized EMA (deployed),0.5,80000,636,1.2332,true,1825
+winsorized EMA (deployed),0.5,120000,1025,1.2332,true,1825
+winsorized EMA (deployed),0.5,160000,1466,1.2332,true,1825
+winsorized EMA (deployed),0.5,200000,1825,1.2332,true,1825
+winsorized EMA (deployed),1.0,10000,24,1.2343,true,934
+winsorized EMA (deployed),1.0,15000,40,1.2343,true,934
+winsorized EMA (deployed),1.0,20000,56,1.2343,true,934
+winsorized EMA (deployed),1.0,30000,88,1.2343,true,934
+winsorized EMA (deployed),1.0,40000,120,1.2343,true,934
+winsorized EMA (deployed),1.0,60000,173,1.2343,true,934
+winsorized EMA (deployed),1.0,80000,326,1.2343,true,934
+winsorized EMA (deployed),1.0,120000,525,1.2343,true,934
+winsorized EMA (deployed),1.0,160000,751,1.2343,true,934
+winsorized EMA (deployed),1.0,200000,934,1.2343,true,934
+winsorized EMA (deployed),2.0,10000,12,1.2399,true,473
+winsorized EMA (deployed),2.0,15000,20,1.2399,true,473
+winsorized EMA (deployed),2.0,20000,28,1.2399,true,473
+winsorized EMA (deployed),2.0,30000,44,1.2399,true,473
+winsorized EMA (deployed),2.0,40000,61,1.2399,true,473
+winsorized EMA (deployed),2.0,60000,87,1.2399,true,473
+winsorized EMA (deployed),2.0,80000,165,1.2399,true,473
+winsorized EMA (deployed),2.0,120000,266,1.2399,true,473
+winsorized EMA (deployed),2.0,160000,381,1.2399,true,473
+winsorized EMA (deployed),2.0,200000,473,1.2399,true,473
+winsorized EMA (deployed),5.0,10000,5,1.2293,true,191
+winsorized EMA (deployed),5.0,15000,8,1.2293,true,191
+winsorized EMA (deployed),5.0,20000,12,1.2293,true,191
+winsorized EMA (deployed),5.0,30000,18,1.2293,true,191
+winsorized EMA (deployed),5.0,40000,25,1.2293,true,191
+winsorized EMA (deployed),5.0,60000,35,1.2293,true,191
+winsorized EMA (deployed),5.0,80000,67,1.2293,true,191
+winsorized EMA (deployed),5.0,120000,107,1.2293,true,191
+winsorized EMA (deployed),5.0,160000,154,1.2293,true,191
+winsorized EMA (deployed),5.0,200000,191,1.2293,true,191
+winsorized EMA (deployed),10.0,10000,3,1.2015,true,96
+winsorized EMA (deployed),10.0,15000,4,1.2015,true,96
+winsorized EMA (deployed),10.0,20000,6,1.2015,true,96
+winsorized EMA (deployed),10.0,30000,9,1.2015,true,96
+winsorized EMA (deployed),10.0,40000,13,1.2015,true,96
+winsorized EMA (deployed),10.0,60000,18,1.2015,true,96
+winsorized EMA (deployed),10.0,80000,34,1.2015,true,96
+winsorized EMA (deployed),10.0,120000,54,1.2015,true,96
+winsorized EMA (deployed),10.0,160000,77,1.2015,true,96
+winsorized EMA (deployed),10.0,200000,96,1.2015,true,96
+two-timescale envelope (proven),0.5,10000,9,1.2063,true,321
+two-timescale envelope (proven),0.5,15000,15,1.2063,true,321
+two-timescale envelope (proven),0.5,20000,20,1.2063,true,321
+two-timescale envelope (proven),0.5,30000,31,1.2063,true,321
+two-timescale envelope (proven),0.5,40000,43,1.2063,true,321
+two-timescale envelope (proven),0.5,60000,65,1.2063,true,321
+two-timescale envelope (proven),0.5,80000,112,1.2063,true,321
+two-timescale envelope (proven),0.5,120000,179,1.2063,true,321
+two-timescale envelope (proven),0.5,160000,261,1.2063,true,321
+two-timescale envelope (proven),0.5,200000,321,1.2063,true,321
+two-timescale envelope (proven),1.0,10000,5,1.1859,true,167
+two-timescale envelope (proven),1.0,15000,8,1.1859,true,167
+two-timescale envelope (proven),1.0,20000,11,1.1859,true,167
+two-timescale envelope (proven),1.0,30000,17,1.1859,true,167
+two-timescale envelope (proven),1.0,40000,23,1.1859,true,167
+two-timescale envelope (proven),1.0,60000,34,1.1859,true,167
+two-timescale envelope (proven),1.0,80000,59,1.1859,true,167
+two-timescale envelope (proven),1.0,120000,94,1.1859,true,167
+two-timescale envelope (proven),1.0,160000,136,1.1859,true,167
+two-timescale envelope (proven),1.0,200000,167,1.1859,true,167
+two-timescale envelope (proven),2.0,10000,3,1.155,true,86
+two-timescale envelope (proven),2.0,15000,4,1.155,true,86
+two-timescale envelope (proven),2.0,20000,6,1.155,true,86
+two-timescale envelope (proven),2.0,30000,9,1.155,true,86
+two-timescale envelope (proven),2.0,40000,12,1.155,true,86
+two-timescale envelope (proven),2.0,60000,17,1.155,true,86
+two-timescale envelope (proven),2.0,80000,30,1.155,true,86
+two-timescale envelope (proven),2.0,120000,48,1.155,true,86
+two-timescale envelope (proven),2.0,160000,70,1.155,true,86
+two-timescale envelope (proven),2.0,200000,86,1.155,true,86
+two-timescale envelope (proven),5.0,10000,1,1.1427,false,35
+two-timescale envelope (proven),5.0,15000,2,1.1427,false,35
+two-timescale envelope (proven),5.0,20000,3,1.1427,false,35
+two-timescale envelope (proven),5.0,30000,4,1.1427,false,35
+two-timescale envelope (proven),5.0,40000,5,1.1427,false,35
+two-timescale envelope (proven),5.0,60000,7,1.1427,false,35
+two-timescale envelope (proven),5.0,80000,12,1.1427,false,35
+two-timescale envelope (proven),5.0,120000,20,1.1427,false,35
+two-timescale envelope (proven),5.0,160000,29,1.1427,false,35
+two-timescale envelope (proven),5.0,200000,35,1.1427,false,35
+two-timescale envelope (proven),10.0,10000,1,1.0174,false,18
+two-timescale envelope (proven),10.0,15000,1,1.0174,false,18
+two-timescale envelope (proven),10.0,20000,2,1.0174,false,18
+two-timescale envelope (proven),10.0,30000,2,1.0174,false,18
+two-timescale envelope (proven),10.0,40000,3,1.0174,false,18
+two-timescale envelope (proven),10.0,60000,4,1.0174,false,18
+two-timescale envelope (proven),10.0,80000,7,1.0174,false,18
+two-timescale envelope (proven),10.0,120000,10,1.0174,false,18
+two-timescale envelope (proven),10.0,160000,15,1.0174,false,18
+two-timescale envelope (proven),10.0,200000,18,1.0174,false,18
+block median (most accurate),0.5,10000,1,0.3716,false,3
+block median (most accurate),0.5,15000,1,0.3716,false,3
+block median (most accurate),0.5,20000,1,0.3716,false,3
+block median (most accurate),0.5,30000,1,0.3716,false,3
+block median (most accurate),0.5,40000,1,0.3716,false,3
+block median (most accurate),0.5,60000,1,0.3716,false,3
+block median (most accurate),0.5,80000,1,0.3716,false,3
+block median (most accurate),0.5,120000,2,0.3716,false,3
+block median (most accurate),0.5,160000,3,0.3716,false,3
+block median (most accurate),0.5,200000,3,0.3716,false,3
+block median (most accurate),1.0,10000,1,0.2592,false,2
+block median (most accurate),1.0,15000,1,0.2592,false,2
+block median (most accurate),1.0,20000,1,0.2592,false,2
+block median (most accurate),1.0,30000,1,0.2592,false,2
+block median (most accurate),1.0,40000,1,0.2592,false,2
+block median (most accurate),1.0,60000,1,0.2592,false,2
+block median (most accurate),1.0,80000,1,0.2592,false,2
+block median (most accurate),1.0,120000,2,0.2592,false,2
+block median (most accurate),1.0,160000,2,0.2592,false,2
+block median (most accurate),1.0,200000,2,0.2592,false,2
+block median (most accurate),2.0,10000,1,0.2592,false,2
+block median (most accurate),2.0,15000,1,0.2592,false,2
+block median (most accurate),2.0,20000,1,0.2592,false,2
+block median (most accurate),2.0,30000,1,0.2592,false,2
+block median (most accurate),2.0,40000,1,0.2592,false,2
+block median (most accurate),2.0,60000,1,0.2592,false,2
+block median (most accurate),2.0,80000,1,0.2592,false,2
+block median (most accurate),2.0,120000,2,0.2592,false,2
+block median (most accurate),2.0,160000,2,0.2592,false,2
+block median (most accurate),2.0,200000,2,0.2592,false,2
+block median (most accurate),5.0,10000,1,0.0,false,1
+block median (most accurate),5.0,15000,1,0.0,false,1
+block median (most accurate),5.0,20000,1,0.0,false,1
+block median (most accurate),5.0,30000,1,0.0,false,1
+block median (most accurate),5.0,40000,1,0.0,false,1
+block median (most accurate),5.0,60000,1,0.0,false,1
+block median (most accurate),5.0,80000,1,0.0,false,1
+block median (most accurate),5.0,120000,1,0.0,false,1
+block median (most accurate),5.0,160000,1,0.0,false,1
+block median (most accurate),5.0,200000,1,0.0,false,1
+block median (most accurate),10.0,10000,1,0.0,false,1
+block median (most accurate),10.0,15000,1,0.0,false,1
+block median (most accurate),10.0,20000,1,0.0,false,1
+block median (most accurate),10.0,30000,1,0.0,false,1
+block median (most accurate),10.0,40000,1,0.0,false,1
+block median (most accurate),10.0,60000,1,0.0,false,1
+block median (most accurate),10.0,80000,1,0.0,false,1
+block median (most accurate),10.0,120000,1,0.0,false,1
+block median (most accurate),10.0,160000,1,0.0,false,1
+block median (most accurate),10.0,200000,1,0.0,false,1

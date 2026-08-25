@@ -338,6 +338,31 @@ until now asserted rather than shown. Both are now in the manuscript.
 **Guards.** No `PAPER_CLAIMS` entry covered the per-row figures, which is why the drift went
 unnoticed; three now do. The one guard that did cover a reworded sentence failed correctly.
 
+## Session 13 — direction D1B, the switching bound (registered; closed NEGATIVELY)
+
+The external assessment ranked "D1 — variation-adaptive bound" highest. The naming was wrong and
+the record already said so: C-13 established that bound already exists inside `thm:regret`. The
+open object was Remark D.3's switching bound, so that is what D1B registered.
+
+**Registered a premise check first, and it settled the direction.** The target rate
+`Õ(N^{1−1/p}T^{1/p})` is non-vacuous only if the regime count `N` is sublinear in `T`. Measured
+on the committed scale process with the paper's own definition of a regime: exponent
+**1.155–1.240** over the eight tracker × budget combinations with enough segments to fit one.
+At `N = Θ(T)` the switching rate is `Θ(T)` at every `p`.
+
+**So the bound is unavailable, not underived** — no proof of that form can help here. D1's three
+GAP sub-problems were not attempted, per the registered decision rule, and are now unmotivated
+on this data. Ledger C-20.
+
+**The reliability rule was Table 6's own** (`≳50` blocks), and it discards exactly the
+combinations that looked sublinear — it makes the conclusion harder to reach. That is the test
+for whether a post-hoc filter is legitimate: this one costs us the outcome that would have let
+us keep working.
+
+**Manuscript.** Five places said "left open"; they now say closed, with the measurement in a new
+appendix subsection. Limitations concedes that the per-regime restriction is not a gap we expect
+to close. Main text 8.907 → 8.942pp.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

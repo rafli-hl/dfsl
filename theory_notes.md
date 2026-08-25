@@ -173,3 +173,71 @@ contribution.
    lose an argument with a reviewer who checks the arithmetic.
 3. **`N^{1−1/p}T^{1/p}` is a concrete, checkable target** with both limits verified. It gives a
    future attempt something specific to aim at, and something a reviewer can falsify.
+
+---
+
+# D1B — the switching bound is unavailable, not merely underived (2026-08-26)
+
+D1 ended by naming the open object: Remark D.3's switching bound in the regime count, target
+rate `R_T = Õ(N^{1−1/p}·T^{1/p})`, obstruction located in the global step schedule, three
+sub-problems marked GAP. D1B registered a premise check *before* attacking those, and the check
+settles the question without needing them.
+
+## The precondition
+
+`N^{1−1/p}·T^{1/p}` beats the current `T^{1/p+1/2}` only when `N = o(T^{p/(2(p−1))})`, and it
+beats the vacuous `T` only when **N is sublinear in T**. At `N = Θ(T)` the switching rate is
+`T^{1−1/p}·T^{1/p} = T` for every `p` — the exact bound the direction exists to escape. So the
+whole route has a measurable precondition, and it is one the paper had never checked even though
+it measures the closely related `W_s = Θ(T)`.
+
+## The measurement
+
+`research_d1b_regime_count.py`, on the committed 200 000-round scale process, using the paper's
+own definition of a regime — a horizon over which the tracker's upward variation is `O(1)`.
+Greedy partition: accumulate upward variation, close a segment when the budget `c` would be
+exceeded, so a single step larger than `c` forms its own segment. That is exactly Appendix E.8's
+"piecewise-slow variation plus arbitrary jumps at N change points".
+
+| tracker | exponent of `N(T)` | measurable? |
+|---|---|---|
+| winsorized EMA (deployed) | 1.20 – 1.24 | yes, up to 1 825 segments |
+| two-timescale envelope (proven) | 1.16 – 1.21 | yes at `c ≤ 2` |
+| block median (`B=10⁴`) | 0.00 – 0.37 | **no** — 1 to 3 segments over the whole record |
+
+`c` swept over `{0.5, 1, 2, 5, 10}` median scales.
+
+**The reliability rule is Table 6's, not one invented here.** Table 6 already restricts the
+corresponding `W_s ~ T^β` fit to horizons with `≳50` blocks and calls the large-`B` decline "a
+finite-horizon artifact — `B=10⁴` has only ~20 blocks". Applying the same rule discards 7 of 15
+combinations. **Note which way it cuts:** every discarded combination is one whose exponent
+looked *sublinear*, so the rule removes the only evidence that would have licensed proceeding to
+the derivation. A filter that makes the conclusion harder to reach is not a filter chosen to
+reach it.
+
+Over the 8 surviving combinations the exponent is **1.155 – 1.240**, never below 1.15. An
+exponent above 1 cannot persist asymptotically (`N ≤ T`), so the honest reading is *at least
+linear*. It agrees with Table 6's independently measured `β ≈ 1.0–1.25` for `W_s`, which is the
+coherence check one wants: regimes and upward variation accumulate at the same rate, because
+they are two views of the same drift.
+
+## Verdict
+
+**Success under registered criterion (a): the negative result is established.** The derivation
+was not attempted, per the registered decision rule.
+
+The switching bound is not an open lemma on this data. It is unavailable: no proof of that form
+can be non-vacuous at `N = Θ(T)`, whoever writes it. The residual `√T` that makes `thm:regret`
+per-regime is therefore a property of the measured drift, not a gap in our proof — which is a
+*stronger* and less flattering statement than "left open", and it is now what the manuscript
+says in Remark D.3, the Table 6 caption, Section B.2, Limitations, and a new appendix
+subsection.
+
+## What this does not close
+
+A bound in some other nonstationarity functional, and a stream on which regimes are rarer. The
+measurement is one process, and `N` is defined against a tracker; a tracker coarse enough to see
+one regime also fails Assumption D.1's lower bracket, so "make the tracker coarser" is not an
+escape. Three GAP sub-problems from D1 remain unproven and are now also unmotivated on this
+data.
+
