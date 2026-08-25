@@ -17,11 +17,11 @@ Last verified: **2026-08-24**, commit `b44999d` (branch `research/c10-q6`).
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
 | `master` | `041906e`, the PR #8 merge — contains Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items |
 | Tag | `iclr2027-submission` → `c32db71` (annotated object `347bcb1`). Marks the **submission** state; deliberately not moved onto the research branch |
-| Canonical source | `paper/iclr2027/iclr2027.tex` (1913 lines) |
-| Main text | **8.871pp** of a 9pp limit, ~0.13pp (7 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → **8.871** (§8–10) |
+| Canonical source | `paper/iclr2027/iclr2027.tex` (1952 lines) |
+| Main text | **8.907pp** of a 9pp limit, ~0.09pp (5 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → 8.871 (§8–10) → **8.907** (the Limitations schedule sentence, open item 3 — the only open-items text that lands inside the counted region) |
 | Total | 29pp (statements, references, appendix do not count) |
 | Build | 0 undefined refs, 0 overfull, 0 float-specifier warnings, 0 stray tabs. 6 underfull boxes, all float slack or one badness-1342 proof line — the two badness-10000 bibliography lines are fixed |
-| Tests | **106 passed** (84 + 20 anon-exclusion guards + 2 `tab:replication` mean guards) |
+| Tests | **113 passed** (106 + 5 data-free Jane-path guards + 2 SE-prose guards) |
 | Anon supplement | 307 files, 0 identity tokens, rebuilt at `D:\dfsl-anon-release` (2026-08-24) |
 
 `paper/icml2026/` is a **frozen ICML snapshot** (moved there from flat `paper/*` on
@@ -482,7 +482,7 @@ python scripts/research_predictability_check.py   # the 2x2 decomposition
 python scripts/research_batched_check.py          # tab:jane, tab:replication
 python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
-python -m pytest -q                               # 106 tests
+python -m pytest -q                               # 113 tests
 python scripts/make_anon_release.py               # double-blind supplement (307 files)
 python scripts/research_iterate_norm.py --lr 8   # fig:iternorm -- the flag is NOT the default
 python scripts/research_runtime_suite.py          # wall-clock for the whole suite
@@ -513,7 +513,7 @@ drifted away from it.
 
 - [x] Main text within 9pp (8.502, ~0.50pp margin)
 - [x] 0 undefined refs, 0 overfull, clean build
-- [x] Tests pass (106)
+- [x] Tests pass (113)
 - [x] Tables regenerated from corrected code
 - [x] Anonymized supplement builds, 0 identity tokens (307 files, 2026-08-24)
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
