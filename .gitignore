@@ -27,17 +27,24 @@ results/benchmark/
 results/ablation/
 
 # LaTeX build intermediates (keep source + built PDF)
-paper/*.aux
-paper/*.log
-paper/*.blg
-paper/*.out
-paper/*.bbl
-paper/*.synctex.gz
-paper/*.fls
-paper/*.fdb_latexmk
+# latexmk output. NOTE the ** -- these were written as paper/*.aux, which matches only files
+# directly in paper/ and silently stopped covering anything once the ICML build moved into
+# paper/icml2026/. Same failure mode as the anonymized-export exclusion glob (fixed 2026-08-24).
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.blg
+paper/**/*.out
+paper/**/*.bbl
+paper/**/*.synctex.gz
+paper/**/*.synctex(busy)
+paper/**/*.fls
+paper/**/*.fdb_latexmk
 
 # torchvision MNIST download (second-domain experiment)
 data/mnist/
 
 # stray latex out dir
 out/
+
+# Runtime-suite console logs (the timing CSV next to them is the artifact)
+results/research/runtime_logs/

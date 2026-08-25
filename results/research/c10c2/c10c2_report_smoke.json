@@ -1,0 +1,33 @@
+{
+  "kappa_main": 10.0,
+  "jane_rows": 40000,
+  "streams": {},
+  "results": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V4": false,
+    "V5": true,
+    "V6": true
+  },
+  "accepted": false,
+  "v4_applicable": [],
+  "v6": {
+    "jane": {
+      "agree_new": 1.0,
+      "agree_jane": 1.0,
+      "pass": true
+    },
+    "synthetic": {
+      "agree_new": 1.0,
+      "agree_jane": 1.0,
+      "pass": true
+    },
+    "crypto": {
+      "agree_new": 1.0,
+      "agree_jane": 1.0,
+      "pass": true
+    }
+  },
+  "wallclock_sec": 25.5
+}

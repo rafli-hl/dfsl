@@ -1,0 +1,1477 @@
+# Preregistration -- DFSL Phase 2, research execution
+#
+# NOTE ON GOVERNING DOCUMENTS: RESEARCH_CHARTER.md, research_state.md,
+# claim_ledger.md and results/research/r1_*.md are ABSENT from this repository, and
+# `git log --all` shows they have never been committed to it. This preregistration is
+# therefore written against the field list enumerated in the Phase-2 brief section 3,
+# which is the operative spec available. Section 1 of the brief (verify-or-discard
+# inherited R1 claims) is moot: no r1_* artifact exists. Direction R1c is consequently
+# not actionable and was excluded from consideration.
+
+direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: e66768d
+status: REGISTERED_BEFORE_EXECUTION
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  On the ten-window frozen-hyperparameter Jane benchmark, a CONSTANT scale
+  (fixed-tau clip, per-row mean weighted R2 0.2064) outperforms the PREDICTABLE
+  TRACKED scale the method is built on (SN-OMD M=5, 0.1398). Is that advantage a
+  property of the scale process, or an artifact of an unequal hyperparameter
+  tuning budget?
+
+why_existing_evidence_is_insufficient: >
+  Three reasons, established by reading the generator
+  (scripts/research_windows_replication.py) rather than the stored CSV.
+  (1) BUDGET ASYMMETRY. _grid() gives fixed-tau clip a joint 2-D grid over
+  (lr x tau) = 10 x 7 = 70 configurations on window 1, and gives SN-OMD a 1-D grid over
+  lr alone = 10 configurations, with the cap M pinned at 5. The pinned value came from a
+  separate sweep (results/research/jane_msweep.csv) run at a single fixed lr=0.5, never
+  jointly with the lr actually used here. This is a fairness defect in the baseline's
+  favour: a hyperparameter of the proposal is left at a default while the baseline's
+  structural analogue is tuned.
+  (2) THE TWO METHODS ARE THE SAME ALGORITHM. Read off research_baselines.py and
+  research_batched_check._step, the update magnitude is
+  fixed-tau clip = (lr/sqrt(k)) * min(norm(g_t), tau), and
+  SN-OMD cap M   = (lr/sqrt(k)) * min(norm(g_t)/s_t, M).
+  So SN-OMD with a CONSTANT scale s_t = s0 and cap M is algebraically identical to
+  fixed-tau clip with tau = M*s0 and lr' = lr/s0. The family differs in exactly one
+  place: whether the clip threshold is constant or tracks a predictable scale. That
+  makes the comparison meaningful only at matched budget over (lr, threshold).
+  (3) SELECTION WINDOW IS POOLED INTO THE REPORTED MEAN. The published protocol tunes on
+  window 1 and then reports the mean over all ten windows including window 1. Per-row,
+  SN-OMD WINS window 1 (0.2846 vs 0.2463) and loses all nine held-out windows
+  (0.1237 vs 0.2020) -- a selection-overfitting signature the pooled mean hides.
+
+# ---------------------------------------------------------------------------
+hypothesis_H1: >
+  The constant-scale advantage on held-out windows is substantially an artifact of the
+  unequal tuning budget. Giving SN-OMD a joint (lr x M) grid of the same cardinality (70)
+  that fixed-tau clip receives over (lr x tau) closes at least half of the held-out gap.
+
+null_H0: >
+  Budget equalization leaves the held-out gap essentially unchanged: the constant scale
+  beats the tracked scale for reasons other than tuning budget.
+
+estimand:
+  primary: >
+    delta_matched = mean over held-out windows w=2..10 of
+    [ R2(fixed-tau clip, w) - R2(SN-OMD joint-tuned over (lr,M), w) ],
+    per-row protocol, hyperparameters frozen from window 1.
+  reference: >
+    delta_published = the same quantity with SN-OMD tuned as published (lr only, M=5),
+    MEASURED IN THIS RUN rather than read from the stored CSV.
+  derived: fraction_closed = (delta_published - delta_matched) / delta_published
+  secondary:
+    - per-step protocol, same quantities
+    - count of held-out windows on which fixed-tau clip beats each SN-OMD arm
+    - window-1 (in-sample) R2 per arm, reported separately, never pooled into the primary
+    - selected (lr, M) and (lr, tau), with an explicit grid-boundary check
+
+practical_significance_threshold:
+  H1_survives: fraction_closed >= 0.50
+  H1_falsified: fraction_closed <= 0.25
+  inconclusive: 0.25 < fraction_closed < 0.50
+  rationale: >
+    A budget artifact that explains less than a quarter of the gap does not account for
+    the phenomenon. One that explains more than half means the published comparison
+    cannot support a claim about scale processes at all. The middle band is reported as
+    inconclusive, not rounded to whichever verdict is more convenient.
+
+falsification_condition: >
+  H1 is FALSIFIED if fraction_closed <= 0.25, i.e. fixed-tau clip still beats the
+  budget-matched SN-OMD by more than three quarters of the currently reported held-out
+  gap. That outcome establishes the constant-scale advantage as robust to tuning budget
+  and is a direct problem for the premise the method is built on. It will be reported as
+  such, not reframed.
+
+# ---------------------------------------------------------------------------
+design:
+  experimental_unit: one time window (n=9 held-out; window 1 reserved for selection)
+  pairing: paired by window -- all arms see identical rows in identical order
+  selection_split:
+    selection: window 1 = date[0,120)
+    evaluation: windows 2-10, disjoint 120-day windows with 30-day gaps
+  note_on_published_protocol: >
+    The published protocol reports the mean over all ten windows, including the selection
+    window. Both are reported here; the held-out mean is primary.
+
+  arms:
+    - id: A1_fixedtau_2d
+      method: fixed-tau clip
+      grid: lr in LRS_SF (10) x tau in TAUS (7) = 70
+      role: baseline, reproduces published tuning exactly
+    - id: A2_snomd_1d_published
+      method: SN-OMD, cap pinned M=5
+      grid: lr in LRS_SF (10) = 10
+      role: reproduces published proposal tuning exactly
+    - id: A3_snomd_2d_matched
+      method: SN-OMD, cap tuned
+      grid: lr in LRS_SF (10) x M in M_GRID (7) = 70
+      role: budget-matched proposal -- the intervention
+
+  grids:
+    LRS_SF: [0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
+    TAUS: [2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 300.0]
+    M_GRID: [0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 100.0]
+  m_grid_justification: >
+    Spans the published msweep support {0.5,1,2,5,10,30} and extends to 100 so the
+    uncapped limit is approached from inside the grid. Cardinality is set equal to
+    len(TAUS) so the two arms receive identical configuration counts, which is the point.
+
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+  selection_criterion: highest window-1 weighted R2, identical rule for every arm
+
+# ---------------------------------------------------------------------------
+analysis_plan:
+  - Reproduce A1 and A2 and compare against results/research/windows_replication.csv.
+  - Report delta_published, delta_matched, fraction_closed, and the registered verdict.
+  - Paired analysis over the 9 held-out windows - mean paired difference, standard error,
+    percentile bootstrap CI over windows (10000 resamples, seed 20260823), and an exact
+    two-sided sign test. n=9 is small and the CI will be wide; this is stated, not hidden.
+  - Report window-1 in-sample R2 separately for every arm.
+  - Grid-boundary check on every selected hyperparameter.
+
+reproduction_gate: >
+  If the reproduced A1 or A2 held-out mean differs from the stored CSV by more than 0.005
+  weighted R2, HALT and report a reproduction failure instead of proceeding. Matching a
+  stored artifact proves internal consistency, not correctness
+  (audit/ICLR2027_SUMMARY.md, "Methodological note"); failing to match proves something
+  is wrong and must not be worked around.
+
+seed_policy: >
+  Every algorithm here is deterministic given (data slice, hyperparameters) -- no seeds.
+  Data slices are fixed by date range and row cap. The only stochastic component is the
+  window bootstrap, seeded at 20260823.
+
+stopping_rule: >
+  A single pass over the registered grids. No adaptive extension, no early stopping, no
+  re-running with a modified grid after seeing results. If a selected hyperparameter lands
+  on a grid boundary, that is reported as grid inadequacy; any widened re-run is a
+  separate, explicitly post-hoc analysis and is labelled as such in the results.
+
+compute_budget:
+  window1_tuning_runs: 300
+  evaluation_runs: 60
+  measured_cost_per_run: ~2.0s per-row, ~0.4s per-step, ~0.8s per window load
+  estimated_wallclock: ~10 minutes, single process, foreground
+
+# ---------------------------------------------------------------------------
+decisions_that_follow:
+  if_H1_survives: >
+    The published ten-window comparison cannot support a claim about constant vs tracked
+    scales; it is confounded with tuning budget. The tracker claim must be downgraded and
+    the ten-window table re-run at matched budget before any manuscript use. Does NOT
+    establish that the tracked scale is better -- only that existing evidence does not
+    show it worse.
+  if_H1_falsified: >
+    The constant-scale advantage is real and survives matched tuning. C10/Q6 becomes the
+    central open problem of the project rather than a footnote, and the mechanism question
+    (why a constant threshold beats a tracked one under drift) is the next direction.
+  if_inconclusive: >
+    Report the partial effect with its CI, register the residual gap as unexplained, and
+    do not claim either verdict.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method is deleted, no control is removed, no
+  statistical language is weakened. Prior artifacts are preserved: this run writes to new
+  filenames under results/research/c10/ and overwrites nothing.
+---
+# ===========================================================================
+# SECOND PREREGISTRATION -- direction C10M (mechanism probe), 2026-08-23
+# ===========================================================================
+direction: C10M
+parent_direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: cb6b17c
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  THIS HYPOTHESIS WAS GENERATED AFTER SEEING THE C10/Q6 RESULT. It is preregistered
+  before its own execution, but it is not independent of the data that motivated it: the
+  observation that the budget-matched winner (lr=3, M=2) uses a TIGHTER cap at a HIGHER
+  rate than the published setting (lr=2, M=5) came from the C10 run. Nothing here can be
+  treated as independent confirmation of C10. It is a new question about mechanism, asked
+  of the same data.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  The cap M enters the update only through step magnitude
+  (lr/sqrt(k)) * min(r_t, M), where r_t = norm(g_t)/s_{t-1} is the gradient norm in units
+  of the predictable tracked scale. The clip BINDS when r_t > M. Two readings of why the
+  matched configuration transfers across windows and the published one does not:
+  (a) EFFECTIVE MAX STEP -- the cap's only role is to bound the step at lr*M/sqrt(k), so
+      performance depends on (lr, M) only through the product P = lr*M. Published P = 10,
+      matched P = 6: the matched setting truncates harder while moving faster on ordinary
+      steps.
+  (b) BINDING FREQUENCY -- what matters is how often the clip binds, i.e. what fraction of
+      steps are routed through the scale-free branch (magnitude exactly lr*M/sqrt(k),
+      immune to tracker error) rather than the scale-normalized branch (magnitude
+      lr*r_t/sqrt(k), which inherits the tracker's estimation error).
+  These are different mechanisms and they make different predictions.
+
+why_existing_evidence_is_insufficient: >
+  C10 evaluated exactly one (lr, M) configuration per arm on held-out windows. It
+  establishes that the matched configuration transfers better; it says nothing about which
+  property of that configuration is responsible, because a single point cannot separate
+  P = lr*M from the binding rate, from lr alone, or from M alone. No clip-binding
+  statistic has ever been recorded by any script in this repository.
+
+# ---------------------------------------------------------------------------
+hypothesis_H2: >
+  PRODUCT SUFFICIENCY. Held-out mean R2 is a function of the effective maximum step
+  P = lr*M alone; conditional on P, the individual values of lr and M do not matter.
+
+hypothesis_H3: >
+  BINDING-RATE MEDIATION. The clip-binding rate b (fraction of steps with r_t > M) is a
+  better single-scalar summary of held-out performance than P is.
+
+null_H0: >
+  Neither P nor b summarizes the surface: held-out performance depends on lr and M
+  separately and no single scalar of the registered candidates dominates.
+
+estimand:
+  primary: >
+    eta2_P = fraction of between-configuration variance in held-out mean R2 explained by
+    exact iso-P grouping (P = lr*M), computed on the dyadic grid where P has exact ties.
+  secondary:
+    - "rho2 = squared Spearman correlation between held-out mean R2 and each candidate
+      scalar summary (log P, binding rate b, log lr, log M). The best mediator is the
+      candidate with the largest rho2."
+    - per-window and per-configuration binding rate b, and quantiles of r_t
+      (p50, p90, p99, max), recorded for every configuration and window.
+    - mean and maximum per-step displacement norm.
+    - the same statistics for the two anchor configurations (published lr=2,M=5 and
+      matched lr=3,M=2), which are evaluated alongside the grid but excluded from the
+      variance analysis because they are not on it.
+
+practical_significance_threshold:
+  H2_survives: eta2_P >= 0.80
+  H2_falsified: eta2_P <= 0.50
+  H2_inconclusive: 0.50 < eta2_P < 0.80
+  H3_survives: rho2_b - rho2_logP >= 0.05
+  H3_falsified: rho2_b - rho2_logP <= -0.05
+  H3_inconclusive: absolute difference < 0.05 -- the two are not distinguishable here
+  rationale: >
+    eta2_P is the natural sufficiency statistic: if P were fully sufficient it would
+    explain all reproducible between-configuration variance. 0.80 leaves room for
+    measurement noise across nine windows; below 0.50 the product plainly is not the
+    controlling quantity. The H3 margin of 0.05 in rho2 is set so that a difference
+    smaller than typical sampling noise on 30 configurations is not called a winner.
+
+falsification_condition: >
+  H2 is FALSIFIED if eta2_P <= 0.50, i.e. configurations sharing an effective maximum step
+  perform substantially differently -- the cap then does something beyond bounding the
+  step. H3 is FALSIFIED if rho2_b is at least 0.05 BELOW rho2_logP, i.e. binding frequency
+  is the worse summary. Both may be falsified simultaneously; that outcome supports H0 and
+  will be reported as "no registered scalar explains the surface".
+
+# ---------------------------------------------------------------------------
+design:
+  experimental_unit: one (configuration, window) pair; held-out windows 2-10, n=9
+  no_selection_step: >
+    Every configuration is evaluated directly on every window. Nothing is tuned here, so
+    there is no selection-overfitting concern -- and equally, NO CONFIGURATION FOUND HERE
+    MAY BE REPORTED AS A RECOMMENDED SETTING, because choosing it would be selection on
+    evaluation data. This run maps a surface; it does not pick a point on it.
+  grids:
+    LR_DYADIC: [0.5, 1.0, 2.0, 4.0, 8.0]
+    M_DYADIC: [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+    anchors: [{lr: 2.0, M: 5.0, label: published}, {lr: 3.0, M: 2.0, label: matched}]
+  grid_justification: >
+    Dyadic so that P = lr*M takes exact repeated values along anti-diagonals, giving iso-P
+    groups with exact ties. Without exact ties eta2_P would require binning, and the bin
+    width would become a researcher degree of freedom.
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+  divergence_handling: >
+    Primary analysis uses configurations that do not diverge on any window, by the
+    inherited _diverged definition; the excluded count is reported. Secondary analysis
+    includes all configurations with held-out R2 floored at -1.0. Both are reported; the
+    primary is the non-diverged subset.
+
+instrumentation_validity_gate: >
+  The binding statistics require an instrumented copy of the snomd update. Before any
+  result is computed, the instrumented runner must reproduce the shared harness
+  (research_batched_check._step via anchor_perrow/anchor_batched) to within 1e-9 weighted
+  R2 on at least four (lr, M) configurations in both protocols. If it does not, HALT and
+  report an instrumentation failure. An instrumented reimplementation that silently
+  differs from the measured algorithm would invalidate every number in this run.
+
+analysis_plan:
+  - Validate the instrumented runner against the shared harness (gate above).
+  - Evaluate the dyadic grid and both anchors on all ten windows, both protocols,
+    recording R2 plus binding rate, r_t quantiles, and displacement statistics.
+  - Compute eta2_P by exact iso-P grouping on held-out mean R2; report the registered
+    H2 verdict.
+  - Compute rho2 for log P, b, log lr, log M; report the registered H3 verdict and the
+    ranking of all four.
+  - Report the anchors' binding rates and r_t quantiles descriptively, separately from
+    the variance analysis.
+
+seed_policy: >
+  Deterministic given (data slice, lr, M) -- no seeds. No bootstrap is registered for this
+  probe; uncertainty is reported as the across-window spread of per-window statistics.
+
+stopping_rule: >
+  A single pass over the registered grid and anchors. No adaptive extension. If the
+  surface's optimum sits on a grid edge, that is reported as grid inadequacy and NOT
+  followed by a widened re-run within this session.
+
+compute_budget:
+  configurations: 32   # 30 dyadic + 2 anchors
+  runs: 640            # 32 configs x 10 windows x 2 protocols
+  measured_cost_per_run: ~2.0s per-row instrumented, ~0.4s per-step, ~0.8s per window load
+  estimated_wallclock: ~20 minutes, single process, foreground
+
+decisions_that_follow:
+  if_H2_survives: >
+    The cap is redundant with the learning rate up to their product; the method has one
+    effective hyperparameter, not two, and the paper's framing of M as interpolating
+    between normalized-GD and scale-adaptive OGD needs re-examination on that basis.
+  if_H3_survives: >
+    Binding frequency is the controlling quantity, which supports the reading that the
+    tracked scale helps only insofar as the clip routes steps around its estimation error.
+    That is a mechanism the paper does not currently state.
+  if_both_falsified: >
+    Report that no registered scalar summarizes the surface, and that the (lr, M)
+    interaction is genuinely two-dimensional. Register the mechanism as unexplained.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. Prior
+  artifacts preserved: this run writes only to results/research/c10m/.
+---
+# ===========================================================================
+# THIRD PREREGISTRATION -- direction C10S (locate the stability threshold)
+# ===========================================================================
+direction: C10S
+parent_direction: C10M
+branch: research/c10-q6
+registered_at_commit: cb3d7ed
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  Follows the EXPLORATORY, unregistered observation logged as ledger C-7: on the C10M
+  dyadic grid, per-row divergence separated perfectly on the effective maximum step
+  P = lr*M (20/20 stable at P <= 8, 10/10 divergent at P >= 16). That observation was
+  generated from data, not registered. This direction registers it as a hypothesis and
+  tests it on configurations C10M never evaluated. It is a confirmation attempt on new
+  points, not a re-analysis of the same ones -- but the hypothesis still originated in the
+  data, and a positive result is weaker evidence than if it had been registered first.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  Is divergence governed by the effective maximum step P = lr*M alone, and if so, where
+  exactly is the threshold P*?
+
+why_existing_evidence_is_insufficient: >
+  C10M's dyadic grid brackets the per-row threshold only to (8, 16] -- a factor of two --
+  and confounds P with the (lr, M) split, because each iso-P anti-diagonal contains a
+  fixed small set of splits. More seriously, configurations sharing a P can have very
+  different TYPICAL steps: the step is (lr/sqrt(k))*min(r_t, M) with r_t = ||g_t||/s_{t-1},
+  so at P=16 the split (lr=32, M=0.5) clips 57% of steps while (lr=1, M=16) clips 0.1% and
+  takes typical steps ~30x smaller. If divergence still turns at the same P across such
+  splits, the maximum step really is the controlling quantity. If it does not, P is the
+  wrong parameterization and C-7 was an artifact of the dyadic grid's limited splits.
+
+# ---------------------------------------------------------------------------
+hypothesis_H4: >
+  P-SUFFICIENCY FOR STABILITY. There is a single threshold P* such that, along every ray
+  through (lr, M) space, configurations with P below P* are stable on all ten windows and
+  configurations above it diverge on at least one. Operationally, the per-ray thresholds
+  agree to within a factor of 1.25.
+
+null_H0: >
+  The divergence boundary depends on lr and M separately, not on their product: the per-ray
+  thresholds differ by a factor of 2 or more, and C-7 reflects the dyadic grid's limited
+  set of (lr, M) splits rather than a property of P.
+
+estimand:
+  primary: >
+    spread = max_over_rays(P*_M) / min_over_rays(P*_M), where P*_M is the bisection
+    threshold on the ray with cap M held fixed and lr = P/M. Per-row protocol.
+  point_estimate: >
+    P*_hat = geometric mean of the per-ray thresholds, reported with the per-ray bracket
+    endpoints (each bracket resolved to a factor of about 1.044).
+  secondary:
+    - per-step protocol, same quantities
+    - per-ray thresholds tabulated against M, to expose any systematic trend
+    - fraction of the ten windows that diverge at each visited P, not only the any-window
+      indicator, so the boundary's sharpness in windows is visible
+
+practical_significance_threshold:
+  H4_survives: spread <= 1.25
+  H4_falsified: spread >= 2.00
+  H4_inconclusive: 1.25 < spread < 2.00
+  rationale: >
+    C10M resolved the threshold only to a factor of 2, so a spread at or above 2 means this
+    scan has learned nothing C10M did not already imply and P is not pinning the boundary.
+    A spread within 1.25 across rays whose typical step sizes differ by more than an order
+    of magnitude would be a strong statement that the maximum step is what matters.
+
+falsification_condition: >
+  H4 is FALSIFIED if spread >= 2.00, i.e. the divergence boundary sits at materially
+  different P on different rays. That outcome retires C-7 as a grid artifact and means the
+  cap and the rate act on stability separately. It will be reported as such.
+
+# ---------------------------------------------------------------------------
+design:
+  rays: >
+    Six rays, each with the cap M held fixed and the rate set to lr = P/M, so that moving
+    along a ray changes P while holding the clip threshold constant. This is the design
+    choice that breaks the P/(lr,M) confound: at a given P the six rays differ in typical
+    step size by more than an order of magnitude.
+  M_RAYS: [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+  P_bracket: [6.0, 24.0]
+  bracket_justification: >
+    C10M places the per-row threshold in (8, 16]. The bracket is widened to [6, 24] so that
+    both endpoints are expected to be decided (6 stable, 24 divergent) on every ray, which
+    is what makes the endpoint check a real test rather than an assumption.
+
+  search: >
+    Deterministic log-space bisection, fully specified in advance so the procedure is not
+    an adaptive researcher degree of freedom. Evaluate both endpoints first. If both are
+    stable the ray is right-censored (P* > 24); if both divergent, left-censored (P* < 6);
+    either way the ray stops and is excluded from the spread statistic. Otherwise perform
+    exactly 5 bisections at P_mid = sqrt(P_lo * P_hi), moving P_hi down on divergence and
+    P_lo up on stability. Final bracket width is a factor of 4^(1/32) = 1.044; the ray
+    threshold P*_M is reported as sqrt(P_lo * P_hi) of the final bracket.
+  evaluations_per_ray: 7
+  censoring_rule: >
+    Censored rays are excluded from the spread statistic and reported explicitly. If two or
+    more of the six rays are censored, the spread statistic is declared uninformative and
+    no H4 verdict is issued.
+
+  monotonicity_validity_check: >
+    Bisection presupposes that divergence is monotone in P along a ray. This is checked,
+    not assumed: every stable P visited on a ray must be strictly below every divergent P
+    visited on that ray. A violation invalidates the bisection for that ray, and the ray is
+    reported as non-monotone and excluded from the spread statistic rather than having its
+    threshold quoted.
+
+  divergence_criterion: >
+    The inherited _diverged from research_windows_replication, unchanged, applied per
+    window; a configuration counts as divergent if it diverges on at least one of the ten
+    windows. This is exactly the rule that produced C-7, so the two are comparable.
+  windows: all ten, preloaded once (~1.0 GB, against 5.2 GB available)
+  rows_per_window: 150000
+  protocols: [per-row, per-step]
+  primary_protocol: per-row
+
+analysis_plan:
+  - Run the bisection independently for each protocol; the two searches may visit different
+    points and that is expected.
+  - Apply the monotonicity check to every ray before any threshold is quoted.
+  - Report per-ray thresholds and brackets, the spread statistic, and the registered
+    H4 verdict.
+  - Report P*_hat as the geometric mean over uncensored, monotone rays.
+  - Tabulate per-ray threshold against M so a systematic trend is visible. ANY alternative
+    parameterization suggested by such a trend is post hoc and must be labelled as such;
+    it may be proposed but not tested on this data.
+
+seed_policy: deterministic given (data slice, lr, M) -- no seeds, no bootstrap.
+
+stopping_rule: >
+  Exactly 7 evaluations per ray per protocol, fixed in advance. No extra refinement after
+  seeing the answer, no widening of [6, 24], no additional rays. If the result is
+  inconclusive it is reported inconclusive.
+
+compute_budget:
+  configurations: 84   # 6 rays x 7 evaluations x 2 protocols
+  runs: 840            # x 10 windows
+  measured_cost_per_run: ~2.0s per-row, ~0.4s per-step
+  estimated_wallclock: ~17 minutes, single process; will exceed the 600s foreground cap
+
+scope_limits: >
+  The threshold is measured at 150000 rows per window on the Jane stream with the existing
+  standardization. The step is (lr/sqrt(k))*min(r_t, M), so the horizon enters through k
+  and a different row cap could move P*. Nothing here speaks to other datasets.
+
+decisions_that_follow:
+  if_H4_survives: >
+    C-7 is promoted from exploratory to supported, with a numeric threshold. The cap is a
+    stability parameter acting through lr*M, and thm:stability -- which bounds iterates
+    under a capped normalized step -- acquires a concrete empirical prediction to be checked
+    against: whether its constant reproduces P*.
+  if_H4_falsified: >
+    C-7 is retired as an artifact of the dyadic grid's limited (lr, M) splits. The cap and
+    the rate act on stability separately, and the mechanism question returns to open with
+    one fewer candidate.
+  if_inconclusive: >
+    Report the per-ray thresholds and the spread with no verdict. Do not re-run with a
+    different bracket or more rays inside this session.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration from this run may be reported as a recommended setting: this maps a
+  stability boundary and performs no selection. Writes confined to results/research/c10s/.
+---
+# ===========================================================================
+# FOURTH PREREGISTRATION -- direction C10R (realized max step, held-out test)
+# ===========================================================================
+direction: C10R
+parent_direction: C10S
+branch: research/c10-q6
+registered_at_commit: c59af35
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  Ledger C-8 was generated from the C10S residual on Jane: the per-step thresholds P* rose
+  monotonically with M (7.29 -> 17.34 across M = 0.5 -> 16), which the NOMINAL maximum step
+  P = lr*M does not predict but a REALIZED maximum step lr*min(r_q, M) would. C10S's
+  registration states that any such proposal "may be proposed but not tested on this data".
+  This registration honours that: Jane is used only to FIT the free parameter, and the test
+  is on a stream that did not generate the hypothesis.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  P = lr*M is the maximum step the update could take, but it is attained only when the clip
+  binds, which for large M is rare. Does the REALIZED maximum step,
+  R = lr * min(r_q, M) where r_q is a high quantile of the gradient-to-scale ratio
+  r_t = norm(g_t)/s_{t-1}, locate the divergence boundary better than P does?
+
+why_existing_evidence_is_insufficient: >
+  C10S measured the boundary on Jane and found P compresses a 32x variation in M and a
+  23.6x variation in the critical rate into a 1.68x variation in P* -- good, but short of
+  the registered 1.25 sufficiency tolerance, with a systematic residual (per-step P* rising
+  monotonically in M). C-8 was invented to explain that residual, so Jane cannot test it:
+  any parameterization invented to fit a residual will fit that residual.
+
+# ---------------------------------------------------------------------------
+hypothesis_H5: >
+  On a stream that did not generate the hypothesis, the realized maximum step collapses the
+  per-ray divergence thresholds substantially better than the nominal maximum step does.
+
+null_H0: >
+  The realized maximum step is no better than the nominal one on held-out data: C-8 is a
+  post-hoc rationalization of a Jane-specific residual.
+
+# ---------------------------------------------------------------------------
+design:
+  two_stage: >
+    STAGE 1 (FIT, on Jane -- the generating data). The free parameter is the quantile level
+    q. Choose q* = argmin over the registered grid of the spread of
+    R*_M = (P*_M / M) * min(r_q, M), using the C10S per-row thresholds P*_M and Jane's
+    reference r-quantiles. No new Jane runs; this is a re-analysis of committed artifacts and
+    is NOT a test.
+    STAGE 2 (TEST, on crypto -- held out). Repeat the C10S bisection on the BTC/USDT stream,
+    measure that stream's own reference r-quantiles, and evaluate R with q* FROZEN from
+    stage 1. The comparison of spread_R against spread_P on crypto is the test.
+
+  q_grid: [p50, p90, p99, max]
+  q_grid_justification: >
+    These are the quantiles already recorded per configuration and window by
+    research_c10m_binding.py, so stage 1 requires no re-run and cannot be tuned by choosing
+    a convenient quantile after the fact. None is degenerate a priori: Jane's r_p99 is
+    around 5-6 against rays spanning M = 0.5 to 16, so min(r_q, M) is a non-trivial
+    transformation somewhere in the range for every candidate.
+
+  reference_r_measurement: >
+    r_t is recorded PRE-clip by the instrumented runner, so values above M are still
+    observed. The reference configuration is (lr=0.5, M=8): comfortably inside the stable
+    region and binding only ~0.3% of steps on Jane, so the trajectory -- and hence the r
+    distribution -- is barely distorted by clipping. Quantiles are pooled across the ten
+    windows. Registered fallback ladder if the reference diverges on any window:
+    (0.5, 8) -> (0.2, 8) -> (0.1, 8); the fallback actually used is reported.
+
+  heldout_stream:
+    name: Binance BTC/USDT 1h (research_crypto_mechanism.load_features)
+    n: 76888 bars, 2017-09-15 to 2025-03-11, 13 features
+    windows: ten disjoint 6000-bar windows with gaps, exactly as research_crypto_algorithms
+    target_rescale: >
+      y divided by its global standard deviation, as that script already does. This is a
+      CONSTANT rescale: it leaves R2 unchanged and preserves the volatility drift, and only
+      calibrates the loss scale so a Jane-calibrated learning rate is meaningful. Adopted
+      unchanged rather than re-derived.
+
+  M_RAYS: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]
+  P_bracket: [0.5, 128.0]
+  n_bisect: 10
+  bracket_justification: >
+    Deliberately far wider than Jane's [6, 24] because the crypto threshold is unknown and
+    narrowing it would require looking at the test data first. Ten bisections resolve each
+    ray to a factor of 256^(1/1024) = 1.0054.
+  protocol: per-row only (the crypto harness has no per-step group structure)
+
+  divergence_criterion:
+    primary: >
+      The crypto script's own rule, peak rolling loss > 1e3, adopted unchanged. It was
+      calibrated for this stream by prior work, so adopting it avoids choosing a threshold
+      after seeing results.
+    secondary: >
+      Jane's _diverged (peak > 50 or R2 <= -1), reported alongside as a sensitivity. BOTH
+      are reported whatever they show; the primary is fixed in advance so a disagreement
+      cannot be resolved by preference.
+
+  guards: >
+    The C10S censoring and monotonicity guards apply unchanged. Rays whose bracket endpoints
+    are both stable or both divergent are censored and excluded; two or more censored rays
+    void the spread statistic. Every stable P visited must fall strictly below every
+    divergent P visited on that ray, or the ray is excluded as non-monotone.
+
+# ---------------------------------------------------------------------------
+estimand:
+  primary: ratio = spread_R / spread_P on the held-out crypto stream, where spread_X = max_over_rays(X*) / min_over_rays(X*)
+  secondary:
+    - spread of the pure-rate parameterization lr* = P*/M on crypto, as a reference point
+      for how much any product-like parameterization is buying
+    - stage-1 Jane spreads for every q in the grid, so the fit is visible and not just its
+      argmin
+    - per-ray thresholds and brackets on crypto under both divergence criteria
+
+practical_significance_threshold:
+  H5_survives: ratio <= 0.769      # spread_R at most spread_P / 1.3
+  H5_falsified: ratio >= 1.00      # no improvement, or worse
+  H5_inconclusive: 0.769 < ratio < 1.00
+  rationale: >
+    R has a fitted free parameter and P has none, so R must clear a margin rather than merely
+    tie to be preferred. A 30% reduction in spread is the smallest improvement that would
+    justify a more complicated parameterization carrying a fitted constant.
+
+falsification_condition: >
+  H5 is FALSIFIED if ratio >= 1.00 on crypto: the realized maximum step is then no better
+  than the nominal one on data that did not generate it, and C-8 is a post-hoc
+  rationalization of a Jane-specific residual. This will be reported as such and C-8 retired.
+
+stage1_degeneracy_rule: >
+  If no q in the grid reduces the Jane spread below the spread of P itself, then C-8 fails
+  on its own generating data. That is recorded explicitly, and stage 2 still runs with the
+  argmin q* -- the best available candidate -- so the held-out result is reported either way
+  rather than the direction being quietly abandoned at the point it looks bad.
+
+analysis_plan:
+  - Stage 1: report the Jane spread for every q in the grid and the resulting q*.
+  - Stage 2: bisect all eight crypto rays; apply both guards before quoting any threshold.
+  - Report spread_P, spread_R, ratio, and the registered H5 verdict, under the primary
+    divergence criterion; repeat under the secondary as a sensitivity.
+  - Report the pure-rate spread for context.
+
+seed_policy: deterministic given (stream, lr, M) -- no seeds, no bootstrap.
+
+stopping_rule: >
+  One pass. The q grid is fixed at four levels and is not extended after seeing stage 1. The
+  crypto bracket and ray set are not adjusted after seeing stage 2. If the result is
+  inconclusive it is reported inconclusive.
+
+compute_budget:
+  crypto_runs: 960          # 8 rays x up to 12 evaluations x 10 windows
+  measured_cost_per_run: 0.078s on a 6000-bar window
+  estimated_wallclock: ~2 minutes, single process, foreground
+
+scope_limits: >
+  One held-out stream. Crypto hourly returns are close to unpredictable (best fixed linear
+  R2 ~ 0.002), so this tests the STABILITY boundary only and says nothing about accuracy.
+  Thresholds remain horizon-specific and window-length-specific.
+
+decisions_that_follow:
+  if_H5_survives: >
+    C-8 is promoted: the realized maximum step is the better stability parameterization, and
+    the residual C10S found has a mechanism. The cap then matters through how often it
+    actually binds, which partly rehabilitates the binding-frequency reading that C10M could
+    not support directly.
+  if_H5_falsified: >
+    C-8 is retired. P remains the best available single parameterization despite its
+    residual, and the residual stays unexplained rather than being explained by a quantity
+    that does not transfer.
+  if_inconclusive: >
+    Report the ratio with no verdict. Do not re-fit q, do not add rays, do not switch the
+    divergence criterion to whichever gives a cleaner answer.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration is reported as a recommended setting. Writes confined to
+  results/research/c10r/.
+---
+# ===========================================================================
+# FIFTH PREREGISTRATION -- direction C10T (clean test of C-8, synthetic suite)
+# ===========================================================================
+direction: C10T
+parent_direction: C10R
+branch: research/c10-q6
+registered_at_commit: 6b2c9e5
+status: REGISTERED_BEFORE_EXECUTION
+
+provenance_disclosure: >
+  This is the clean test of C-8 that C10R failed to deliver. Two contaminations are already
+  spent and are disclosed rather than worked around.
+  (1) The frozen quantile level q* = p99 was NOT chosen by a preregistered fit. It was the
+  argmin of a POST-HOC computation in C10R, run on Jane per-step after the registered
+  per-row fit came back degenerate. It is still a fit on the generating stream, which is
+  what the design allows, but it was not blind.
+  (2) Jane generated C-8 and crypto's answer has been seen, so neither can serve as the test
+  stream again. The synthetic suite has never been touched by this line of work; it is the
+  only uncontaminated stream left, and after this run there will be none.
+  Nothing about the synthetic streams below has been inspected before registration.
+
+# ---------------------------------------------------------------------------
+scientific_question: >
+  Does the realized maximum step R = lr * min(r_q, M) locate the divergence boundary better
+  than the nominal P = lr*M, on a stream that played no part in generating the hypothesis?
+
+why_existing_evidence_is_insufficient: >
+  C10R's registered test was vacuous: its stage-1 fit selected q = max, Jane's r_max exceeds
+  every M on the grid, so R was identically equal to P and the ratio was 1.0000 by
+  construction. The favourable crypto ratios (0.433 at p99, 0.730 at p90) were computed post
+  hoc using crypto's own quantiles on crypto's own thresholds -- fitted and evaluated on the
+  same data. C-8 is therefore untested in both directions.
+
+# ---------------------------------------------------------------------------
+hypothesis_H6: >
+  With q frozen at p99, the realized maximum step collapses the per-ray divergence
+  thresholds substantially better than the nominal one on synthetic streams.
+
+hypothesis_H7: >
+  If C-8 is a general mechanism rather than a stream-specific coincidence, it holds across
+  tail regimes: the ratio clears the survival threshold at all three tail indices, not only
+  the primary one.
+
+null_H0: >
+  The realized maximum step is no better than the nominal one on an uncontaminated stream.
+  C-8 is then a post-hoc rationalization and is retired.
+
+# ---------------------------------------------------------------------------
+design:
+  stream: >
+    The repository's own synthetic generator (scripts/research_synthetic.py), reused at its
+    canonical settings rather than re-chosen: d=5, T=20000, sigma=1.0, x ~ N(0, I_d),
+    y_t = <u, x_t> + eps_t with eps_t symmetric Student-t of tail index p, static unit-norm
+    comparator u. Data-free, so a reviewer can reproduce it exactly, which the Jane numbers
+    are not.
+  window_analogue: >
+    Ten INDEPENDENT replicate streams, seeds 1000..1009, each drawing its own u, X and eps.
+    These play the role the ten time windows play on Jane and crypto. They are genuinely
+    independent rather than disjoint slices of one record, which is a strengthening.
+  tail_indices:
+    primary: 1.5
+    secondary: [1.3, 2.0]
+    justification: >
+      Exactly the three values the repository's synthetic suite already uses; 1.5 is its
+      default for the dynamic experiment. Chosen by prior work, not by me, and fixed before
+      any threshold is measured.
+
+  M_RAYS: [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]
+  P_bracket: [0.5, 128.0]
+  n_bisect: 10
+  protocol: per-row only
+  q_frozen: p99
+
+  algorithm: >
+    The same anchor_perrow harness used on Jane and crypto, driven with unit weights so the
+    gradient 2*(<w,x>-y)*x matches the synthetic suite's loss exactly. Using one
+    implementation across all three streams is deliberate: it removes the algorithm as a
+    source of cross-stream difference.
+
+  divergence_criterion:
+    primary: >
+      STATE-BASED, chosen on stability grounds as C10R's postmortem requires, and defined
+      before any synthetic run: a configuration diverges on a stream if the iterate norm is
+      non-finite at any step, or max_t ||w_t|| > 1e8. This refers to the quantity
+      thm:stability actually bounds, involves no loss threshold, and needs no per-stream
+      calibration -- which is what made the two inherited criteria non-comparable (ledger
+      C-9). With standardized inputs a bounded run has ||w|| of order 1 to 1e2, so 1e8 is
+      unambiguous blow-up and is not a tuned boundary.
+    secondary: >
+      Jane's _diverged, reported alongside for comparability with C10S and C10R. Both are
+      reported whatever they show.
+
+  instrumentation_validity_gate: >
+    Tracking max ||w_t|| needs a runner that mirrors research_batched_check._step. Before any
+    threshold is computed it must reproduce anchor_perrow to within 1e-9 weighted R2 on at
+    least four (lr, M) configurations. If it does not, HALT. Same gate as C10M, which passed
+    bit-exactly.
+
+  guards: >
+    C10S censoring and monotonicity guards, unchanged. Two or more censored rays void the
+    spread statistic for that condition; a ray with a stable P above a divergent P is
+    excluded as non-monotone rather than quoted.
+
+# ---------------------------------------------------------------------------
+estimand:
+  primary: ratio = spread_R / spread_P at tail index 1.5 under the state-based criterion
+  secondary:
+    - the same ratio at tail indices 1.3 and 2.0
+    - the same ratios under the inherited Jane criterion
+    - spread of the pure-rate parameterization lr* = P*/M, as a reference point
+    - measured r_p99 per tail index, with the per-ray thresholds and brackets
+
+registered_sanity_expectation: >
+  Heavier tails should produce larger normalized-gradient spikes, so the measured reference
+  r_p99 should be ordered p=1.3 > p=1.5 > p=2.0. This is a check on whether the streams do
+  what the generator is supposed to do, NOT a hypothesis. If the ordering fails, the
+  interpretation of every ratio below is weakened and that is reported.
+
+practical_significance_threshold:
+  H6_survives: ratio <= 0.769
+  H6_falsified: ratio >= 1.00
+  H6_inconclusive: 0.769 < ratio < 1.00
+  H7_supported: all three tail indices clear 0.769
+  H7_falsified: the primary clears it but at least one secondary has ratio >= 1.00
+  rationale: >
+    Thresholds are carried over unchanged from C10R so the two runs are directly comparable
+    and the bar cannot be said to have moved after a vacuous result. R carries a fitted free
+    parameter and P carries none, so R must clear a margin rather than tie.
+
+falsification_condition: >
+  H6 is FALSIFIED if ratio >= 1.00 at tail index 1.5 under the state-based criterion. C-8 is
+  then retired: it would have failed on the only uncontaminated stream available, and the
+  favourable crypto numbers would stand exposed as self-fitting. This will be reported
+  plainly, and the direction closed rather than moved to a fourth stream.
+
+analysis_plan:
+  - Pass the instrumentation gate, or halt.
+  - Measure reference r-quantiles per tail index at (lr=0.5, M=8), fallback ladder as C10R.
+  - Check the registered sanity expectation on r_p99 ordering.
+  - Bisect all eight rays per tail index per criterion; apply both guards before quoting.
+  - Report spread_P, spread_R, spread_lr, ratio, and the H6/H7 verdicts.
+
+seed_policy: >
+  Streams are seeded 1000..1009 and fixed in advance. Given a stream and (lr, M) the run is
+  deterministic. No bootstrap.
+
+stopping_rule: >
+  One pass. q is not re-fitted. The ray set, bracket, tail indices and criteria are not
+  adjusted after seeing results. If the result is inconclusive it is reported inconclusive,
+  and no fourth stream is sought -- there is no uncontaminated one left.
+
+compute_budget:
+  runs: 2880   # 3 tails x 8 rays x up to 12 evaluations x 10 streams
+  measured_cost_per_run: 0.241s at T=20000, d=5
+  estimated_wallclock: ~12 minutes; exceeds the 600s foreground cap
+
+scope_limits: >
+  The synthetic stream is STATIONARY in scale: sigma is constant and the noise is i.i.d.
+  Student-t, so there is no scale drift and the predictable tracker has little to track. That
+  makes this a clean test of C-8's r-quantile mechanism but a narrow one -- it does not
+  reproduce the drifting-scale conditions of Jane or crypto, and a positive result here does
+  not establish that the mechanism survives drift.
+
+decisions_that_follow:
+  if_H6_survives: >
+    C-8 is promoted to supported on an uncontaminated, data-free, reviewer-reproducible
+    stream. The cap acts through the realized step, which means it matters through how often
+    it binds -- partially rehabilitating the binding-frequency reading C10M could not support.
+  if_H6_falsified: >
+    C-8 is retired. P stays the best available single parameterization despite its residual,
+    and the residual stays unexplained.
+  if_inconclusive: >
+    Report the ratio with no verdict and close the direction as unresolved. Do not re-fit,
+    do not switch criteria, do not seek another stream.
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No method deleted, no control removed. No
+  configuration reported as a recommended setting. Writes confined to results/research/c10t/.
+---
+# ===========================================================================
+# SIXTH REGISTRATION -- direction C10C (instrument construction, ledger C-10)
+# ===========================================================================
+direction: C10C
+parent_direction: C10T
+branch: research/c10-q6
+registered_at_commit: a4e5a9e
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+what_this_is_not: >
+  This is not a hypothesis test. It builds a measuring instrument and states, in advance, the
+  acceptance tests it must pass. The distinction matters because the failure mode here is not
+  a false positive -- it is tuning the instrument until it reproduces thresholds I already
+  know and like. Every acceptance test below is therefore a property of the INSTRUMENT
+  (invariance, sanity, robustness), and none references the value or location of any
+  threshold. No threshold search is run in this session.
+
+known_contamination: >
+  I already know the numbers a threshold search produced under the old criteria: Jane per-row
+  P* in [8.67, 14.58], crypto in [6.60, 37.95], synthetic void. A criterion that happened to
+  reproduce those would be indistinguishable from one fitted to them. That is why V1-V5 below
+  test the instrument and not its output, and why locating thresholds is deferred.
+
+# ---------------------------------------------------------------------------
+problem_statement: >
+  Ledger C-10. Two families of divergence criterion are in use and neither transfers.
+  (1) LOSS-BASED WITH ABSOLUTE THRESHOLDS. Jane's _diverged fires when peak rolling weighted
+      squared error exceeds 50 -- a number calibrated to Jane's standardized targets. On a
+      Student-t(1.5) stream the target has infinite variance and the statistic is ~34600 for
+      ANY predictor, including the zero predictor, so the rule fires on everything. Crypto's
+      rule uses 1e3 and fired on nothing, even at P=128.
+  (2) STATE-BASED. Iterate blow-up cannot happen for a capped method: the step is bounded by
+      (lr/sqrt(k))*M so ||w_T|| <= 2*lr*M*sqrt(T), which is exactly what thm:stability
+      guarantees. Any state threshold is either unreachable or fires only on the uncapped
+      endpoint.
+  A third non-comparability sits inside (1): _peak_rolling_loss uses a FIXED 2000-step window,
+  which is 1.3% of a Jane window, 33% of a crypto window, and 10% of a synthetic stream.
+
+# ---------------------------------------------------------------------------
+proposed_criterion: >
+  RELATIVE DIVERGENCE. Everything is measured against the best constant predictor on the SAME
+  window, so no per-stream constant appears.
+  Let c* = weighted mean of y (the best constant under weighted squared loss),
+  L_model = weighted MSE of the learner, L_ref = weighted MSE of c*,
+  Ppeak_model, Ppeak_ref = peak rolling weighted squared error of each, over a window of
+  max(100, floor(T/10)) steps -- a FRACTION of the stream, not a fixed count.
+  Then
+      diverged  <=>  (L_model / L_ref >= 2)  OR  (Ppeak_model / Ppeak_ref >= kappa)
+  with kappa = 10, and either ratio non-finite counting as divergence.
+  Reading: the learner is divergent if it is at least twice as bad as doing nothing overall,
+  or if its worst local stretch is an order of magnitude worse than doing nothing there.
+  The first clause is the scale-free half of the inherited rule, restated against the best
+  constant instead of zero. The second replaces the absolute threshold that failed.
+  kappa is a dimensionless multiple, not a loss level; V5 tests whether it matters.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1_reference_sanity: >
+    The best-constant predictor and the zero predictor must be classified NON-DIVERGENT on
+    every window of every stream. This is the property the inherited Jane rule violates: it
+    calls the zero predictor divergent on synthetic. PASS requires 100% -- a criterion that
+    flags doing-nothing as divergence is measuring the stream, not the learner.
+  V2_detects_true_blowup: >
+    Ground truth is taken from the iterate norm, which is INDEPENDENT of the criterion and is
+    genuinely unbounded for uncapped methods: a run has truly blown up if max_t ||w_t|| > 1e6.
+    Every such run must be classified divergent. PASS requires 100% recall on this set. The
+    probe set is plain OGD and the uncapped endpoint (cap=1e9) across a rate grid, which is
+    where real explosion lives.
+  V3_monotone_in_P: >
+    Along a ray with M fixed and lr = P/M, no stable configuration may sit above a divergent
+    one. Bisection presupposes this; if the instrument does not deliver it, the search
+    procedure used throughout this line of work is invalid. PASS requires 0 violations.
+  V4_non_vacuous: >
+    On every stream the criterion must classify at least one configuration in the probe grid
+    as stable AND at least one as divergent. This is what both inherited criteria failed on
+    synthetic, in opposite directions. PASS requires both classes present on all three streams.
+  V5_kappa_robustness: >
+    Classifications are recomputed at kappa in {5, 10, 20}. The fraction of grid
+    configurations whose classification changes across that range must be below 0.10 on every
+    stream. If it is not, the criterion is an absolute threshold wearing a ratio's clothing.
+
+overall_acceptance: >
+  The criterion is ACCEPTED only if V1-V5 all pass on all three streams. If any test fails the
+  criterion is REJECTED and reported as such; it is not patched and re-run within this
+  session, because patching against a failed acceptance test with the thresholds already known
+  is how the instrument gets fitted to the answers.
+
+# ---------------------------------------------------------------------------
+design:
+  streams:
+    jane: three windows (indices 1, 5, 9 of the ten), 150000 rows, per-row
+    crypto: three windows (indices 1, 5, 9 of the ten), 6000 bars, per-row
+    synthetic: three independent streams (seeds 1000, 1004, 1008), T=20000, tail p=1.5
+  stream_subsetting_justification: >
+    Three windows per stream rather than ten. These are instrument checks, not measurements,
+    and V1-V5 are pass/fail per configuration; more windows would multiply cost without
+    changing what any test can conclude. Indices are fixed in advance.
+  probe_grid:
+    capped: lr in [0.5, 1, 2, 4, 8] x M in [0.5, 2, 8, 32]
+    blowup_probe: OGD and uncapped (cap=1e9) at lr in [0.01, 0.1, 1.0, 4.0]
+  ray_for_V3: M in [0.5, 2, 8, 32], P in a fixed geometric ladder from 0.5 to 128 (12 points)
+
+  comparison_reporting: >
+    For context only, the same grid is classified by the two inherited criteria and the
+    agreement rate with the new one is reported. This is DESCRIPTIVE. Disagreement is not
+    evidence against either, since the inherited criteria are already known not to transfer.
+
+instrumentation: >
+  Reuses the gate-verified instrumented runner pattern: the runner must reproduce
+  anchor_perrow to 1e-9 weighted R2 on at least four configurations before any classification
+  is computed, or HALT.
+
+out_of_scope_this_session: >
+  No threshold search. No re-run of C-7, C-8 or C-9. No manuscript work. The deliverable is a
+  validated (or rejected) criterion plus its acceptance report. Relocating the thresholds under
+  the new instrument is the NEXT direction and is deliberately not started here, so that the
+  instrument is fixed before it is pointed at the questions it was built for.
+
+compute_budget:
+  estimated_wallclock: ~5 minutes, dominated by Jane's three 150k-row windows
+
+amendments:
+  - id: A1
+    date_utc: "2026-08-23"
+    made_before_seeing: >
+      No acceptance-test output from the full run. The run was killed after producing only
+      the instrumentation gate result (PASSED, 0.00e+00) and two Jane per-window progress
+      lines. V1-V5 are all computed at the end of the script, so none had been evaluated.
+    change: >
+      The Jane row cap is reduced from the registered 150000 to 40000 for these instrument
+      checks. Implemented as an explicit --jane-rows flag whose default remains the
+      registered 150000, so the deviation is visible in the invocation and in the run log
+      rather than hidden in a constant.
+    reason: >
+      COST ONLY. Measured 1171s per Jane window against an estimated ~150s, an 8x overrun.
+      The cost is dominated by the V2 blow-up probes: OGD and the uncapped endpoint at high
+      rates run almost every step through overflow arithmetic, which is far slower than the
+      normal float path. Those probes are the independent ground truth for V2 and cannot be
+      dropped.
+    why_this_cannot_fit_the_instrument_to_the_answers: >
+      Three reasons, stated because a post-registration change to a design parameter always
+      deserves them.
+      (1) V1-V5 are pass/fail properties of the criterion -- reference sanity, recall against
+          an independent ground truth, monotonicity, non-vacuity, kappa robustness. None is a
+          measurement whose VALUE depends on window length.
+      (2) The change touches Jane only. The one acceptance signal already seen is the SMOKE
+          run's V4 failure on synthetic, which this cannot influence.
+      (3) Nothing about the criterion itself changes: no threshold, no kappa, no clause, no
+          rolling-window rule. Only how many rows of one stream the checks run on.
+    residual_risk: >
+      A shorter Jane window could in principle change a classification near a boundary, which
+      would show up as a V3 or V4 difference. If the full-cap result is ever needed, it can be
+      recovered by dropping the flag; the registered default is unchanged.
+    authorized_by: user, in-session, after being shown the cost overrun and this option
+---
+# ===========================================================================
+# SEVENTH REGISTRATION -- direction C10C2 (correct V4, add a blind V6)
+# ===========================================================================
+direction: C10C2
+parent_direction: C10C
+branch: research/c10-q6
+registered_at_commit: f264f4f
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+provenance_disclosure: >
+  I have seen the complete C10C output: which acceptance tests passed, the criterion's
+  classifications on all three streams, and the per-configuration L_ratio and P_ratio values.
+  Respecifying a failed acceptance test in that state is exactly the situation in which a
+  respecification can be self-serving, so two things are stated plainly rather than glossed.
+  (1) The corrected V4 is expected to pass. Its outcome is largely determined by what I
+      already know, so re-running it is BOOKKEEPING -- it makes the suite correct for future
+      use of the instrument -- and is NOT new evidence that the criterion is sound.
+  (2) The evidential weight of this direction therefore rests on V6, which is new and which
+      the criterion has never been evaluated against. If only V4 were corrected, this
+      registration would be worth very little.
+  V1, V2, V3 and V5 were evaluated blind in C10C and passed; they are re-run unchanged for
+  completeness, and their passing here adds nothing to what C10C already established.
+
+# ---------------------------------------------------------------------------
+what_was_wrong_with_V4: >
+  V4 required that the criterion classify at least one capped configuration divergent and at
+  least one non-divergent ON EVERY STREAM. That is a property of the stream and the probe
+  grid, not of the instrument. On the synthetic stream no capped configuration diverges at
+  all -- independent ground truth confirms it, the largest iterate norm over the whole grid
+  being 160.6 against a blow-up threshold of 1e6 -- so a CORRECT criterion must return a
+  single class there, and V4 penalised it for being correct.
+
+V4_respecified: >
+  Non-vacuity is required only where it is meaningful, and applicability is decided by the
+  criterion-INDEPENDENT ground truth so the criterion cannot influence its own exemption.
+  For each stream: if the capped probe grid contains at least one run with max||w|| > 1e6,
+  then the criterion must classify at least one capped run divergent and at least one
+  non-divergent. If it contains none, the stream is reported NOT APPLICABLE -- explicitly,
+  never silently as a pass -- and the acceptance decision rests on the remaining streams.
+  Degeneracy in the whole-instrument sense is already covered elsewhere: an always-divergent
+  criterion fails V1 and an always-stable one fails V2.
+
+V6_new_and_blind: >
+  STABILITY UNDER STREAM TRUNCATION. The criterion has never been tested for sensitivity to
+  how long the stream is. This matters because the rolling window is T/10 and the peak
+  statistic is an extremum, both of which move with T, and because every threshold this
+  instrument will later locate is horizon-specific already.
+  Each capped configuration is classified on the full window and again on its first half.
+  Agreement is the fraction of configurations whose classification is unchanged.
+  The test is COMPARATIVE rather than absolute: halving T genuinely changes the algorithm's
+  trajectory, so some classifications SHOULD move and an absolute bar would be measuring the
+  algorithm rather than the criterion. The inherited Jane rule is subjected to the identical
+  truncation, and the new criterion must be no worse:
+      agreement_new  >=  agreement_jane - 0.05
+  on every stream. I do not know the outcome of this test.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1: unchanged -- zero and best-constant predictors never divergent
+  V2: unchanged -- 100% recall against max||w|| > 1e6
+  V3: unchanged -- no stable P above a divergent P on a ray
+  V4: respecified above, conditional on ground-truth blow-up existing in the capped grid
+  V5: unchanged -- <10% of classifications move across kappa in {5, 10, 20}
+  V6: new -- agreement_new >= agreement_jane - 0.05 under truncation to T/2
+
+overall_acceptance: >
+  ACCEPTED only if V1, V2, V3, V4, V5 and V6 all pass. On failure the criterion is REJECTED
+  and reported as such and is not patched within this session -- the same rule as C10C, which
+  is what forced this registration to exist rather than letting V4 be edited in place.
+  If the criterion is accepted, the acceptance is qualified in the report: V4 was corrected
+  with knowledge of the failure it was correcting, so the blind evidence is V1, V2, V3, V5
+  from C10C plus V6 from here.
+
+design:
+  streams: as C10C -- jane (3 windows, 40000 rows per amendment A1), crypto (3 windows,
+    6000 bars), synthetic (3 streams, T=20000, tail 1.5)
+  probe_grid: as C10C -- capped lr in [0.5,1,2,4,8] x M in [0.5,2,8,32]; blow-up probes
+    OGD and uncapped at lr in [0.01,0.1,1.0,4.0]
+  truncation_for_V6: first half of each window, same configurations
+  criterion_under_test: scripts/research_divergence.py, UNCHANGED -- no threshold, no kappa,
+    no clause and no rolling-window rule is touched by this registration. Only the acceptance
+    suite changes.
+
+instrumentation: >
+  Same gate: the tracked runner must reproduce anchor_perrow to 1e-9 weighted R2 on four
+  configurations before any classification is computed, or HALT.
+
+stopping_rule: >
+  One pass. V4's respecification and V6 are fixed as written above and are not adjusted after
+  seeing results. No threshold search is run in this session either.
+
+compute_budget:
+  estimated_wallclock: ~6 minutes -- roughly C10C's 222s plus the V6 half-length re-runs
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
+  C-9. Prior artifacts preserved: writes go to results/research/c10c2/ and overwrite nothing.
+---
+# ===========================================================================
+# EIGHTH REGISTRATION -- direction C10C3 (drop V4; add blind V7 and V8)
+# ===========================================================================
+direction: C10C3
+parent_direction: C10C2
+branch: research/c10-q6
+registered_at_commit: aab7c64
+status: REGISTERED_BEFORE_EXECUTION
+kind: INSTRUMENT_CONSTRUCTION
+
+provenance_disclosure: >
+  V4 is dropped on the USER'S EXPLICIT INSTRUCTION, given after I flagged that my own argument
+  for dropping it is exactly the argument a motivated author produces -- a clean case for a
+  change that also happens to make my instrument pass. The argument itself is in
+  results/research/c10c2/r_c10c2_summary.md and stands on its own: for capped methods the
+  iterates are provably bounded by thm:stability, so no criterion-INDEPENDENT ground truth of
+  divergence exists, and non-vacuity within the capped grid cannot be validated by any
+  construction. Degeneracy is already excluded by V1 (an always-divergent criterion flags the
+  zero predictor) and V2 (an always-stable one misses 20 genuine blow-ups), both anchored on
+  uncapped and OGD probes where the iterate norm genuinely is unbounded. A reader who thinks
+  the argument is self-serving should discount it; the decision to act on it was not mine.
+
+  CONSEQUENCE, STATED UP FRONT: with V4 gone and V1, V2, V3, V5, V6 all having passed in
+  C10C2, acceptance on those five is a FOREGONE CONCLUSION. Re-running them is bookkeeping.
+  This registration is worth running only because of V7 and V8 below, which are new, blind,
+  and which the criterion has never faced. V8 in particular tests the property C-10 exists
+  for, and the inherited criteria provably fail it.
+
+# ---------------------------------------------------------------------------
+acceptance_tests:
+  V1: unchanged -- zero and best-constant predictors never divergent
+  V2: unchanged -- 100% recall against max||w|| > 1e6 on the uncapped/OGD probes
+  V3: unchanged -- no stable P above a divergent P on a ray
+  V5: unchanged -- <10% of classifications move across kappa in {5, 10, 20}
+  V6: unchanged -- agreement_new >= agreement_jane - 0.05 under truncation to T/2
+  V8: NEW AND BLIND -- see below; part of acceptance
+  V4: DROPPED, per the disclosure above
+
+V8_scale_invariance: >
+  THE DEFINING PROPERTY OF C-10, AND THE ONE NEVER YET TESTED. The whole reason the inherited
+  criteria fail to transfer is that their thresholds carry units: Jane's 50 is a loss level
+  calibrated to standardized targets, crypto's 1e3 likewise. A criterion whose thresholds are
+  ratios should be exactly invariant when the units of the problem change.
+  Test, applied to the CRITERION FUNCTION directly rather than to the learner: take each
+  recorded run's (y, preds, wts) and multiply BOTH y and preds by c, for
+  c in {1e-3, 1, 1e3}. This is a pure change of units -- it rescales the learner's errors and
+  the reference's errors identically -- so a unit-free criterion must return an identical
+  classification for all three. Note this is NOT a claim that the ALGORITHM is equivariant to
+  rescaling the target; it is not, and no learner is re-run here.
+  PASS requires 100% identical classification across c, on every run, on every stream.
+  The inherited Jane rule is subjected to the same transformation and its rate is reported
+  for contrast; it is expected to fail, and if it does not, my account of why the inherited
+  criteria do not transfer is wrong and that must be reported.
+
+V7_clause_necessity: >
+  REGISTERED BLIND DIAGNOSTIC, NOT AN ACCEPTANCE GATE. The criterion has two clauses:
+  L_ratio >= 2 (aggregate) and P_ratio >= kappa (peak). The peak clause exists to catch
+  transient blow-ups the aggregate washes out, and it is the clause that replaced the broken
+  absolute threshold. Does it ever change a decision?
+  Report, per stream: the number of runs divergent by P_ratio only, by L_ratio only, and by
+  both. No threshold is attached, because "the peak clause is inert" is an observation about
+  the criterion's construction rather than a defect.
+  CONSEQUENCE, FIXED IN ADVANCE so it cannot be chosen after seeing the count: if NO run on
+  ANY stream is divergent by P_ratio only, the criterion is reducible to its single aggregate
+  clause on this evidence, and that is reported as such -- the peak machinery, and kappa with
+  it, would then be carrying no weight and V5 would be vacuous rather than passed. I do not
+  know the answer.
+
+overall_acceptance: >
+  ACCEPTED only if V1, V2, V3, V5, V6 and V8 all pass. On failure the criterion is REJECTED
+  and not patched in this session -- the same rule that produced C10C2 and this registration.
+  If ACCEPTED, the acceptance must be reported with its qualifications attached: V1/V2/V3/V5
+  were blind in C10C, V6 was blind in C10C2, V8 is blind here, and V4 was removed by user
+  decision rather than by evidence.
+
+design:
+  streams: as C10C2 -- jane (3 windows, 40000 rows per amendment A1), crypto (3 windows,
+    6000 bars), synthetic (3 streams, T=20000, tail 1.5)
+  probe_grid: as C10C2 -- capped lr in [0.5,1,2,4,8] x M in [0.5,2,8,32]; blow-up probes
+    OGD and uncapped at lr in [0.01,0.1,1.0,4.0]
+  criterion_under_test: scripts/research_divergence.py, UNCHANGED. No threshold, no kappa,
+    no clause, no rolling-window rule is touched. Only the suite moves.
+
+instrumentation: same gate -- tracked runner reproduces anchor_perrow to 1e-9, or HALT
+
+stopping_rule: >
+  One pass. V7 and V8 are fixed as written and are not adjusted after seeing results. No
+  threshold search is run in this session either.
+
+compute_budget:
+  estimated_wallclock: ~5 minutes -- C10C2's grid plus V8, which is pure post-processing on
+    already-computed predictions and costs essentially nothing
+
+out_of_scope_this_session: >
+  Manuscript prose, figures, page budget. No threshold search, no re-opening of C-7, C-8 or
+  C-9. Writes go to results/research/c10c3/ and overwrite nothing.
+---
+# ===========================================================================
+# NINTH REGISTRATION -- direction C12 (regenerate tab:replication, matched budget)
+# ===========================================================================
+direction: C12
+parent_direction: C10/Q6
+branch: research/c10-q6
+registered_at_commit: c135eda
+status: REGISTERED_BEFORE_EXECUTION
+kind: ARTIFACT_REGENERATION
+
+what_this_is: >
+  A like-for-like regeneration of tab:replication with the tuning-budget confound removed.
+  Not a new hypothesis: C10/Q6 already established, on a three-arm subset, that equalizing the
+  budget reverses the SN-OMD vs fixed-tau ordering. This extends that correction to the whole
+  six-method table so the manuscript has a defensible artifact to cite.
+
+provenance_disclosure: >
+  I already know what the three-arm subset does: at matched budget SN-OMD reaches 0.2270
+  held-out per-row against fixed-tau's 0.2020, winning 9/9 held-out windows. So the direction
+  of the SN-OMD/fixed-tau change is not news. What is NOT known, and is the reason to run the
+  full table: where the other four methods land relative to a properly tuned SN-OMD, whether
+  the divergence partition survives, and whether tuning M collapses SN-OMD onto one of its own
+  endpoints (normalized-GD at M->0, scale-adaptive OGD at M->inf), which would make three rows
+  of the table redundant rather than three distinct methods.
+
+# ---------------------------------------------------------------------------
+the_defect_being_corrected: >
+  research_windows_replication._grid gives fixed-tau clip a joint 2-D grid over (lr x tau) =
+  10 x 7 = 70 configurations and gives SN-OMD a 1-D grid over lr alone = 10, with the cap
+  pinned at M=5 -- a value selected in a separate sweep (jane_msweep.csv) at a single fixed
+  lr=0.5, never jointly with the lr used here. Both methods have exactly one threshold
+  parameter; one gets it tuned and the other does not.
+
+which_methods_change_and_why:
+  SN-OMD: >
+    1-D (lr) -> 2-D (lr x M). This is the correction. M is a free threshold parameter and was
+    pinned; tau, its structural analogue in the baseline, was tuned.
+  fixed-tau clip: unchanged -- already 2-D over (lr x tau)
+  Normalized-GD: >
+    unchanged, 1-D. It is the M->0 limit of the SN-OMD family and has NO free threshold
+    parameter, so a 1-D grid is intrinsic to the method rather than a deficiency in its
+    treatment. Same for Scale-adaptive OGD (the M->inf limit).
+  OGD: unchanged, 1-D -- no threshold parameter
+  AdaGrad-Norm: unchanged, 1-D -- no threshold parameter
+  note: >
+    Giving every method a 2-D grid would be the wrong fix. The principle is that each method
+    is tuned over ITS OWN free parameters; the defect was that one method's free parameter was
+    frozen while the comparator's was not.
+
+# ---------------------------------------------------------------------------
+design:
+  unchanged_from_published: >
+    Ten windows, 150000 rows each, selection on window 1, hyperparameters then frozen, both
+    protocols, the same lr grids, and the same inherited _diverged criterion. Only SN-OMD's
+    grid changes. Everything else is held fixed so the difference is attributable.
+  M_GRID: [0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 100.0]
+  m_grid_justification: >
+    Reused verbatim from the C10/Q6 registration rather than re-chosen. Seven values, matching
+    len(TAUS), so SN-OMD and fixed-tau clip receive identical configuration counts. It also
+    contains 5.0, so the published configuration remains reachable and the new selection can
+    only be as good or better on window 1.
+  divergence_criterion:
+    primary: >
+      The inherited _diverged, unchanged, so the regenerated table is directly comparable to
+      the published one. Changing both the tuning and the criterion at once would make the
+      difference unattributable.
+    secondary: >
+      The C-10 relative criterion accepted in C10C3, reported alongside. It is the criterion
+      that actually transfers across streams, and reporting both shows whether the divergence
+      partition is an artifact of the old rule.
+
+reported_quantities:
+  - mean, std, min, max and divergence count over ALL TEN windows -- the published table's
+    format, for like-for-like comparison
+  - the same over HELD-OUT windows 2-10 only, reported separately. C10/Q6 showed the
+    published all-ten mean pools its own selection window and conceals selection overfitting;
+    both are reported and neither is suppressed
+  - window-1 (in-sample) score per method
+  - selected hyperparameters per method and protocol, with an explicit grid-boundary check
+  - for SN-OMD, the selected M, and whether it sits at 0.5 or 100 (its grid edges), which
+    would mean it has collapsed toward normalized-GD or scale-adaptive OGD
+
+what_would_be_a_surprise: >
+  Stated in advance so it cannot be rationalized after the fact.
+  (a) SN-OMD selecting M at a grid edge, which would make it a relabelling of one of the two
+      endpoint methods rather than a distinct row.
+  (b) The divergence partition changing -- the published table has OGD and the uncapped
+      endpoint diverging while every bounded scale-free method does not. Tuning M cannot make
+      OGD stable, so a change there would indicate something wrong with the harness.
+  (c) The regenerated fixed-tau, OGD, normalized-GD, scale-adaptive and AdaGrad rows differing
+      from the published CSV at all. Their grids are untouched, so they must reproduce; a
+      REPRODUCTION GATE at 0.005 weighted R2 halts the run if they do not.
+
+artifact_policy: >
+  Writes to results/research/c12/ ONLY. windows_replication.csv and
+  windows_replication_summary.csv are NOT overwritten: they are what the manuscript currently
+  cites and what tests/test_artifacts_fresh.py::test_paper_number_matches_its_csv pins the
+  printed numbers to. Regenerating them in place would destroy the cited artifact and trip
+  that guard, which is the guard working as designed.
+
+out_of_scope: >
+  NO manuscript edit. This produces a corrected artifact and a report; deciding what
+  tab:replication should say, and rewriting the prose and the table, is a separate step
+  requiring author judgement about which claim the paper now makes.
+
+seed_policy: deterministic given (window, method, hyperparameters) -- no seeds
+stopping_rule: one pass over the registered grids; no adaptive extension
+compute_budget:
+  runs: ~466  # 346 tuning + 120 evaluation, across both protocols
+  estimated_wallclock: ~10 minutes; may exceed the 600s foreground cap
+---
+# ===========================================================================
+# TENTH REGISTRATION -- direction D1/T1 (variation-adaptive dynamic regret)
+# ===========================================================================
+direction: D1_T1
+name: variation-adaptive dynamic regret
+branch: research/c10-q6
+registered_at_commit: 0aa50c1
+status: REGISTERED_BEFORE_EXECUTION
+kind: THEORY
+
+# ---------------------------------------------------------------------------
+why_this_direction: >
+  D1 is the brief's top-ranked direction and the one the proposed reframe is gated on. Two of
+  the alternatives are already substantially answered by completed Phase-2 work and would be
+  re-running settled questions:
+  D2 (C10) is CLOSED. Its own falsification condition -- "if the constant-scale advantage
+  vanishes once the tracker is properly tuned across regimes, it is a tuning artifact" -- is
+  what happened. At matched budget (70 joint (lr x M) configurations against the baseline's
+  70 over (lr x tau)) the ordering REVERSES: held-out per-row SN-OMD 0.2270 vs fixed-tau
+  0.2020, SN-OMD winning 9/9 held-out windows. See ledger C-1.
+  D3 (T4) is partly undercut by the same body of work. C10S found the divergence boundary is
+  governed, to within a factor of 1.68 across rays spanning 32x in M, by the effective maximum
+  step P = lr*M -- a rate-schedule quantity. That is close to D3's own falsification
+  condition, "if scale-dependent clipping can be made stable ... by a rate schedule alone, the
+  partition is about tuning, not structure". D3 is not dead, but it can no longer be attacked
+  without first accounting for P.
+  D4 is not actionable: no r1_* artifact exists in this repository. D5 is cheap but low value.
+
+# ---------------------------------------------------------------------------
+step_0_premise_check: >
+  The whole reframe rests on one empirical claim: that the causally normalized gradient has
+  tail index above 2, which is what empties Theorem 3.2 in the regime the paper measures.
+  Verify it from committed artifacts before any derivation, and report the number whatever it
+  is. If the normalized tail index is NOT above 2, the premise of both the brief's section 2.2
+  and this direction is wrong, and that is reported instead of proceeding.
+
+objective: >
+  A dynamic-regret bound for SN-OMD whose nonstationarity cost is explicit and MEASURABLE on
+  the real scale process -- in the scale path variation V_sigma = sum_t |s_t - s_{t-1}|, or a
+  regime count N -- rather than in T.
+
+the_structural_observation_to_exploit: >
+  The capped normalized gradient satisfies ||clip(g_t/s_{t-1}, M)|| <= M DETERMINISTICALLY.
+  The heavy-tail moment assumption is therefore not needed to control the update at all; it is
+  needed only to control the SCALE process. Appendix C already says as much -- "after scale
+  normalization the tail the learner actually sees has p ~ 2 ... the super-sqrt(T) growth of
+  the pooled budget largely evaporates" -- and the paper then keeps a T^{1/p} bound anyway.
+  The target is to carry that observation through: run the standard bounded-gradient dynamic
+  regret argument in NORMALIZED units, where everything is bounded by M, and let the scale
+  process re-enter only when converting back to loss units.
+
+success_criteria: >
+  ALL of the following, or it is not a success:
+  (a) a stated theorem with a COMPLETE proof written out, not a sketch;
+  (b) sublinear in T at p = 2, where the current bound is vacuous;
+  (c) every quantity in the rate is measurable on the real scale process -- V_sigma and P_T
+      are, an unobservable regime count is not;
+  (d) it reduces to the known bound in the stationary-scale special case, as a sanity check.
+
+failure_criteria_and_commitment: >
+  If the bound still collapses to T^{1/p+1/2}, or requires an assumption that makes the
+  nonstationarity term unmeasurable, the attempt FAILED. The obstruction is recorded in
+  theory_notes.md with the precise step where it arises, and the theory contribution is
+  demoted rather than defended. Per the brief's decision rule, failure means Structure C
+  (measurement-first) and Theorem 3.2 moves to a supporting role.
+
+anti_fabrication_commitment: >
+  THE BINDING CONSTRAINT ON THIS DIRECTION. No theorem is asserted without a proof I have
+  actually written out and checked line by line. If I reach only a proof sketch, it is
+  labelled a sketch and does NOT count as success under (a). The manuscript already carries
+  one sketched assumption which section E.8 honestly calls "a sketch, not a theorem"; adding a
+  second dressed as a theorem would be the worst outcome available in this phase -- worse than
+  reporting failure, because it would be an unfalsifiable claim in a document whose main
+  virtue is that it does not make them. Any step I cannot justify is marked GAP in the write-up
+  and the result is reported as incomplete.
+
+deliverable:
+  - theory_notes.md -- the derivation, complete with any GAP markers, and the obstruction if it fails
+  - ledger and state updates
+  - NO manuscript edit; the brief puts prose, section order and the abstract out of scope
+
+out_of_scope: >
+  Manuscript prose, abstract, title, figures, section ordering, page budget. No empirical
+  result is removed, no control dropped, no tie softened into an equivalence.
+
+stopping_rule: >
+  One pass at the derivation. If it fails, record the obstruction and stop -- do not iterate
+  toward a weaker theorem that technically clears the bar, and do not weaken (a)-(d) after
+  seeing where the derivation breaks.
+---
+# ===========================================================================
+# ELEVENTH REGISTRATION -- C12B (block-median at matched budget)
+# ===========================================================================
+direction: C12B
+parent_direction: C12
+branch: research/c10-q6
+kind: ARTIFACT_REGENERATION
+status: REGISTERED_BEFORE_EXECUTION
+
+why: >
+  C12 corrected the tuning-budget defect for the plain SN-OMD row of tab:replication but not
+  for its sibling row, SN-OMD + block-median tracker, which is the SAME method with a different
+  scale tracker and whose cap is likewise pinned (blockmed_perrow default cap=5.0, tuned over
+  lr alone: 9 configurations). Adopting C12 into the table without this would place the same
+  method at two different tuning budgets in adjacent rows -- reintroducing, between two rows,
+  precisely the defect C10/Q6 exists to correct.
+
+audit_of_the_published_table_budgets: >
+  Per-row configuration counts as published: OGD 5, Normalized-GD 10, Scale-adaptive 10,
+  fixed-tau clip 70, AdaGrad-Norm 8, Cutkosky-Mehta 216, SN-OMD (M=5) 10, SN-OMD+block-median 9.
+  Cutkosky-Mehta's 216 = lr(9) x tau(6) x beta(4) is LEGITIMATE under the registered principle:
+  cm_perrow(tau, beta, lr) genuinely has three free parameters, and searching all three is
+  correct treatment, not favouritism. No change is made to CM. The defect is confined to the
+  two SN-OMD rows, both of which had their cap frozen.
+
+change: >
+  Block-median SN-OMD is tuned over lr x M instead of lr alone. The lr grid is the tracker
+  script's own LRS (9 values), unchanged, so the cap is the ONLY thing that differs from the
+  published row -- exactly parallel to C12's single change to the plain SN-OMD row.
+  M_GRID = [0.5, 1, 2, 5, 10, 30, 100], reused verbatim from C10/Q6 and C12, giving 63
+  configurations. It contains 5.0, so the published configuration stays reachable and window-1
+  can only improve.
+  The block length B stays pinned (B=10000 per-row, Bg=818 per-step), because it is a
+  tracker-internal constant, the analogue of the winsorized EMA's decay and winsorization
+  which are also pinned for the plain SN-OMD row. Tuning it would be a different change and
+  would break the parallel.
+
+reported: >
+  Mean, std, min, max, divergence count over all ten windows in the published format; held-out
+  windows 2-10 separately; window-1 in-sample; selected (lr, M) with a grid-boundary check;
+  divergence under both the inherited _diverged and the accepted C-10 relative criterion.
+
+reproduction_gate: >
+  Re-running the published configuration (cap pinned at 5, lr grid unchanged) must reproduce
+  the published block-median row to 0.005 weighted R2, or the run reports a harness problem
+  rather than a result.
+
+surprises_named_in_advance:
+  - block-median selecting M at a grid edge, which would mean it has collapsed toward an
+    endpoint method rather than remaining a distinct tracker variant
+  - the divergence count changing from 0/10, which tuning a cap downward should not cause
+
+artifact_policy: >
+  Writes to results/research/c12b/ only. Nothing in results/research/ is overwritten, and
+  windows_replication*.csv remain the artifacts the manuscript cites.
+
+out_of_scope: no manuscript edit in this direction; the table adoption is a separate step

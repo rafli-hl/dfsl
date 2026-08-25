@@ -1,0 +1,46 @@
+{
+  "q_frozen": "p99",
+  "tails": [
+    1.5
+  ],
+  "seeds": [
+    1000,
+    1001,
+    1002
+  ],
+  "T": 3000,
+  "d": 5,
+  "M_RAYS": [
+    0.5,
+    4.0,
+    32.0
+  ],
+  "wnorm_limit": 100000000.0,
+  "results": {
+    "1.5": {
+      "r_q": {
+        "p50": 0.5112595574780989,
+        "p90": 2.317895569725556,
+        "p99": 11.9648084889209,
+        "max": 541.60100833044
+      },
+      "criteria": {
+        "state": {
+          "n_usable": 0,
+          "n_censored": 3,
+          "n_non_monotone": 0,
+          "thresholds": {},
+          "verdict": "VOID"
+        },
+        "jane": {
+          "n_usable": 0,
+          "n_censored": 3,
+          "n_non_monotone": 0,
+          "thresholds": {},
+          "verdict": "VOID"
+        }
+      }
+    }
+  },
+  "wallclock_sec": 2.3
+}

@@ -1,0 +1,46 @@
+================================================================================================
+C10S -- stability threshold: 3 rays x 4 evaluations x 3 windows x 2 protocols, rows<=4000
+================================================================================================
+
+[preloading 3 windows]
+  loaded in 2s
+
+########## PROTOCOL: per-row ##########
+  ray M=0.5  (lr = P/M)
+    M=0.5   P=  6.000 lr=  12.000  div=3/3  meanR2=-6.1269  DIVERGENT
+    M=0.5   P= 24.000 lr=  48.000  div=3/3  meanR2=-109.0952  DIVERGENT
+  ray M=4  (lr = P/M)
+    M=4     P=  6.000 lr=   1.500  div=3/3  meanR2=-1.8479  DIVERGENT
+    M=4     P= 24.000 lr=   6.000  div=3/3  meanR2=-42.6781  DIVERGENT
+  ray M=16  (lr = P/M)
+    M=16    P=  6.000 lr=   0.375  div=2/3  meanR2=-1.7795  DIVERGENT
+    M=16    P= 24.000 lr=   1.500  div=3/3  meanR2=-57.1620  DIVERGENT
+
+  --- per-row rays ---
+    M=0.5   LEFT_CENSORED -- excluded
+    M=4     LEFT_CENSORED -- excluded
+    M=16    LEFT_CENSORED -- excluded
+  SPREAD STATISTIC VOID: 3 censored rays (registered rule: two or more voids it)
+
+########## PROTOCOL: per-step ##########
+  ray M=0.5  (lr = P/M)
+    M=0.5   P=  6.000 lr=  12.000  div=3/3  meanR2=-7.0354  DIVERGENT
+    M=0.5   P= 24.000 lr=  48.000  div=3/3  meanR2=-128.6627  DIVERGENT
+  ray M=4  (lr = P/M)
+    M=4     P=  6.000 lr=   1.500  div=0/3  meanR2=-0.5180  stable
+    M=4     P= 24.000 lr=   6.000  div=3/3  meanR2=-67.6332  DIVERGENT
+    M=4     P= 12.000 lr=   3.000  div=3/3  meanR2=-10.1068  DIVERGENT
+    M=4     P=  8.485 lr=   2.121  div=2/3  meanR2=-3.2915  DIVERGENT
+  ray M=16  (lr = P/M)
+    M=16    P=  6.000 lr=   0.375  div=0/3  meanR2=+0.2471  stable
+    M=16    P= 24.000 lr=   1.500  div=2/3  meanR2=-3.2071  DIVERGENT
+    M=16    P= 12.000 lr=   0.750  div=0/3  meanR2=+0.3025  stable
+    M=16    P= 16.971 lr=   1.061  div=0/3  meanR2=-0.0324  stable
+
+  --- per-step rays ---
+    M=0.5   LEFT_CENSORED -- excluded
+    M=4     P* = 7.135   bracket [6.000, 8.485]   (max stable 6.000, min divergent 8.485)
+    M=16    P* = 20.182   bracket [16.971, 24.000]   (max stable 16.971, min divergent 24.000)
+
+  P*_hat (geometric mean over 2 usable rays) = 12.000
+  per-ray range [7.135, 20.182]   spread = 2.8284

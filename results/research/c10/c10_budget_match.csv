@@ -1,0 +1,61 @@
+protocol,window,window_idx,arm,method,setting,n_configs,weighted_r2,diverged,is_selection_window
+per-row,"[0,120)",1,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.246344,false,true
+per-row,"[0,120)",1,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.284564,false,true
+per-row,"[0,120)",1,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.315169,false,true
+per-row,"[150,270)",2,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.229805,false,false
+per-row,"[150,270)",2,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.20361,false,false
+per-row,"[150,270)",2,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.266685,false,false
+per-row,"[300,420)",3,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.198826,false,false
+per-row,"[300,420)",3,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.14215,false,false
+per-row,"[300,420)",3,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.245201,false,false
+per-row,"[450,570)",4,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.235835,false,false
+per-row,"[450,570)",4,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.197153,false,false
+per-row,"[450,570)",4,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.26566,false,false
+per-row,"[600,720)",5,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.211686,false,false
+per-row,"[600,720)",5,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.146166,false,false
+per-row,"[600,720)",5,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.238206,false,false
+per-row,"[750,870)",6,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.192454,false,false
+per-row,"[750,870)",6,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.103901,false,false
+per-row,"[750,870)",6,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.205167,false,false
+per-row,"[900,1020)",7,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.163858,false,false
+per-row,"[900,1020)",7,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,-0.107059,false,false
+per-row,"[900,1020)",7,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.169324,false,false
+per-row,"[1050,1170)",8,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.156742,false,false
+per-row,"[1050,1170)",8,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.043479,false,false
+per-row,"[1050,1170)",8,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.177371,false,false
+per-row,"[1200,1320)",9,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.237146,false,false
+per-row,"[1200,1320)",9,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.227547,false,false
+per-row,"[1200,1320)",9,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.276398,false,false
+per-row,"[1350,1470)",10,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.191636,false,false
+per-row,"[1350,1470)",10,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.156537,false,false
+per-row,"[1350,1470)",10,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=3,M=2",70,0.199426,false,false
+per-step,"[0,120)",1,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.382085,false,true
+per-step,"[0,120)",1,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.306556,false,true
+per-step,"[0,120)",1,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.383694,false,true
+per-step,"[150,270)",2,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.33876,false,false
+per-step,"[150,270)",2,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.29186,false,false
+per-step,"[150,270)",2,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.343,false,false
+per-step,"[300,420)",3,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.278861,false,false
+per-step,"[300,420)",3,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.167498,false,false
+per-step,"[300,420)",3,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.288395,false,false
+per-step,"[450,570)",4,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.292245,false,false
+per-step,"[450,570)",4,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.287687,false,false
+per-step,"[450,570)",4,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.306405,false,false
+per-step,"[600,720)",5,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.19908,false,false
+per-step,"[600,720)",5,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.086846,false,false
+per-step,"[600,720)",5,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.210088,false,false
+per-step,"[750,870)",6,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.130956,false,false
+per-step,"[750,870)",6,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,-0.019059,false,false
+per-step,"[750,870)",6,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.140369,false,false
+per-step,"[900,1020)",7,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.019661,false,false
+per-step,"[900,1020)",7,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,-0.095295,false,false
+per-step,"[900,1020)",7,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.05351,false,false
+per-step,"[1050,1170)",8,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.021219,false,false
+per-step,"[1050,1170)",8,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.170237,false,false
+per-step,"[1050,1170)",8,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.052941,false,false
+per-step,"[1200,1320)",9,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.269813,false,false
+per-step,"[1200,1320)",9,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,0.058622,false,false
+per-step,"[1200,1320)",9,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.271603,false,false
+per-step,"[1350,1470)",10,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.2,tau=20",70,0.082927,false,false
+per-step,"[1350,1470)",10,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=2,M=5",10,-0.030066,false,false
+per-step,"[1350,1470)",10,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=8,M=0.5",70,0.087618,false,false

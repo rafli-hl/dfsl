@@ -1,0 +1,68 @@
+{
+  "results": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V5": true,
+    "V6": true,
+    "V8": true
+  },
+  "accepted": true,
+  "v6": {
+    "synthetic": {
+      "new": 1.0,
+      "jane": 1.0,
+      "pass": true
+    },
+    "crypto": {
+      "new": 1.0,
+      "jane": 1.0,
+      "pass": true
+    },
+    "jane": {
+      "new": 1.0,
+      "jane": 1.0,
+      "pass": true
+    }
+  },
+  "v8": {
+    "jane": {
+      "new": 1.0,
+      "jane": 0.4166666666666667,
+      "pass": true
+    },
+    "crypto": {
+      "new": 1.0,
+      "jane": 0.2777777777777778,
+      "pass": true
+    },
+    "synthetic": {
+      "new": 1.0,
+      "jane": 0.1388888888888889,
+      "pass": true
+    }
+  },
+  "v7": {
+    "crypto": {
+      "P_only": 0,
+      "L_only": 4,
+      "both": 6,
+      "divergent": 10
+    },
+    "jane": {
+      "P_only": 0,
+      "L_only": 0,
+      "both": 15,
+      "divergent": 15
+    },
+    "synthetic": {
+      "P_only": 0,
+      "L_only": 1,
+      "both": 4,
+      "divergent": 5
+    }
+  },
+  "v7_reducible": true,
+  "jane_rows": 40000,
+  "wallclock_sec": 27.0
+}

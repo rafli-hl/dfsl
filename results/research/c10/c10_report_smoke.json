@@ -1,0 +1,168 @@
+{
+  "grids": {
+    "LRS_SF": [
+      0.1,
+      0.5,
+      2.0
+    ],
+    "TAUS": [
+      5.0,
+      20.0
+    ],
+    "M_GRID": [
+      2.0,
+      10.0
+    ]
+  },
+  "boot_seed": 20260823,
+  "n_boot": 10000,
+  "protocols": {
+    "per-row": {
+      "window1": {
+        "A1_fixedtau_2d": 0.423174,
+        "A2_snomd_1d_published": 0.310922,
+        "A3_snomd_2d_matched": 0.448987
+      },
+      "heldout_mean": {
+        "A1_fixedtau_2d": 0.1780195,
+        "A2_snomd_1d_published": 0.15372999999999998,
+        "A3_snomd_2d_matched": 0.247426
+      },
+      "heldout_std": {
+        "A1_fixedtau_2d": 0.051149983230691275,
+        "A2_snomd_1d_published": 0.026083754944409367,
+        "A3_snomd_2d_matched": 0.08698969043513147
+      },
+      "frozen": {
+        "A1_fixedtau_2d": {
+          "lr": 0.1,
+          "tau": 5.0
+        },
+        "A2_snomd_1d_published": {
+          "lr": 0.1,
+          "M": 5.0
+        },
+        "A3_snomd_2d_matched": {
+          "lr": 0.5,
+          "M": 2.0
+        }
+      },
+      "boundary_flags": {
+        "A1_fixedtau_2d": [
+          "lr=0.1 at grid edge",
+          "tau=5 at grid edge"
+        ],
+        "A2_snomd_1d_published": [
+          "lr=0.1 at grid edge"
+        ],
+        "A3_snomd_2d_matched": [
+          "M=2 at grid edge"
+        ]
+      },
+      "delta_published": 0.024289500000000006,
+      "delta_matched": -0.06940650000000001,
+      "fraction_closed": 3.8574692768480205,
+      "paired_published": {
+        "mean": 0.024289500000000006,
+        "se": 0.01772449999999999,
+        "ci_lo": 0.006565000000000015,
+        "ci_hi": 0.042013999999999996,
+        "n_positive": 2,
+        "n": 2,
+        "sign_p": 0.5
+      },
+      "paired_matched": {
+        "mean": -0.06940650000000001,
+        "se": 0.025342500000000014,
+        "ci_lo": -0.09474900000000003,
+        "ci_hi": -0.04406399999999999,
+        "n_positive": 0,
+        "n": 2,
+        "sign_p": 0.5
+      },
+      "paired_gain": {
+        "mean": 0.09369600000000002,
+        "se": 0.04306700000000001,
+        "ci_lo": 0.05062900000000001,
+        "ci_hi": 0.13676300000000002,
+        "n_positive": 2,
+        "n": 2,
+        "sign_p": 0.5
+      }
+    },
+    "per-step": {
+      "window1": {
+        "A1_fixedtau_2d": 0.50136,
+        "A2_snomd_1d_published": 0.421918,
+        "A3_snomd_2d_matched": 0.421918
+      },
+      "heldout_mean": {
+        "A1_fixedtau_2d": 0.354452,
+        "A2_snomd_1d_published": 0.208975,
+        "A3_snomd_2d_matched": 0.208975
+      },
+      "heldout_std": {
+        "A1_fixedtau_2d": 0.07094543757000867,
+        "A2_snomd_1d_published": 0.027751112734447247,
+        "A3_snomd_2d_matched": 0.027751112734447247
+      },
+      "frozen": {
+        "A1_fixedtau_2d": {
+          "lr": 0.1,
+          "tau": 5.0
+        },
+        "A2_snomd_1d_published": {
+          "lr": 0.5,
+          "M": 5.0
+        },
+        "A3_snomd_2d_matched": {
+          "lr": 0.5,
+          "M": 10.0
+        }
+      },
+      "boundary_flags": {
+        "A1_fixedtau_2d": [
+          "lr=0.1 at grid edge",
+          "tau=5 at grid edge"
+        ],
+        "A2_snomd_1d_published": [],
+        "A3_snomd_2d_matched": [
+          "M=10 at grid edge"
+        ]
+      },
+      "delta_published": 0.145477,
+      "delta_matched": 0.145477,
+      "fraction_closed": 0.0,
+      "paired_published": {
+        "mean": 0.145477,
+        "se": 0.030542999999999987,
+        "ci_lo": 0.11493400000000001,
+        "ci_hi": 0.17601999999999998,
+        "n_positive": 2,
+        "n": 2,
+        "sign_p": 0.5
+      },
+      "paired_matched": {
+        "mean": 0.145477,
+        "se": 0.030542999999999987,
+        "ci_lo": 0.11493400000000001,
+        "ci_hi": 0.17601999999999998,
+        "n_positive": 2,
+        "n": 2,
+        "sign_p": 0.5
+      },
+      "paired_gain": {
+        "mean": 0.0,
+        "se": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n_positive": 0,
+        "n": 0,
+        "sign_p": 1.0
+      }
+    }
+  },
+  "verdict": "H1 SURVIVED (fraction_closed >= 0.50)",
+  "reproduction": {},
+  "wallclock_sec": 3.5
+}

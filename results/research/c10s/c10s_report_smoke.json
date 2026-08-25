@@ -1,0 +1,269 @@
+{
+  "M_RAYS": [
+    0.5,
+    4.0,
+    16.0
+  ],
+  "P_bracket": [
+    6.0,
+    24.0
+  ],
+  "n_bisect": 2,
+  "rows_per_window": 4000,
+  "n_windows": 3,
+  "protocols": {
+    "per-row": {
+      "rays": [
+        {
+          "M": 0.5,
+          "status": "left_censored",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 0.5,
+              "lr": 12.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -6.126939392011917
+            },
+            {
+              "P": 24.0,
+              "M": 0.5,
+              "lr": 48.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -109.09519986232335
+            }
+          ],
+          "threshold": null,
+          "bracket": [
+            null,
+            6.0
+          ]
+        },
+        {
+          "M": 4.0,
+          "status": "left_censored",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 4.0,
+              "lr": 1.5,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -1.8479407287939962
+            },
+            {
+              "P": 24.0,
+              "M": 4.0,
+              "lr": 6.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -42.678053809891736
+            }
+          ],
+          "threshold": null,
+          "bracket": [
+            null,
+            6.0
+          ]
+        },
+        {
+          "M": 16.0,
+          "status": "left_censored",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 16.0,
+              "lr": 0.375,
+              "n_div": 2,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 0.6666666666666666,
+              "mean_r2": -1.779461433030704
+            },
+            {
+              "P": 24.0,
+              "M": 16.0,
+              "lr": 1.5,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -57.16201883252768
+            }
+          ],
+          "threshold": null,
+          "bracket": [
+            null,
+            6.0
+          ]
+        }
+      ],
+      "n_usable": 0,
+      "n_censored": 3,
+      "n_non_monotone": 0,
+      "spread": null,
+      "verdict": "VOID (>=2 censored rays)"
+    },
+    "per-step": {
+      "rays": [
+        {
+          "M": 0.5,
+          "status": "left_censored",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 0.5,
+              "lr": 12.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -7.035379041437131
+            },
+            {
+              "P": 24.0,
+              "M": 0.5,
+              "lr": 48.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -128.66271163268354
+            }
+          ],
+          "threshold": null,
+          "bracket": [
+            null,
+            6.0
+          ]
+        },
+        {
+          "M": 4.0,
+          "status": "ok",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 4.0,
+              "lr": 1.5,
+              "n_div": 0,
+              "n_windows": 3,
+              "any_div": false,
+              "frac_div": 0.0,
+              "mean_r2": -0.5180315923928771
+            },
+            {
+              "P": 24.0,
+              "M": 4.0,
+              "lr": 6.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -67.63320389382928
+            },
+            {
+              "P": 12.0,
+              "M": 4.0,
+              "lr": 3.0,
+              "n_div": 3,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 1.0,
+              "mean_r2": -10.106777540154859
+            },
+            {
+              "P": 8.48528137423857,
+              "M": 4.0,
+              "lr": 2.1213203435596424,
+              "n_div": 2,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 0.6666666666666666,
+              "mean_r2": -3.2915046599222073
+            }
+          ],
+          "threshold": 7.135242690016327,
+          "bracket": [
+            6.0,
+            8.48528137423857
+          ],
+          "max_stable": 6.0,
+          "min_divergent": 8.48528137423857
+        },
+        {
+          "M": 16.0,
+          "status": "ok",
+          "visited": [
+            {
+              "P": 6.0,
+              "M": 16.0,
+              "lr": 0.375,
+              "n_div": 0,
+              "n_windows": 3,
+              "any_div": false,
+              "frac_div": 0.0,
+              "mean_r2": 0.2470762139223837
+            },
+            {
+              "P": 24.0,
+              "M": 16.0,
+              "lr": 1.5,
+              "n_div": 2,
+              "n_windows": 3,
+              "any_div": true,
+              "frac_div": 0.6666666666666666,
+              "mean_r2": -3.2070638902838824
+            },
+            {
+              "P": 12.0,
+              "M": 16.0,
+              "lr": 0.75,
+              "n_div": 0,
+              "n_windows": 3,
+              "any_div": false,
+              "frac_div": 0.0,
+              "mean_r2": 0.30245545829995485
+            },
+            {
+              "P": 16.97056274847714,
+              "M": 16.0,
+              "lr": 1.0606601717798212,
+              "n_div": 0,
+              "n_windows": 3,
+              "any_div": false,
+              "frac_div": 0.0,
+              "mean_r2": -0.032388298420036286
+            }
+          ],
+          "threshold": 20.18151396608915,
+          "bracket": [
+            16.97056274847714,
+            24.0
+          ],
+          "max_stable": 16.97056274847714,
+          "min_divergent": 24.0
+        }
+      ],
+      "n_usable": 2,
+      "n_censored": 1,
+      "n_non_monotone": 0,
+      "spread": 2.82842712474619,
+      "P_hat": 12.0,
+      "thresholds": {
+        "4.0": 7.135242690016327,
+        "16.0": 20.18151396608915
+      }
+    }
+  },
+  "wallclock_sec": 2.9
+}

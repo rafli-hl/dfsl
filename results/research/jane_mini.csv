@@ -1,0 +1,57 @@
+protocol,method,lr,r2,w_norm,diverged,bounded_family
+per-row,OGD (scale-dependent),0.001,0.06861051370475468,0.1525079156857191,false,false
+per-row,OGD (scale-dependent),0.01,-2.237516409947577,0.28812470485960634,false,false
+per-row,OGD (scale-dependent),0.1,-36962018476.09814,0.31957930332340456,false,false
+per-row,OGD (scale-dependent),0.5,-8.419175945724201e+114,2.8380121351858394,false,false
+per-row,OGD (scale-dependent),1.0,,1.100525952369338e+119,true,false
+per-row,OGD (scale-dependent),2.0,,7.238855987872208e+153,true,false
+per-row,OGD (scale-dependent),5.0,,,true,false
+per-row,Normalized-GD (M->0),0.001,0.008583258791974413,0.015239841869310537,false,true
+per-row,Normalized-GD (M->0),0.01,0.06408403925609496,0.13059458757954148,false,true
+per-row,Normalized-GD (M->0),0.1,0.10708447476105576,0.29130888620942197,false,true
+per-row,Normalized-GD (M->0),0.5,0.06553977411265854,0.3064838190591032,false,true
+per-row,Normalized-GD (M->0),1.0,-0.030313309354933926,0.32897218637343906,false,true
+per-row,Normalized-GD (M->0),2.0,-0.3627128991980715,0.36720685814688236,false,true
+per-row,Normalized-GD (M->0),5.0,-2.5200750144072215,0.45129376606797306,false,true
+per-row,Scale-adaptive OGD (M->inf),0.001,0.012984200216377473,0.023146187926014156,false,false
+per-row,Scale-adaptive OGD (M->inf),0.01,0.08188998084240395,0.17902100810868432,false,false
+per-row,Scale-adaptive OGD (M->inf),0.1,-0.0923982558745764,0.2850867558878722,false,false
+per-row,Scale-adaptive OGD (M->inf),0.5,-7474.395658646885,61.73647961719935,false,false
+per-row,Scale-adaptive OGD (M->inf),1.0,-3818750.5690171705,1564.498532378355,false,false
+per-row,Scale-adaptive OGD (M->inf),2.0,-3103215078.4495993,44920.36608823423,false,false
+per-row,Scale-adaptive OGD (M->inf),5.0,-1561578031918143.8,32075449.023061816,true,false
+per-row,SN-OMD (M=5),0.001,0.012870205050512062,0.022906679466663846,false,true
+per-row,SN-OMD (M=5),0.01,0.08157698458879714,0.17781770944390607,false,true
+per-row,SN-OMD (M=5),0.1,0.10649148666026154,0.28507617636902166,false,true
+per-row,SN-OMD (M=5),0.5,0.01775411158902751,0.29315422953114484,false,true
+per-row,SN-OMD (M=5),1.0,-0.2273241597186002,0.31319279372200864,false,true
+per-row,SN-OMD (M=5),2.0,-1.2468290128775412,0.35891126037391063,false,true
+per-row,SN-OMD (M=5),5.0,-9.64310525120035,0.4825427921974263,false,true
+per-step,OGD (scale-dependent),0.001,0.10278669381304006,0.25446474666954766,false,false
+per-step,OGD (scale-dependent),0.01,0.08325025740174985,0.29436371883809603,false,false
+per-step,OGD (scale-dependent),0.1,-2.8731656158712124e+24,0.4262697828316099,false,false
+per-step,OGD (scale-dependent),0.5,,5.065067331462936e+152,true,false
+per-step,OGD (scale-dependent),1.0,,7.676116160921946e+152,true,false
+per-step,OGD (scale-dependent),2.0,,1.456614975642155e+153,true,false
+per-step,OGD (scale-dependent),5.0,,5.836073595438117e+153,true,false
+per-step,Normalized-GD (M->0),0.001,0.009923634561040728,0.017362271039255826,false,true
+per-step,Normalized-GD (M->0),0.01,0.07002477303559618,0.14457647414831098,false,true
+per-step,Normalized-GD (M->0),0.1,0.11051729538617405,0.2866870359907291,false,true
+per-step,Normalized-GD (M->0),0.5,0.0897163120791471,0.292274702965588,false,true
+per-step,Normalized-GD (M->0),1.0,0.05727876220566064,0.3052838199139968,false,true
+per-step,Normalized-GD (M->0),2.0,-0.026452168203992654,0.3394516617712069,false,true
+per-step,Normalized-GD (M->0),5.0,-0.42399458410388835,0.4357053905456639,false,true
+per-step,Scale-adaptive OGD (M->inf),0.001,0.008871593072176442,0.01611109036319134,false,false
+per-step,Scale-adaptive OGD (M->inf),0.01,0.06370035000514374,0.13425348079470695,false,false
+per-step,Scale-adaptive OGD (M->inf),0.1,0.10841460374190692,0.2870346713761641,false,false
+per-step,Scale-adaptive OGD (M->inf),0.5,0.08726753263249099,0.2916477707956137,false,false
+per-step,Scale-adaptive OGD (M->inf),1.0,0.052246642860755976,0.30230903467886794,false,false
+per-step,Scale-adaptive OGD (M->inf),2.0,-0.2093551856390674,0.3301965545314438,false,false
+per-step,Scale-adaptive OGD (M->inf),5.0,-1511.6838126358705,0.4207212291635054,false,false
+per-step,SN-OMD (M=5),0.001,0.008871593072176442,0.01611109036319134,false,true
+per-step,SN-OMD (M=5),0.01,0.06370035000514374,0.13425348079470695,false,true
+per-step,SN-OMD (M=5),0.1,0.10842201890548309,0.2870313327967558,false,true
+per-step,SN-OMD (M=5),0.5,0.08732285644946902,0.2916477323065755,false,true
+per-step,SN-OMD (M=5),1.0,0.052349638233981866,0.3023090345555961,false,true
+per-step,SN-OMD (M=5),2.0,-0.19658724316464227,0.3301965545326884,false,true
+per-step,SN-OMD (M=5),5.0,-3.107228031289238,0.4207212305018083,false,true

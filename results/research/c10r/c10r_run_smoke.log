@@ -1,0 +1,48 @@
+================================================================================================
+C10R -- realized vs nominal maximum step, tested on a held-out stream
+================================================================================================
+
+================================================================================================
+STAGE 1 -- FIT on Jane (re-analysis of committed artifacts; NOT a test)
+================================================================================================
+  Jane per-row thresholds: M=0.5:8.671  M=1:9.055  M=2:12.806  M=4:14.583  M=8:13.373  M=16:11.743
+  reference config (lr=0.5, M=8), pooled over 9 held-out windows
+  Jane reference r-quantiles: p50=0.670  p90=2.256  p99=5.588  max=49.926
+
+  spread of P* (nominal, no free parameter) = 1.6818
+    q=p50  r_q=  0.670   spread of R* = 17.6308   (no better than P)
+    q=p90  r_q=  2.256   spread of R* = 7.7338   (no better than P)
+    q=p99  r_q=  5.588   spread of R* = 3.5556   (no better than P)
+    q=max  r_q= 49.926   spread of R* = 1.6818   (no better than P)
+
+  q* = max   (Jane spread 1.6818 vs P's 1.6818)
+  STAGE-1 DEGENERACY: no q in the grid improves on P. C-8 fails on its own
+  generating data. Registered rule: stage 2 still runs with the argmin q*.
+
+================================================================================================
+STAGE 2 -- TEST on crypto (BTC/USDT 1h), q* frozen from stage 1
+================================================================================================
+  n=76888 bars 2017-09-15..2025-03-11   3 windows x 1500 bars
+  crypto reference config (lr=0.5, M=8) stable on all windows
+  crypto reference r-quantiles: p50=0.559  p90=2.378  p99=9.433  max=208.374   bind_rate=0.0109
+
+  [bisecting under primary: crypto peak>1e3]
+
+  --- primary: crypto peak>1e3 ---
+    M=0.5    P* =  90.5097  bracket [64.0000, 128.0000]
+    M=4      RIGHT_CENSORED -- excluded
+    M=32     RIGHT_CENSORED -- excluded
+  SPREAD VOID (censored=2, usable=1)
+
+  [bisecting under secondary: Jane _diverged]
+
+  --- secondary: Jane _diverged ---
+    M=0.5    P* =   2.8284  bracket [2.0000, 4.0000]
+    M=4      P* =  11.3137  bracket [8.0000, 16.0000]
+    M=32     P* =  22.6274  bracket [16.0000, 32.0000]
+    R* (q*=max, r_q=208.374): M=0.5:2.828  M=4:11.314  M=32:22.627
+    spread_P  = 8.0000   (nominal max step, no free parameter)
+    spread_R  = 8.0000   (realized max step, q* fitted on Jane)
+    spread_lr = 8.0000   (pure rate, reference point)
+    ratio = spread_R / spread_P = 1.0000
+    REGISTERED VERDICT: H5 FALSIFIED (ratio >= 1.00)

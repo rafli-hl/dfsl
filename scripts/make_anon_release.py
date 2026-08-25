@@ -44,7 +44,14 @@ EXCLUDE_GLOBS = (
     # is identity-clean, so the token self-check below passes it -- but shipping a prior-venue
     # build discloses submission history to a double-blind ICLR reviewer, which is a different
     # kind of leak than the one that check looks for.
-    "paper/icml2026.",
+    #
+    # NO TRAILING DOT. Matching is plain substring containment, so "paper/icml2026." matched the
+    # flat layout (paper/icml2026.tex) and SILENTLY STOPPED MATCHING when those files moved to
+    # paper/icml2026/icml2026.tex -- the exclusion would have failed open, shipping the very
+    # thing it exists to withhold, with the token self-check still reporting clean because the
+    # leak is submission history rather than identity. Without the dot it covers both layouts.
+    # tests/test_anon_exclusions.py pins this.
+    "paper/icml2026",
     "out/",                  # stray committed latexmk output (one empty .synctex(busy) stub)
 )
 

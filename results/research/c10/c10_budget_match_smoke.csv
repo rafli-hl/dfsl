@@ -1,0 +1,19 @@
+protocol,window,window_idx,arm,method,setting,n_configs,weighted_r2,diverged,is_selection_window
+per-row,"[0,120)",1,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.423174,false,true
+per-row,"[0,120)",1,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.1,M=5",3,0.310922,false,true
+per-row,"[0,120)",1,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=2",6,0.448987,false,true
+per-row,"[150,270)",2,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.214188,false,false
+per-row,"[150,270)",2,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.1,M=5",3,0.172174,false,false
+per-row,"[150,270)",2,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=2",6,0.308937,false,false
+per-row,"[300,420)",3,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.141851,false,false
+per-row,"[300,420)",3,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.1,M=5",3,0.135286,false,false
+per-row,"[300,420)",3,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=2",6,0.185915,false,false
+per-step,"[0,120)",1,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.50136,false,true
+per-step,"[0,120)",1,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.5,M=5",3,0.421918,false,true
+per-step,"[0,120)",1,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=10",6,0.421918,false,true
+per-step,"[150,270)",2,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.404618,false,false
+per-step,"[150,270)",2,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.5,M=5",3,0.228598,false,false
+per-step,"[150,270)",2,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=10",6,0.228598,false,false
+per-step,"[300,420)",3,A1_fixedtau_2d,fixed-tau clip (lr x tau),"lr=0.1,tau=5",6,0.304286,false,false
+per-step,"[300,420)",3,A2_snomd_1d_published,SN-OMD M=5 (lr only),"lr=0.5,M=5",3,0.189352,false,false
+per-step,"[300,420)",3,A3_snomd_2d_matched,SN-OMD (lr x M),"lr=0.5,M=10",6,0.189352,false,false

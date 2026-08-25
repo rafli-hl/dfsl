@@ -1,0 +1,226 @@
+{
+  "kappa_main": 10.0,
+  "kappas": [
+    5.0,
+    10.0,
+    20.0
+  ],
+  "streams": {},
+  "v1_rows": [
+    {
+      "stream": "jane",
+      "window": 0,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0000257858134027,
+      "P_ratio": 0.9986079755151293
+    },
+    {
+      "stream": "jane",
+      "window": 0,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "jane",
+      "window": 1,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0003379048801946,
+      "P_ratio": 0.9985549571258759
+    },
+    {
+      "stream": "jane",
+      "window": 1,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "jane",
+      "window": 2,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0002013212180292,
+      "P_ratio": 1.004306640401174
+    },
+    {
+      "stream": "jane",
+      "window": 2,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "crypto",
+      "window": 0,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.00006243748897,
+      "P_ratio": 1.0000386253129978
+    },
+    {
+      "stream": "crypto",
+      "window": 0,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "crypto",
+      "window": 1,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0000019473993933,
+      "P_ratio": 1.0000811514673784
+    },
+    {
+      "stream": "crypto",
+      "window": 1,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "crypto",
+      "window": 2,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0000250056964304,
+      "P_ratio": 0.9998216157831429
+    },
+    {
+      "stream": "crypto",
+      "window": 2,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": false,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "synthetic",
+      "window": 0,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0000098447944943,
+      "P_ratio": 0.9998801122524784
+    },
+    {
+      "stream": "synthetic",
+      "window": 0,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "synthetic",
+      "window": 1,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0000000217870681,
+      "P_ratio": 1.0000085393626363
+    },
+    {
+      "stream": "synthetic",
+      "window": 1,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    },
+    {
+      "stream": "synthetic",
+      "window": 2,
+      "predictor": "zero",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0000808863820128,
+      "P_ratio": 0.9999959038974983
+    },
+    {
+      "stream": "synthetic",
+      "window": 2,
+      "predictor": "best_constant",
+      "new_div": false,
+      "jane_div": true,
+      "L_ratio": 1.0,
+      "P_ratio": 1.0
+    }
+  ],
+  "v3_rows": [
+    {
+      "stream": "jane",
+      "M": 0.5,
+      "monotone": true,
+      "n_stable": 2,
+      "n_div": 2
+    },
+    {
+      "stream": "jane",
+      "M": 8.0,
+      "monotone": true,
+      "n_stable": 2,
+      "n_div": 2
+    },
+    {
+      "stream": "crypto",
+      "M": 0.5,
+      "monotone": true,
+      "n_stable": 2,
+      "n_div": 2
+    },
+    {
+      "stream": "crypto",
+      "M": 8.0,
+      "monotone": true,
+      "n_stable": 3,
+      "n_div": 1
+    },
+    {
+      "stream": "synthetic",
+      "M": 0.5,
+      "monotone": true,
+      "n_stable": 3,
+      "n_div": 1
+    },
+    {
+      "stream": "synthetic",
+      "M": 8.0,
+      "monotone": true,
+      "n_stable": 4,
+      "n_div": 0
+    }
+  ],
+  "results": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V4": false,
+    "V5": true
+  },
+  "accepted": false,
+  "wallclock_sec": 23.2
+}

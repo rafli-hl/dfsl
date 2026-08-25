@@ -1,0 +1,54 @@
+====================================================================================================
+C12 -- tab:replication at MATCHED tuning budget (only SN-OMD's grid changes)
+3 windows, rows<=4000; SN-OMD gets lr x M = 3x2=6, fixed-tau gets lr x tau = 3x2=6
+====================================================================================================
+
+########## per-row ##########
+[tune] window 1 date[0,120)  n=4000
+  OGD                        2 cfg  lr=0.002               win1 R2=-0.1515   <-- lr=0.002 at edge
+  Normalized-GD              3 cfg  lr=0.5                 win1 R2=+0.3887
+  Scale-adaptive OGD         3 cfg  lr=0.1                 win1 R2=+0.3129   <-- lr=0.1 at edge
+  SN-OMD (M tuned)           6 cfg  lr=0.5,M=2             win1 R2=+0.4490   <-- M=2 at edge  <-- collapsed toward an endpoint method
+  fixed-tau clip             6 cfg  lr=0.1,tau=5           win1 R2=+0.4232   <-- lr=0.1 at edge; tau=5 at edge
+  AdaGrad-Norm               2 cfg  lr=0.3                 win1 R2=+0.3278   <-- lr=0.3 at edge
+[eval] window 1 done (2s)
+[eval] window 2 done (2s)
+[eval] window 3 done (3s)
+
+########## per-step ##########
+[tune] window 1 date[0,120)  n=4000
+  OGD                        2 cfg  lr=0.002               win1 R2=+0.1193   <-- lr=0.002 at edge
+  Normalized-GD              3 cfg  lr=0.5                 win1 R2=+0.5014
+  Scale-adaptive OGD         3 cfg  lr=0.5                 win1 R2=+0.4219
+  SN-OMD (M tuned)           6 cfg  lr=0.5,M=10            win1 R2=+0.4219   <-- M=10 at edge  <-- collapsed toward an endpoint method
+  fixed-tau clip             6 cfg  lr=0.1,tau=5           win1 R2=+0.5014   <-- lr=0.1 at edge; tau=5 at edge
+  AdaGrad-Norm               2 cfg  lr=0.3                 win1 R2=+0.3895   <-- lr=0.3 at edge
+[eval] window 1 done (4s)
+[eval] window 2 done (4s)
+[eval] window 3 done (4s)
+
+====================================================================================================
+MATCHED-BUDGET TABLE   (all ten windows, published format | held-out 2-10)
+====================================================================================================
+
+per-row:
+  method                    cfg  all-10 mean     std   div  div_rel   held-out     win1
+  SN-OMD (M tuned)            6      +0.3146  0.1316   0/10      0/10    +0.2474  +0.4490
+  fixed-tau clip              6      +0.2597  0.1461   0/10      0/10    +0.1780  +0.4232
+  Normalized-GD               3      +0.2390  0.1359   0/10      0/10    +0.1641  +0.3887
+  AdaGrad-Norm                2      +0.2378  0.0816   0/10      0/10    +0.1927  +0.3278
+  Scale-adaptive OGD          3      +0.1952  0.1104   0/10      0/10    +0.1363  +0.3129
+  OGD                         2      -0.0155  0.1186   0/10      0/10    +0.0524  -0.1515
+
+per-step:
+  method                    cfg  all-10 mean     std   div  div_rel   held-out     win1
+  Normalized-GD               3      +0.4034  0.0985   0/10      0/10    +0.3545  +0.5014
+  fixed-tau clip              6      +0.4034  0.0985   0/10      0/10    +0.3545  +0.5014
+  AdaGrad-Norm                2      +0.2909  0.0870   0/10      0/10    +0.2416  +0.3895
+  Scale-adaptive OGD          3      +0.2800  0.1245   0/10      0/10    +0.2090  +0.4219
+  SN-OMD (M tuned)            6      +0.2800  0.1245   0/10      0/10    +0.2090  +0.4219
+  OGD                         2      +0.1467  0.0360   0/10      0/10    +0.1603  +0.1193
+
+====================================================================================================
+REPRODUCTION GATE -- the five untouched methods must match the published CSV
+====================================================================================================

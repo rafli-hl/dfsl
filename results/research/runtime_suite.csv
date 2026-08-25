@@ -1,0 +1,30 @@
+script,seconds,status,needs_jane,produces
+research_predictability_check.py,203.2,ok,True,the 2x2 predictability decomposition
+research_review2_checks.py,1.4,ok,True,tab:residual real-data rows
+research_residual_surrogate.py,30.5,ok,False,tab:residual GARCH-surrogate rows
+research_null_normalization.py,87.5,ok,True,"fig:nullcontrol, the three null controls"
+research_iterate_norm.py,11.6,ok,True,fig:iternorm
+research_leakage_controls.py,63.9,ok,True,tab:leakage
+research_cap_sweep_jane.py,413.0,ok,True,the Jane cap frontier
+research_crypto_mechanism.py,1.6,ok,False,crypto tail decomposition
+research_crypto_algorithms.py,15.3,ok,False,crypto stability dichotomy
+research_synthetic.py,99.8,ok,False,"fig:synthetic, known-tail streams"
+research_jane_msweep.py,510.5,ok,True,fig:msweep
+research_tracker.py,3.5,ok,True,"fig:tracker, tab:tracker"
+research_tracker_bootstrap.py,3.2,ok,True,app:tracker paired bootstrap
+research_cm_normgd_equiv.py,99.2,ok,True,Cutkosky-Mehta beta=0 equivalence
+research_cm_widen.py,202.1,ok,True,Cutkosky-Mehta grid widening
+research_lr_widen.py,80.2,ok,True,learning-rate grid widening
+research_lr_curves_windows.py,730.4,ok,True,per-window lr curves
+research_grid_adequacy.py,917.6,ok,True,tab:grid
+research_rmsprop_adam.py,158.8,ok,True,app:adaptive
+research_review3_checks.py,20.3,ok,True,round-3 audit checks
+research_batched_check.py,104.5,ok,True,tab:jane
+research_table1_errorbars.py,193.8,ok,True,tab:jane error bars
+research_windows_replication.py,351.5,ok,True,ten-window baselines
+research_windows_tracker.py,116.0,ok,True,ten-window tracker rows
+research_baselines.py,338.5,ok,True,tab:jane baseline rows
+research_block_length.py,648.1,ok,True,block-length sensitivity
+research_jane_mini.py,13.5,ok,False,reviewer-runnable Jane path
+research_c12_matched_table.py,2214.1,ok,True,"tab:replication, matched budget"
+research_c12b_blockmed.py,3006.7,ok,True,tab:replication block-median row

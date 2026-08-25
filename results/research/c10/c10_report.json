@@ -1,0 +1,201 @@
+{
+  "grids": {
+    "LRS_SF": [
+      0.02,
+      0.05,
+      0.1,
+      0.2,
+      0.5,
+      1.0,
+      2.0,
+      3.0,
+      5.0,
+      8.0
+    ],
+    "TAUS": [
+      2.0,
+      5.0,
+      10.0,
+      20.0,
+      50.0,
+      100.0,
+      300.0
+    ],
+    "M_GRID": [
+      0.5,
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      30.0,
+      100.0
+    ]
+  },
+  "boot_seed": 20260823,
+  "n_boot": 10000,
+  "protocols": {
+    "per-row": {
+      "window1": {
+        "A1_fixedtau_2d": 0.246344,
+        "A2_snomd_1d_published": 0.284564,
+        "A3_snomd_2d_matched": 0.315169
+      },
+      "heldout_mean": {
+        "A1_fixedtau_2d": 0.20199866666666666,
+        "A2_snomd_1d_published": 0.12372044444444444,
+        "A3_snomd_2d_matched": 0.22704866666666668
+      },
+      "heldout_std": {
+        "A1_fixedtau_2d": 0.029493000784084348,
+        "A2_snomd_1d_published": 0.10281394877655355,
+        "A3_snomd_2d_matched": 0.04030051291857214
+      },
+      "frozen": {
+        "A1_fixedtau_2d": {
+          "lr": 0.2,
+          "tau": 20.0
+        },
+        "A2_snomd_1d_published": {
+          "lr": 2.0,
+          "M": 5.0
+        },
+        "A3_snomd_2d_matched": {
+          "lr": 3.0,
+          "M": 2.0
+        }
+      },
+      "boundary_flags": {
+        "A1_fixedtau_2d": [],
+        "A2_snomd_1d_published": [],
+        "A3_snomd_2d_matched": []
+      },
+      "delta_published": 0.07827822222222222,
+      "delta_matched": -0.02505,
+      "fraction_closed": 1.32001237750247,
+      "paired_published": {
+        "mean": 0.07827822222222222,
+        "se": 0.0263339758164122,
+        "ci_lo": 0.039111544444444445,
+        "ci_hi": 0.13248081111111107,
+        "n_positive": 9,
+        "n": 9,
+        "sign_p": 0.00390625
+      },
+      "paired_matched": {
+        "mean": -0.02505,
+        "se": 0.004822617892113508,
+        "ci_lo": -0.03377783611111111,
+        "ci_hi": -0.016176222222222217,
+        "n_positive": 0,
+        "n": 9,
+        "sign_p": 0.00390625
+      },
+      "paired_gain": {
+        "mean": 0.10332822222222221,
+        "se": 0.023707523693719507,
+        "ci_lo": 0.06782941666666667,
+        "ci_hi": 0.15359758055555547,
+        "n_positive": 9,
+        "n": 9,
+        "sign_p": 0.00390625
+      }
+    },
+    "per-step": {
+      "window1": {
+        "A1_fixedtau_2d": 0.382085,
+        "A2_snomd_1d_published": 0.306556,
+        "A3_snomd_2d_matched": 0.383694
+      },
+      "heldout_mean": {
+        "A1_fixedtau_2d": 0.18150244444444444,
+        "A2_snomd_1d_published": 0.10203666666666666,
+        "A3_snomd_2d_matched": 0.19488099999999997
+      },
+      "heldout_std": {
+        "A1_fixedtau_2d": 0.12182762536070289,
+        "A2_snomd_1d_published": 0.1381150186909447,
+        "A3_snomd_2d_matched": 0.11393466308591077
+      },
+      "frozen": {
+        "A1_fixedtau_2d": {
+          "lr": 0.2,
+          "tau": 20.0
+        },
+        "A2_snomd_1d_published": {
+          "lr": 2.0,
+          "M": 5.0
+        },
+        "A3_snomd_2d_matched": {
+          "lr": 8.0,
+          "M": 0.5
+        }
+      },
+      "boundary_flags": {
+        "A1_fixedtau_2d": [],
+        "A2_snomd_1d_published": [],
+        "A3_snomd_2d_matched": [
+          "lr=8 at grid edge",
+          "M=0.5 at grid edge"
+        ]
+      },
+      "delta_published": 0.07946577777777777,
+      "delta_matched": -0.013378555555555553,
+      "fraction_closed": 1.168356189666551,
+      "paired_published": {
+        "mean": 0.07946577777777777,
+        "se": 0.03449639440972933,
+        "ci_lo": 0.010027466666666655,
+        "ci_hi": 0.13623507222222225,
+        "n_positive": 8,
+        "n": 9,
+        "sign_p": 0.0390625
+      },
+      "paired_matched": {
+        "mean": -0.013378555555555553,
+        "se": 0.0038829021867638285,
+        "ci_lo": -0.02103528333333333,
+        "ci_hi": -0.006775997222222219,
+        "n_positive": 0,
+        "n": 9,
+        "sign_p": 0.00390625
+      },
+      "paired_gain": {
+        "mean": 0.09284433333333332,
+        "se": 0.03242913283222356,
+        "ci_lo": 0.029358100000000005,
+        "ci_hi": 0.14648986388888888,
+        "n_positive": 8,
+        "n": 9,
+        "sign_p": 0.0390625
+      }
+    }
+  },
+  "verdict": "H1 SURVIVED (fraction_closed >= 0.50)",
+  "reproduction": {
+    "per-row/A1_fixedtau_2d": {
+      "mine": 0.20199866666666666,
+      "stored": 0.2019988888888889,
+      "abs_diff": 2.2222222223478028e-07,
+      "within_tol": true
+    },
+    "per-row/A2_snomd_1d_published": {
+      "mine": 0.12372044444444444,
+      "stored": 0.12372111111111112,
+      "abs_diff": 6.666666666765853e-07,
+      "within_tol": true
+    },
+    "per-step/A1_fixedtau_2d": {
+      "mine": 0.18150244444444444,
+      "stored": 0.18150333333333335,
+      "abs_diff": 8.888888889113655e-07,
+      "within_tol": true
+    },
+    "per-step/A2_snomd_1d_published": {
+      "mine": 0.10203666666666666,
+      "stored": 0.10203777777777777,
+      "abs_diff": 1.1111111111045124e-06,
+      "within_tol": true
+    }
+  },
+  "wallclock_sec": 425.8
+}

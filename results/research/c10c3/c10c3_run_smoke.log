@@ -1,0 +1,70 @@
+================================================================================================
+C10C3 -- final acceptance suite (criterion UNCHANGED; V4 dropped by user decision)
+jane_rows=40000   V7 and V8 are new and blind
+================================================================================================
+
+================================================================================================
+INSTRUMENTATION GATE (tracked runner vs anchor_perrow)
+================================================================================================
+  snomd   cap=0.5      lr=0.5    diff=0.00e+00
+  snomd   cap=8        lr=2      diff=0.00e+00
+  ogd     cap=0        lr=0.01   diff=0.00e+00
+  snomd   cap=1e+09    lr=0.1    diff=0.00e+00
+  GATE PASSED (worst 0.00e+00 <= 1e-09)
+
+########## STREAM: jane ##########
+  full: done (12s)
+  half: done (14s)
+  rays done (19s)
+
+########## STREAM: crypto ##########
+  full: done (22s)
+  half: done (22s)
+  rays done (24s)
+
+########## STREAM: synthetic ##########
+  full: done (25s)
+  half: done (26s)
+  rays done (27s)
+
+================================================================================================
+ACCEPTANCE TESTS  (V4 dropped by user decision -- see registration)
+================================================================================================
+
+V1 reference sanity: 0/18 flagged -> PASS   (inherited rule flags 6)
+
+V2 blow-up recall: 13 true blow-ups, 0 missed -> PASS
+
+V3 monotone in P: 6 rays, 0 violations -> PASS
+
+V5 kappa robustness [jane]: 0.000 move -> ok
+V5 kappa robustness [crypto]: 0.000 move -> ok
+V5 kappa robustness [synthetic]: 0.000 move -> ok
+V5 overall -> PASS
+
+V6 truncation [synthetic]: new=1.000 jane=1.000 -> ok
+V6 truncation [crypto]: new=1.000 jane=1.000 -> ok
+V6 truncation [jane]: new=1.000 jane=1.000 -> ok
+V6 overall -> PASS
+
+V8 scale invariance (NEW, BLIND -- units change on (y, preds), criterion function):
+   jane       invariant fraction  new=1.000  inherited=0.417  -> ok
+   crypto     invariant fraction  new=1.000  inherited=0.278  -> ok
+   synthetic  invariant fraction  new=1.000  inherited=0.139  -> ok
+V8 overall -> PASS
+
+V7 clause necessity (DIAGNOSTIC, not a gate):
+   crypto     divergent= 10   by P only=  0   by L only=  4   by both=  6
+   jane       divergent= 15   by P only=  0   by L only=  0   by both= 15
+   synthetic  divergent=  5   by P only=  0   by L only=  1   by both=  4
+   => peak clause changed 0 decisions across all streams.
+   => REDUCIBLE: on this evidence the criterion collapses to its aggregate
+      clause alone; the peak machinery and kappa carry no weight, and V5 is
+      vacuous rather than passed. (Consequence fixed in the registration.)
+
+================================================================================================
+VERDICT: criterion ACCEPTED   V1=PASS  V2=PASS  V3=PASS  V5=PASS  V6=PASS  V8=PASS
+QUALIFICATIONS: V1/V2/V3/V5 blind in C10C; V6 blind in C10C2; V8 blind here;
+V4 removed by user decision rather than by evidence.
+AND: V7 shows the peak clause is inert on this evidence -- see above.
+================================================================================================

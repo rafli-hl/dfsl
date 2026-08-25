@@ -1,0 +1,59 @@
+================================================================================================
+C10C2 -- corrected acceptance suite (criterion itself UNCHANGED)
+jane_rows=40000   V4 respecified, V6 new and blind
+================================================================================================
+
+================================================================================================
+INSTRUMENTATION GATE (tracked runner vs anchor_perrow)
+================================================================================================
+  snomd   cap=0.5      lr=0.5    diff=0.00e+00
+  snomd   cap=8        lr=2      diff=0.00e+00
+  ogd     cap=0        lr=0.01   diff=0.00e+00
+  snomd   cap=1e+09    lr=0.1    diff=0.00e+00
+  GATE PASSED (worst 0.00e+00 <= 1e-09)
+
+########## STREAM: jane ##########
+  full grid: 24 runs (11s)
+  truncated grid: 12 runs (13s)
+  rays done (18s)
+
+########## STREAM: crypto ##########
+  full grid: 24 runs (20s)
+  truncated grid: 12 runs (21s)
+  rays done (22s)
+
+########## STREAM: synthetic ##########
+  full grid: 24 runs (24s)
+  truncated grid: 12 runs (24s)
+  rays done (25s)
+
+================================================================================================
+ACCEPTANCE TESTS
+================================================================================================
+
+V1 reference sanity: 0/18 wrongly flagged -> PASS  (inherited Jane rule flags 6)
+
+V2 blow-up recall: 13 true blow-ups, 0 missed -> PASS
+
+V3 monotone in P: 6 rays, 0 violations -> PASS
+
+V4 non-vacuity (RESPECIFIED -- applicability from max||w||>1e6, not the criterion):
+   synthetic  capped grid contains 0 ground-truth blow-ups (max||w||=18.9) -> NOT APPLICABLE
+   crypto     capped grid contains 0 ground-truth blow-ups (max||w||=19.6) -> NOT APPLICABLE
+   jane       capped grid contains 0 ground-truth blow-ups (max||w||=34.1) -> NOT APPLICABLE
+   applicable on NO STREAM -> FAIL
+
+V5 kappa robustness [crypto]: 0.000 move -> ok
+V5 kappa robustness [jane]: 0.000 move -> ok
+V5 kappa robustness [synthetic]: 0.000 move -> ok
+V5 overall -> PASS
+
+V6 truncation stability (NEW, BLIND -- comparative against the inherited rule):
+   jane       agreement new=1.000  jane=1.000  (new >= jane-0.05) -> ok
+   synthetic  agreement new=1.000  jane=1.000  (new >= jane-0.05) -> ok
+   crypto     agreement new=1.000  jane=1.000  (new >= jane-0.05) -> ok
+V6 overall -> PASS
+
+================================================================================================
+VERDICT: criterion REJECTED   V1=PASS  V2=PASS  V3=PASS  V4=FAIL  V5=PASS  V6=PASS
+================================================================================================
