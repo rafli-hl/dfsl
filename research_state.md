@@ -449,15 +449,42 @@ ceiling is right-censored, and the uncorrected code would have reported a `1.88�
 FALSIFIED verdict that was an artifact of the grid ending. Fixed before the result was recorded;
 the invariant is INCONCLUSIVE, not falsified.
 
-### There is now no live theory direction
+### ~~There is now no live theory direction~~ — overstated; corrected on review
 
 D1/T1 failed. D1B closed the switching bound negatively. D1C emptied Prop F.1's analytical
-discharge. T4 is pre-falsified and yields a classification, not a separation. Every route to a
-non-vacuous *theorem* that this repository has registered is now closed or incomplete, and the
-honest reading is that the contribution here is measurement-first. That is precisely the
-condition Session 14 recorded as the gate on the **Structure C** reframe, and the gate is now
-open — it is the author's call whether to take it, not a decision this session should make
-unilaterally.
+discharge. T4 produced a classification rather than a separation. I wrote that up as "no live
+theory direction", and that is **wrong in a way worth recording**: what T4 produced is a small,
+*correct* theory replacing a vacuous one. Theorem A gives stability for any bounded step map,
+Theorem B separates that from tuning transfer, and Corollary C **derives** AdaGrad-Norm's
+membership in the stable family where the paper currently asserts it. Deriving a membership the
+manuscript asserts is not filler.
+
+What is dead is the *separation* — GAP 2, no lower bound — and that stays dead. What is alive is
+a taxonomy correction, and T4B tests it on the instrument that carries every other stability
+claim.
+
+**The mapped boundary is itself the result.** Four theory directions attempted, four closed,
+three with *measured* obstructions: `W_s = Θ(T)`, `N ≥ Θ(T)`, and `ℓ ≳ 2000` making
+`NW/T^{1/p}` diverge at every admissible `p`. That is not four failures; it is a boundary, and
+it says something specific — **this class of stream has no exploitable structure at any
+timescale, neither heavy tails nor regimes.** Combined with Theorem A/B, the paper's claim
+becomes falsifiable and unusual: here is a family of proof strategies, here is why none can be
+non-vacuous on real market streams, and here is the correct axis for the empirical partition.
+
+The **Structure C** gate Session 14 recorded is now open. The honest cost, recorded so the
+decision is made with it in view rather than around it: a reviewer wanting a deep theorem still
+rejects, and "a phenomenon plus four closed routes" needs the taxonomy correction to be the
+answer rather than the measurement alone. Structure C is a real paper; it is not a
+strong-accept paper.
+
+### An open decision nobody has raised in fifteen sessions: the venue
+
+Four negative theory results with measured obstructions, a taxonomy correction, and a rigorous
+measurement study is good work that is **poorly shaped for a main-track slot optimising for
+novelty**, and well shaped for a venue where the measurement or the negative result is the
+contribution. `audit/ICLR2027_SUMMARY.md` has tracked "ICLR 2027" as settled since the venue
+moved there, and it has never been re-examined against what the work actually became. Recorded
+as an open decision for the author, not a recommendation from this session.
 
 ## What is now open
 

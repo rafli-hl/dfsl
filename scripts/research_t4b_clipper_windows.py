@@ -46,6 +46,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from research_table1_errorbars import agg_r2  # noqa: E402
+
+from dfsl.estimators import get_estimator  # noqa: E402
 from research_windows_replication import (  # noqa: E402  (the instrument itself, not a copy)
     LRS_SF,
     WINDOWS,
@@ -62,19 +64,20 @@ MULTIPLIER = 3.0      # RobustOMD default
 MIN_HISTORY = 10      # both classes wait for 10 samples before clipping
 
 
-def _mom(x: np.ndarray, n_blocks: int = 8) -> float:
-    """Median of means, matching dfsl.estimators' construction closely enough for a threshold."""
-    if x.size < n_blocks:
-        return float(np.median(x))
-    blocks = np.array_split(x, n_blocks)
-    return float(np.median([b.mean() for b in blocks]))
-
-
 def _tau_fn(kind: str):
+    """Threshold statistics, taken from the library rather than reimplemented.
+
+    An earlier version of this script hand-rolled median-of-means with 8 unpermuted blocks. The
+    instrumentation gate caught it: `dfsl.estimators.median_of_means` randomly *permutes* the
+    sample and defaults to `ceil(8 log(1/0.05)) = 24` blocks, so the hand-rolled version drifted
+    up to 3.7e-2 relative on the iterate path. Calling `get_estimator` costs a permutation per
+    round and removes the discrepancy entirely.
+    """
     if kind == "adaptive_clip":
         return lambda h: float(np.quantile(h, QUANTILE))
     if kind == "robust_omd":
-        return lambda h: MULTIPLIER * max(_mom(h), 1e-12)
+        mom = get_estimator("median_of_means")
+        return lambda h: MULTIPLIER * max(float(mom(h)), 1e-12)
     raise ValueError(kind)
 
 

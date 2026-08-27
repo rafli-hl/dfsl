@@ -566,6 +566,19 @@ partition. Does not reopen C-20.
 **Status: T4 FAILED against its registered success criteria (`results/research/t4_separation.csv`,
 2026-08-27). The direction's own falsification condition was already met by committed data.**
 
+**AMENDED 2026-08-27 after review. The condition C-22 fired on was mis-specified, and it was
+mine.** As registered it read *"if scale-dependent clipping can be made stable by a rate
+schedule alone, the partition is about tuning, not structure."* That could never fail to fire:
+any method is stabilised by `η → 0`, and the paper's own `tab:jane` already printed OGD's stable
+ceiling at `10⁻²`. I registered a condition that committed data already satisfied, so its firing
+carried less information than the T4 write-up gave it. The claim actually worth testing is the
+paper's own, and it is a **conjunction** — for scale-dependent methods, stability and
+competitiveness do not overlap: rates small enough to stay bounded underfit, and any rate large
+enough to be competitive diverges. T4 did not test that; **T4B** does, on the ten-window frozen
+instrument. The classification below is unaffected — it rests on Theorems A and B, not on the
+condition — but the *verdict* "T4 as framed is falsified" should be read as "T4 asked a question
+whose answer was already in the paper", which is a weaker and more accurate statement.
+
 D3/T4 carried the condition *"if scale-dependent clipping can be made stable by a rate schedule
 alone, the partition is about tuning, not structure."* It can. Every scale-dependent method has
 a strictly positive stable rate in every artifact that measures it — OGD at `1`–`2×10⁻³`,
@@ -594,12 +607,39 @@ only that its upper bound is loose. A separation needs both halves and only one 
 so this is a derivation strategy with a located obstruction, which the standing commitment says
 is not a result.
 
+**The invariant was under-tested, added on review.** T4 checked `P = η_max·B` only *within* the
+bounded scale-free family, where normalized-GD's ceiling is censored. Across tiers the dynamic
+range in `B` is ~1000× and both endpoints are measured: OGD's ceiling `[0.01,0.02)` against
+`sup‖g‖ ≈ 1.1×10³` gives `P ∈ [11.5, 23.0)`; SN-OMD's `[3,5)` against `B=5` gives `P ∈ [15,25)`.
+Those **overlap**, and the lower endpoint coincides with C10S's committed `P* = 11.5`. Recorded
+as *suggestive, not measured*, for a reason that kills a clean reading: `sup‖g‖` comes from
+`gradnorm_at_wstar.npy`, which `research_findings.py` builds on date`[0,30)` with 200k rows,
+while the ceilings are measured on date`[0,120)` with 150k — **different window, different
+length, different standardization**. Making it a measurement requires recomputing the gradient
+norms on the ceiling stream.
+
 **Not falsified, and not confirmed:** the `P = η_max·B` invariant. normalized-GD never diverges
 on the committed grid, so its ceiling is right-censored at `lr=8` and every `P` built from it is
 a lower bound. Taking the censored value at face value would have printed a `1.88×` spread and
 a verdict of FALSIFIED against the registered `1.68×` threshold; that verdict would have been an
 artifact of the grid ending and is not recorded. Resolving it needs a wider grid — new compute,
 hence a separate registration.
+
+**The under-weighted consequence, added on review.** C-23 below was filed as a provenance
+defect. It is more than that, because it changes which *axis* predicts divergence:
+
+| method | scale-dependent? | bounded step? | diverges? |
+|---|---|---|---|
+| OGD | yes | no | **9/10** (per-step) |
+| uncapped scale-adaptive OGD | **no** | no | **7/10** (per-row) |
+| AdaptiveClip / RobustOMD | **yes** | yes | **none observed**, `R²` 0.14–0.16 |
+| bounded scale-free family | no | yes | 0/10 |
+
+**Scale-dependence does not predict divergence; boundedness of the step map does** — which is
+exactly what Theorem A says and Theorem B separates from tuning transfer. The paper frames its
+central partition on the other axis. This is a correction to the paper's taxonomy, it is proved,
+and it is corroborated by the one clean measurement of the row the paper had wrong — but it
+rested on a single window until **T4B** put those methods on the primary instrument.
 
 **Bears on** the *explanation* of the partition, not on the partition itself, which is measured
 at frozen hyperparameters and is untouched. Not on Prop 3.1.
