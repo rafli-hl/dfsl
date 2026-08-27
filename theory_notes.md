@@ -462,3 +462,46 @@ Nothing about Prop 3.1, which is correct and untouched. Nothing about the ten-wi
 divergence partition, which is measured at **frozen** hyperparameters and is a different claim
 from a tuned ceiling. And no separation theorem — see GAP 2.
 
+---
+
+# T4B — the taxonomy correction, tested and rejected (2026-08-27)
+
+Registered before execution (fifteenth document), with amendment 1 to the grid recorded before
+any across-window result was seen.
+
+**H_T4B is falsified, and that is the outcome favourable to the manuscript.** AdaptiveClip and
+RobustOMD on the ten-window frozen instrument diverge **9/10 per-step**, precisely OGD's count,
+and per-row are bounded but at mean `R²` of `−0.010` and `−0.007` — below OGD and an order of
+magnitude below the bounded scale-free pack's `0.14`–`0.21`.
+
+## Where T4's argument went wrong
+
+Theorem A's hypothesis is `‖Φ_t‖ ≤ B` for a constant **independent of the stream**. A clipper's
+bound is `c·ŝ_t`. On one window `sup_t ŝ_t` is a finite number, and I read that finite number as
+if it were a constant of the method. It is a property of the window. T4's own 2×2 had already
+placed the clippers in the degree-1 *unbounded* cell alongside OGD; the taxonomy correction
+contradicted the classification it claimed to rest on.
+
+## What survives, and it is the more interesting half
+
+Theorem B predicts that a degree-1 method's stable-rate set moves with the stream, so a rate
+tuned on one window need not survive another. Measured: the clippers tune to `lr = 5×10⁻³` on
+window 1 and diverge on nine of the remaining windows, while every degree-0 method transfers at
+`0/10`. **Theorem B's transfer prediction is confirmed on the paper's primary instrument.**
+That is a proved statement making a falsifiable prediction that then held — which is what T4 was
+supposed to produce and, in this narrower form, did.
+
+## The invariant, corrected downward
+
+`research_t4b_invariant.py` recomputes `sup‖g‖` at `w*` on the ceilings' own slice
+(date`[0,120)`, 150k) rather than on `gradnorm_at_wstar.npy`'s date`[0,30)`/200k: `752.6`
+against `1149.2`, a factor `1.53`. `P = η_max·B` then gives OGD `[7.5, 15.1)` and SN-OMD
+`[15.0, 25.0)` — intersecting only in a `0.1`-wide sliver the grid cannot resolve, with C10S's
+committed `P* = 11.5` **outside** it. The earlier cross-tier agreement was an artifact of mixing
+two streams. Not confirmed.
+
+## Unchanged
+
+GAP 1 and GAP 2 both stand. No lower bound, no separation theorem, and nothing here bears on
+Prop 3.1.
+

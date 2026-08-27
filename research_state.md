@@ -486,6 +486,43 @@ contribution. `audit/ICLR2027_SUMMARY.md` has tracked "ICLR 2027" as settled sin
 moved there, and it has never been re-examined against what the work actually became. Recorded
 as an open decision for the author, not a recommendation from this session.
 
+## Session 16 — direction T4B, the clippers on the frozen instrument (registered; H_T4B FALSIFIED)
+
+Session 15 ended with a taxonomy correction resting on one single-window run. T4B put it on the
+instrument that carries every other stability claim, and **the correction did not survive**. The
+paper's axis is right; my revision of it was wrong.
+
+**Result.** AdaptiveClip and RobustOMD diverge **9/10 per-step** at their frozen window-1 rate,
+identical to OGD, and per-row are bounded but at mean `R²` `−0.010`/`−0.007`, below OGD and far
+below the bounded pack. They belong with OGD. Ledger C-24.
+
+**And `tab:jane` was right.** The clippers' ceiling on the instrument's own slice is
+`[10⁻², 2×10⁻²)` and their best per-row `R²` is `0.013`/`0.014` — the table's `∼0.01` and
+`≤10⁻²`, both confirmed. C-23's provenance defect was real; the number it flagged was not wrong.
+My T4 edits had removed a correct claim on incomplete evidence and are restored.
+
+**What survives is Theorem B, and it is the better half.** Degree-1 homogeneity predicts a tuned
+rate does not transfer across streams of differing scale; the clippers' per-step 9/10 is exactly
+that, against 0/10 for every degree-0 method. A proved statement made a falsifiable prediction
+on the primary instrument and it held.
+
+**Three process failures this session, all caught, one of them twice-flagged.**
+1. The instrumentation gate failed on first run — I had hand-rolled median-of-means with 8
+   unpermuted blocks against the library's permuted 24. The registered run was in flight and was
+   stopped and discarded. Now a data-free test.
+2. I filed the boundary-artifact failure class as tracker item 12, then immediately committed
+   it: launched on `LRS_SF`, whose *floor* is above the clippers' entire operating range, which
+   would have reported "diverges 10/10" as a result. Amendment 1, recorded before the re-run.
+3. I claimed a cross-tier invariant agreement that was an artifact of mixing two streams, and
+   withdrew it the same session once recomputed on one.
+
+### Where the theory stands now
+
+Theorem A and Theorem B are correct and Theorem B now has a confirmed prediction. Corollary C
+still derives AdaGrad-Norm's membership. What is dead: the separation (GAP 2), and the taxonomy
+correction (C-24). The manuscript's own framing came through this better than my revision of it,
+which is worth stating plainly given how much of Sessions 15-16 was spent trying to revise it.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

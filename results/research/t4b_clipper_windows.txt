@@ -1,21 +1,182 @@
 ================================================================================================
 T4B -- the clippers on the ten-window frozen instrument
-  windows=10  rows<=150000  lr grid=[0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0] (matched 1-D, = LRS_SF)
+  windows=10  rows<=150000  lr grid=[0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]
+  matched 1-D budget (10 points, = LRS_SF's count) in the clippers' own decade
 ================================================================================================
 
 ########## PROTOCOL: per-row ##########
 
 [tune] window date[0,120)  n=150000
+    AdaptiveClip   lr=0.001  R2=+0.0129
+    AdaptiveClip   lr=0.002  R2=+0.0066
+    AdaptiveClip   lr=0.005  R2=-0.0954
+    AdaptiveClip   lr=0.01   R2=-0.9165
     AdaptiveClip   lr=0.02   R2=-20.6085   DIVERGED
     AdaptiveClip   lr=0.05   R2=-2107028.2636   DIVERGED
     AdaptiveClip   lr=0.1    R2=-6116108354887.4395   DIVERGED
     AdaptiveClip   lr=0.2    R2=-2320355173436059912503296.0000   DIVERGED
     AdaptiveClip   lr=0.5    R2=-89240861049352457154643007284810009486924638584832.0000   DIVERGED
     AdaptiveClip   lr=1      R2=-1055862576640865151684239704384908714483092260905517540235769460057970011466499781112031123115490404160151218028544.0000   DIVERGED
-    AdaptiveClip   lr=2      R2=-6790228276688286258816228595613137052194976540399324726542224991413097116929164848056203038213722219472211424005021729057279398630646894096361161266267275607892225878977551213927987672718744378874373904872594206002698697912618802714239630398188869862780695087092194305732318855168.0000   DIVERGED
+  AdaptiveClip   frozen lr=0.001  window1 R2=+0.0129   ceiling located in [0.01,0.02)
+    RobustOMD      lr=0.001  R2=+0.0143
+    RobustOMD      lr=0.002  R2=+0.0097
+    RobustOMD      lr=0.005  R2=-0.0790
+    RobustOMD      lr=0.01   R2=-0.8299
+    RobustOMD      lr=0.02   R2=-20.7055   DIVERGED
+    RobustOMD      lr=0.05   R2=-589841.7301   DIVERGED
+    RobustOMD      lr=0.1    R2=-906162290672.9341   DIVERGED
+    RobustOMD      lr=0.2    R2=-355349403647723634688.0000   DIVERGED
+    RobustOMD      lr=0.5    R2=-102284186208442443780380659151523917005324288.0000   DIVERGED
+    RobustOMD      lr=1      R2=-61099313433803817792015780036624025646498729898547527939650062817757616316121637910571198457904146407227392.0000   DIVERGED
+  RobustOMD      frozen lr=0.001  window1 R2=+0.0143   ceiling located in [0.01,0.02)
+
+[eval] window 1 date[0,120)  n=150000
+  AdaptiveClip   R2=+0.0129
+  RobustOMD      R2=+0.0143
+
+[eval] window 2 date[150,270)  n=150000
+  AdaptiveClip   R2=+0.0154
+  RobustOMD      R2=+0.0180
+
+[eval] window 3 date[300,420)  n=150000
+  AdaptiveClip   R2=+0.0023
+  RobustOMD      R2=+0.0056
+
+[eval] window 4 date[450,570)  n=150000
+  AdaptiveClip   R2=-0.0287
+  RobustOMD      R2=-0.0255
+
+[eval] window 5 date[600,720)  n=150000
+  AdaptiveClip   R2=-0.0172
+  RobustOMD      R2=-0.0148
+
+[eval] window 6 date[750,870)  n=150000
+  AdaptiveClip   R2=+0.0117
+  RobustOMD      R2=+0.0145
+
+[eval] window 7 date[900,1020)  n=150000
+  AdaptiveClip   R2=+0.0186
+  RobustOMD      R2=+0.0217
+
+[eval] window 8 date[1050,1170)  n=150000
+  AdaptiveClip   R2=-0.1471
+  RobustOMD      R2=-0.1341
+
+[eval] window 9 date[1200,1320)  n=150000
+  AdaptiveClip   R2=+0.0314
+  RobustOMD      R2=+0.0338
+
+[eval] window 10 date[1350,1470)  n=150000
+  AdaptiveClip   R2=-0.0017
+  RobustOMD      R2=+0.0000
+
+########## PROTOCOL: per-step ##########
+
+[tune] window date[0,120)  n=150000
+    AdaptiveClip   lr=0.001  R2=+0.0383
+    AdaptiveClip   lr=0.002  R2=+0.0617
+    AdaptiveClip   lr=0.005  R2=+0.1174
+    AdaptiveClip   lr=0.01   R2=-35.4037   DIVERGED
+    AdaptiveClip   lr=0.02   R2=-227141634092526.0000   DIVERGED
+    AdaptiveClip   lr=0.05   R2=-5532833789952757872128369333381365760.0000   DIVERGED
+    AdaptiveClip   lr=0.1    R2=-1907154364766850133639551038447770263322083016607498999715785147940864.0000   DIVERGED
+    AdaptiveClip   lr=0.2    R2=-28513043469649632483215412376012529455276710381736887475079128285964477206917010553785371033545024457289502358571051692598052472573919232000.0000   DIVERGED
 D:\dfsl\.venv\Lib\site-packages\numpy\linalg\_linalg.py:2767: RuntimeWarning: overflow encountered in dot
   sqnorm = x.dot(x)
-    AdaptiveClip   lr=3      R2=-inf   DIVERGED
-    AdaptiveClip   lr=5      R2=-inf   DIVERGED
-    AdaptiveClip   lr=8      R2=-inf   DIVERGED
-  AdaptiveClip   frozen lr=0.02   window1 R2=none stable   ceiling BELOW the grid: diverged at every lr tested, from 0.02
+    AdaptiveClip   lr=0.5    R2=-inf   DIVERGED
+    AdaptiveClip   lr=1      R2=-inf   DIVERGED
+  AdaptiveClip   frozen lr=0.005  window1 R2=+0.1174   ceiling located in [0.005,0.01)
+    RobustOMD      lr=0.001  R2=+0.0420
+    RobustOMD      lr=0.002  R2=+0.0690
+    RobustOMD      lr=0.005  R2=+0.1313
+    RobustOMD      lr=0.01   R2=-8.5550   DIVERGED
+    RobustOMD      lr=0.02   R2=-833871116.7210   DIVERGED
+    RobustOMD      lr=0.05   R2=-6775208612071931379712.0000   DIVERGED
+    RobustOMD      lr=0.1    R2=-48976195066972977899128247127868380731670528.0000   DIVERGED
+    RobustOMD      lr=0.2    R2=-131573205971869890381310353481433810118129584850586239601920369216782576538111229403707147102248239104.0000   DIVERGED
+    RobustOMD      lr=0.5    R2=-1933621265204948592272394003450936403653992397346169875057492080572405894634035432945334736028784282946033372906943246751403237698375530667178039509895110496832676282973501572475191137597693230350469201579425153874597472384282733699961009132417089534563719913209808854122210596587439294334894080.0000   DIVERGED
+    RobustOMD      lr=1      R2=-inf   DIVERGED
+  RobustOMD      frozen lr=0.005  window1 R2=+0.1313   ceiling located in [0.005,0.01)
+
+[eval] window 1 date[0,120)  n=150000
+  AdaptiveClip   R2=+0.1174
+  RobustOMD      R2=+0.1313
+
+[eval] window 2 date[150,270)  n=150000
+  AdaptiveClip   R2=-43.2049   <-- DIVERGED
+  RobustOMD      R2=-43.0127   <-- DIVERGED
+
+[eval] window 3 date[300,420)  n=150000
+  AdaptiveClip   R2=-84.8061   <-- DIVERGED
+  RobustOMD      R2=-84.6936   <-- DIVERGED
+
+[eval] window 4 date[450,570)  n=150000
+  AdaptiveClip   R2=-5.1093   <-- DIVERGED
+  RobustOMD      R2=-4.6045   <-- DIVERGED
+
+[eval] window 5 date[600,720)  n=150000
+  AdaptiveClip   R2=-14442.1278   <-- DIVERGED
+  RobustOMD      R2=-1028.2919   <-- DIVERGED
+
+[eval] window 6 date[750,870)  n=150000
+  AdaptiveClip   R2=-511326950120087.9375   <-- DIVERGED
+  RobustOMD      R2=-12273468296.1861   <-- DIVERGED
+
+[eval] window 7 date[900,1020)  n=150000
+  AdaptiveClip   R2=-1210.5761   <-- DIVERGED
+  RobustOMD      R2=-64.2363   <-- DIVERGED
+
+[eval] window 8 date[1050,1170)  n=150000
+  AdaptiveClip   R2=-3212441967.6400   <-- DIVERGED
+  RobustOMD      R2=-314957934.0934   <-- DIVERGED
+
+[eval] window 9 date[1200,1320)  n=150000
+  AdaptiveClip   R2=-986059923011172096.0000   <-- DIVERGED
+  RobustOMD      R2=-37257282246697.7969   <-- DIVERGED
+
+[eval] window 10 date[1350,1470)  n=150000
+  AdaptiveClip   R2=-4991321.3004   <-- DIVERGED
+  RobustOMD      R2=-363016.1234   <-- DIVERGED
+
+================================================================================================
+ACROSS-WINDOW SUMMARY (mean +/- std weighted R^2 at frozen settings)
+================================================================================================
+
+per-row:
+  RobustOMD      mean=-0.0067  std=0.0481  [-0.1341,+0.0338]  diverged=0/10
+  AdaptiveClip   mean=-0.0102  std=0.0512  [-0.1471,+0.0314]  diverged=0/10
+
+per-step:
+  RobustOMD      mean=-3726987103716.8906  std=11781345435497.2422  [-37257282246697.7969,+0.1313]  diverged=9/10
+  AdaptiveClip   mean=-98657125317874128.0000  std=311801601710692800.0000  [-986059923011172096.0000,+0.1174]  diverged=9/10
+
+================================================================================================
+AGAINST THE COMMITTED INSTRUMENT (windows_replication_summary.csv)
+================================================================================================
+
+per-row:
+  fixed-tau clip           mean=+0.2064  diverged=0/10
+  AdaGrad-Norm             mean=+0.1980  diverged=0/10
+  Normalized-GD            mean=+0.1787  diverged=0/10
+  SN-OMD (M=5)             mean=+0.1398  diverged=0/10
+  OGD                      mean=+0.0010  diverged=0/10
+  RobustOMD                mean=-0.0067  diverged=0/10  <== T4B
+  AdaptiveClip             mean=-0.0102  diverged=0/10  <== T4B
+  Scale-adaptive OGD       mean=-298909.0291  diverged=7/10
+
+per-step:
+  fixed-tau clip           mean=+0.2016  diverged=0/10
+  AdaGrad-Norm             mean=+0.1882  diverged=0/10
+  SN-OMD (M=5)             mean=+0.1225  diverged=0/10
+  Scale-adaptive OGD       mean=+0.0950  diverged=0/10
+  Normalized-GD            mean=+0.0941  diverged=0/10
+  RobustOMD                mean=-3726987103716.8906  diverged=9/10  <== T4B
+  AdaptiveClip             mean=-98657125317874128.0000  diverged=9/10  <== T4B
+  OGD                      mean=-354911900407372745415961541520833678495417977284037505081940627092476213037307177821850215526988513280.0000  diverged=9/10
+
+================================================================================================
+WHAT THIS DOES NOT ESTABLISH
+  No lower bound and no separation theorem -- T4's GAP 2 stands untouched.
+  The clippers' threshold uses the current round's norm, so tau_t is NOT
+    predictable; this reproduces the library, and is not a claim about ass:track.
+================================================================================================

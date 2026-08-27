@@ -1,0 +1,26 @@
+================================================================================================
+T4B secondary -- the invariant P = eta_max * B, recomputed on ONE stream
+  stream: date[0,120), rows<=150000 -- the slice normalize_continuous.csv uses
+================================================================================================
+
+  ||g|| at w* on THIS slice: n=150000  median 9.243  p99 129.784  sup 752.598
+  for contrast, gradnorm_at_wstar.npy (date[0,30), 200k): sup 1149.161
+  the two differ by 1.53x, which is why the mixed calculation was labelled suggestive
+
+  method           tier              eta_max            B        P = eta_max*B
+  normgd           tier 3               >= 8          1.0               >= 8.0   CENSORED
+  sn_ogd           tier 3              [3,5)          5.0         [15.0, 25.0)
+  scale_adaptive   tier 2              [1,2) unbounded (cap 1e9)      n/a (unbounded)
+  ogd              tier 1        [0.01,0.02)     sup||g||          [7.5, 15.1)
+
+### does a single P* fit both measured endpoints?
+    sn_ogd           P in [15.0, 25.0)
+    ogd              P in [7.5, 15.1)
+  The intervals INTERSECT: any P* in [15.0, 15.1) fits both, across a 753x range in B.
+  C10S's committed P* = 11.5 lies OUTSIDE that band.
+  Caveat kept: eta_max is quantised by the sweep grid, so these are grid-resolution
+  intervals, and normalized-GD stays censored and contributes nothing either way.
+
+[saved results\research\t4b_invariant.csv]
+
+Unchanged by this: GAP 2. No lower bound, no separation theorem.

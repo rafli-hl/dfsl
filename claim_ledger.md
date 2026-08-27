@@ -609,14 +609,25 @@ is not a result.
 
 **The invariant was under-tested, added on review.** T4 checked `P = η_max·B` only *within* the
 bounded scale-free family, where normalized-GD's ceiling is censored. Across tiers the dynamic
-range in `B` is ~1000× and both endpoints are measured: OGD's ceiling `[0.01,0.02)` against
-`sup‖g‖ ≈ 1.1×10³` gives `P ∈ [11.5, 23.0)`; SN-OMD's `[3,5)` against `B=5` gives `P ∈ [15,25)`.
-Those **overlap**, and the lower endpoint coincides with C10S's committed `P* = 11.5`. Recorded
-as *suggestive, not measured*, for a reason that kills a clean reading: `sup‖g‖` comes from
-`gradnorm_at_wstar.npy`, which `research_findings.py` builds on date`[0,30)` with 200k rows,
-while the ceilings are measured on date`[0,120)` with 150k — **different window, different
-length, different standardization**. Making it a measurement requires recomputing the gradient
-norms on the ceiling stream.
+range in `B` is ~750× and both endpoints are measured. ~~OGD's `P ∈ [11.5, 23.0)` overlaps
+SN-OMD's `[15,25)` and the lower endpoint coincides with C10S's `P* = 11.5`.~~ **Withdrawn the
+same day it was written.** That used `sup‖g‖ ≈ 1.1×10³` from `gradnorm_at_wstar.npy`, which
+`research_findings.py` builds on date`[0,30)` with 200k rows — not the stream the ceilings come
+from. `research_t4b_invariant.py` recomputes the gradient norms at `w*` on date`[0,120)`/150k,
+the ceilings' own slice, and gets `sup‖g‖ = 752.6`, a factor `1.53` smaller. The corrected
+picture is much weaker:
+
+| method | `η_max` | `B` | `P` |
+|---|---|---|---|
+| normalized-GD | `≥ 8` | 1 | `≥ 8` (**censored**) |
+| SN-OMD | `[3,5)` | 5 | `[15.0, 25.0)` |
+| OGD | `[0.01,0.02)` | `752.6` | `[7.5, 15.1)` |
+
+The two measured intervals intersect only in `[15.0, 15.1)` — a sliver of width `0.1` that the
+grid quantisation cannot resolve — and **C10S's committed `P* = 11.5` falls outside it**. So the
+invariant is not confirmed across tiers either; the apparent agreement was an artifact of mixing
+two streams, and the coincidence with `11.5` was the artifact's doing. Recorded as a correction
+to my own same-session claim.
 
 **Not falsified, and not confirmed:** the `P = η_max·B` invariant. normalized-GD never diverges
 on the committed grid, so its ceiling is right-censored at `lr=8` and every `P` built from it is
@@ -664,7 +675,54 @@ covers.
 **Neither the clipper row nor the OGD row is covered by a `PAPER_CLAIMS` guard**, which is how
 this persisted — the same gap that let the C-18 drift run for two sessions.
 
-**Consequence.** The row is marked as off-stream rather than deleted or restated, since no
-committed artifact measures those methods on the 150k stream and running one is new compute.
-§5 is corrected to attribute the ceiling claim to OGD alone.
+**Consequence, and it reversed under T4B (2026-08-27).** The provenance defect is real — the
+number was sourced from date`[0,30)` — but **the number itself is right**. T4B ran those methods
+on the instrument's own slice (date`[0,120)`, 150k) and got best per-row `R²` of `0.0129`
+(AdaptiveClip) and `0.0143` (RobustOMD), with the ceiling located at `[10⁻², 2×10⁻²)`. `tab:jane`
+printed `∼0.01` and `≤10⁻²`. Both confirmed.
 
+So my T4 edits removed correct claims on incomplete evidence, and are **restored**: §5 again
+covers the clippers, and the row again carries its ceiling, now with an on-stream measurement
+behind it. The dagger stays, but it now records where the ceiling was measured rather than that
+it was missing. The `0.14`–`0.16` figure that prompted all this is from `continuous_stream.csv`
+at **300k** rows and does not reproduce at the instrument's 150k — a single-window artifact,
+exactly as T4B's decision rule anticipated it might be.
+
+## C-24 — the taxonomy correction does NOT survive the primary instrument; the paper's axis holds
+
+**Status: H_T4B FALSIFIED (`results/research/t4b_clipper_windows.csv`, 2026-08-27). The outcome
+that vindicates the manuscript as written, and it is reported first.**
+
+T4 argued that scale-dependence does not predict divergence and boundedness does, on the
+strength of one single-window run in which AdaptiveClip and RobustOMD reached `R²` 0.14–0.16
+without diverging. T4B put those two methods through the ten-window frozen instrument — the one
+carrying every other stability claim, which had never run them — at the matched one-dimensional
+budget, same windows, same tune-then-freeze protocol, same divergence criterion.
+
+| | per-row | per-step |
+|---|---|---|
+| AdaptiveClip | `0/10` diverged, mean `R² = −0.010` | **`9/10` diverged** |
+| RobustOMD | `0/10` diverged, mean `R² = −0.007` | **`9/10` diverged** |
+| OGD (committed) | `0/10`, mean `+0.001` | **`9/10` diverged** |
+| bounded scale-free pack | `0/10`, `0.14`–`0.21` | `0/10`, `0.09`–`0.20` |
+
+**The clippers land with OGD, not with the bounded family** — an identical `9/10` per-step
+divergence count, and a per-row mean *below* OGD's and an order of magnitude below the pack's.
+The paper's partition is on the right axis after all.
+
+**Why the theory already said so, and I misread it.** A scale-dependent threshold is bounded by
+`c·ŝ_t`, which is *not* a stream-independent constant, so Theorem A's hypothesis never covered
+the clippers. T4's own 2×2 places them in the degree-1 **unbounded** cell with OGD. The claim
+that they were "bounded" came from reading a finite `sup_t ŝ_t` on one window as if it were a
+constant of the method. It is not: it is a property of that window.
+
+**What T4B does confirm is Theorem B.** Degree-1 homogeneity predicts that a rate tuned on one
+window's scale need not survive a window whose scale differs, and that is exactly the per-step
+result — the clippers tune to `lr = 5×10⁻³` on window 1 and then diverge on nine of ten. The
+bounded scale-free family, degree 0, transfers at `0/10`. That is the prediction being borne
+out on the primary instrument, and it is the half of T4 worth keeping.
+
+**Ceilings located, closing C-23's open item.** Per-row `[10⁻², 2×10⁻²)`; per-step
+`[5×10⁻³, 10⁻²)`.
+
+**Does not touch** GAP 2 — still no lower bound and still no separation theorem.
