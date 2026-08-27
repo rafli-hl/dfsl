@@ -1,0 +1,28 @@
+check,method,best_r2_on_continuous_stream,at_lr,diverged_anywhere,paper_says_r2,paper_says_stable_lr_max,tier,B_median,B_p99,B_sup,ratio_lambda2,ratio_lambda10,degree,eta_max_last_stable,eta_max_first_diverged,censored,B,P_lo,P_hi,verdict,censored_members,eta_max_tier1,eta_max_tier2,eta_max_tier3_floor,intermediate,T,sup,fitted_exponent,predicted_exponent
+tabjane_clipper_row,adaptive_clip,0.1435,0.03,false,0.01,0.01,,,,,,,,,,,,,,,,,,,,,,,
+tabjane_clipper_row,robust_omd[catoni],0.0975,0.02,false,0.01,0.01,,,,,,,,,,,,,,,,,,,,,,,
+tabjane_clipper_row,robust_omd[median_of_means],0.1552,0.03,false,0.01,0.01,,,,,,,,,,,,,,,,,,,,,,,
+tabjane_clipper_row,robust_omd[trimmed_mean],0.1414,0.03,false,0.01,0.01,,,,,,,,,,,,,,,,,,,,,,,
+B_t,OGD,,,,,,tier 1,8.2383,101.6933,305.8151,,,,,,,,,,,,,,,,,,,
+B_t,AdaptiveClip,,,,,,tier 1,32.1614,147.2691,205.6558,,,,,,,,,,,,,,,,,,,
+B_t,RobustOMD,,,,,,tier 1,42.4971,173.3301,224.9886,,,,,,,,,,,,,,,,,,,
+B_t,normgd,,,,,,tier 3,1.0,1.0,1.0,,,,,,,,,,,,,,,,,,,
+B_t,sn_ogd,,,,,,tier 3,5.0,5.0,5.0,,,,,,,,,,,,,,,,,,,
+B_t,fixed-tau clip,,,,,,tier 3,20.0,20.0,20.0,,,,,,,,,,,,,,,,,,,
+homogeneity,OGD,,,,,,tier 1,,,,2.0,10.0,1,,,,,,,,,,,,,,,,
+homogeneity,AdaptiveClip,,,,,,tier 1,,,,2.0,10.0,1,,,,,,,,,,,,,,,,
+homogeneity,RobustOMD,,,,,,tier 1,,,,2.0,10.0,1,,,,,,,,,,,,,,,,
+homogeneity,normgd,,,,,,tier 3,,,,1.0,1.0,0,,,,,,,,,,,,,,,,
+homogeneity,sn_ogd,,,,,,tier 3,,,,1.0,1.0,0,,,,,,,,,,,,,,,,
+homogeneity,fixed-tau clip,,,,,,tier 3,,,,1.0,1.0,0,,,,,,,,,,,,,,,,
+invariant,normgd,,,,,,tier 3,,,,,,,8.0,,true,1.0,8.0,,,,,,,,,,,
+invariant,sn_ogd,,,,,,tier 3,,,,,,,3.0,5.0,false,5.0,15.0,25.0,,,,,,,,,,
+invariant,scale_adaptive,,,,,,tier 2,,,,,,,1.0,2.0,false,,,,,,,,,,,,,
+invariant,ogd,,,,,,tier 1,,,,,,,0.01,0.02,false,,,,,,,,,,,,,
+falsification_a,tier3,,,,,,,,,,,,,,,,,,,INCONCLUSIVE_CENSORED,normgd,,,,,,,,
+falsification_b,scale_adaptive,,,,,,,,,,,,,,,,,,,PASS,,0.01,1.0,3.0,true,,,,
+horizon,sup_grad_norm,,,,,,,,,,,,,,,,,,,,,,,,,12500,581.2376,0.22,0.4115
+horizon,sup_grad_norm,,,,,,,,,,,,,,,,,,,,,,,,,25000,581.2376,0.22,0.4115
+horizon,sup_grad_norm,,,,,,,,,,,,,,,,,,,,,,,,,50000,646.5052,0.22,0.4115
+horizon,sup_grad_norm,,,,,,,,,,,,,,,,,,,,,,,,,100000,683.4008,0.22,0.4115
+horizon,sup_grad_norm,,,,,,,,,,,,,,,,,,,,,,,,,200000,1149.1606,0.22,0.4115

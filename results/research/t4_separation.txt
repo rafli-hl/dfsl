@@ -1,0 +1,166 @@
+==================================================================================================
+STEP 0 -- can a scale-OBLIVIOUS constant rate stabilise the scale-dependent methods?
+  D3/T4's own falsification condition: if yes, the partition is tuning, not structure.
+==================================================================================================
+
+### lr_sensitivity.csv -- date[0,30), 200k rows
+  method                  largest stable lr   R2 there
+  ogd                                 1e-03     0.0238
+  adaptive_clip                       1e-02     0.0686
+  robust_omd[catoni]                  5e-03     0.0473
+
+### fair_tuning.csv -- date[0,30), 100k rows
+  method                          largest stable lr   R2 there
+  adaptive_clip                               2e-03     0.0024
+  ogd                                         2e-03     0.0160
+  robust_omd[catoni]                          2e-03     0.0062
+  robust_omd[median_of_means]                 2e-03     0.0058
+  robust_omd[trimmed_mean]                    2e-03     0.0009
+
+### continuous_stream.csv -- date[0,120), 300k rows  <- the stream tab:jane names
+  method                          largest stable lr   R2 there  peak roll loss
+  adaptive_clip                                0.03     0.1435           4.425 <-- AT THE TOP OF THE GRID
+  ogd                                         0.002    -0.0654          18.274
+  robust_omd[catoni]                           0.03     0.0765          16.886 <-- AT THE TOP OF THE GRID
+  robust_omd[median_of_means]                  0.03     0.1552           4.347 <-- AT THE TOP OF THE GRID
+  robust_omd[trimmed_mean]                     0.03     0.1414           4.780 <-- AT THE TOP OF THE GRID
+--------------------------------------------------------------------------------------------------
+Every scale-dependent method has a strictly positive rate at which it is stable,
+in every artifact that measures it (5 of 5 methods found):
+    ogd                            lr_sensitivity=0.001, fair_tuning=0.002, continuous_stream=0.002
+    adaptive_clip                  lr_sensitivity=0.01, fair_tuning=0.002, continuous_stream=0.03
+    robust_omd[catoni]             lr_sensitivity=0.005, fair_tuning=0.002, continuous_stream=0.03
+    robust_omd[median_of_means]    fair_tuning=0.002, continuous_stream=0.03
+    robust_omd[trimmed_mean]       fair_tuning=0.002, continuous_stream=0.03
+
+STEP 0 VERDICT: the condition IS met. A scale-oblivious constant rate stabilises
+  the scale-dependent methods. T4 AS ORIGINALLY FRAMED IS FALSIFIED -- the partition
+  is not 'one family diverges and the other does not' for ALL rate schedules.
+==================================================================================================
+STEP 0b -- tab:jane's AdaptiveClip/RobustOMD row against the stream its caption names
+==================================================================================================
+  The paper prints:  AdaptiveClip / RobustOMD   R2 ~ 0.01   stable lr <= 1e-2
+  The caption sources tab:jane to the *continuous* Jane stream. On that stream:
+
+  method                            best R2    at lr   diverged anywhere?
+  adaptive_clip                      0.1435     0.03                False
+  robust_omd[catoni]                 0.0975     0.02                False
+  robust_omd[median_of_means]        0.1552     0.03                False
+  robust_omd[trimmed_mean]           0.1414     0.03                False
+
+  Two discrepancies, both reported as provenance findings and NOT as settled errors:
+   (1) the row's ~0.01 matches fair_tuning.csv / lr_sensitivity.csv, which are
+       date[0,30) windows -- not the continuous stream the caption names, where the
+       same methods reach 0.14-0.16.
+   (2) 'stable lr <= 1e-2' is not what the artifact shows: the clippers are stable at
+       2e-2 and 3e-2 and NEVER diverge in the sweep, which stops at 3e-2. The ceiling
+       is not located, so 'any larger rate diverges' is untested for these methods.
+  Neither row is covered by a PAPER_CLAIMS guard, which is how this could persist.
+==================================================================================================
+STEP 1 -- B_t on ONE common reference stream, and the homogeneity test
+==================================================================================================
+  reference stream: gradnorm_at_wstar.npy, n=200000 -- gradients at the FIXED
+  optimum w*, so no feedback from a diverging iterate contaminates the comparison.
+  ||g||: median 8.851  p99 125.797  max 1149.161
+
+  method         tier       median B_t      p99 B_t      sup B_t
+  OGD            tier 1          8.238      101.693      305.815
+  AdaptiveClip   tier 1         32.161      147.269      205.656
+  RobustOMD      tier 1         42.497      173.330      224.989
+  normgd         tier 3          1.000        1.000        1.000   (a constant, by definition)
+  sn_ogd         tier 3          5.000        5.000        5.000   (a constant, by definition)
+  fixed-tau clip tier 3         20.000       20.000       20.000   (a constant, by definition)
+
+### the homogeneity test: rescale the WHOLE stream by lambda and re-measure B
+  H_T4' classifies methods by degree. Verify it numerically rather than assert it.
+
+  method           B(2g)/B(g)  B(10g)/B(g)   degree
+  OGD                  2.0000      10.0000   1
+  AdaptiveClip         2.0000      10.0000   1
+  RobustOMD            2.0000      10.0000   1
+  normgd               1.0000       1.0000   0   (B is a constant; nothing to measure)
+  sn_ogd               1.0000       1.0000   0   (B is a constant; nothing to measure)
+  fixed-tau clip       1.0000       1.0000   0   (B is a constant; nothing to measure)
+
+  Degree 1 means the step bound inherits the gradient scale in full. That is the
+  structural content of 'scale-dependent', and it is now measured, not asserted.
+==================================================================================================
+STEP 2 -- the invariant  eta_max * sup_t B_t ~= P*,  and tier 2's position
+==================================================================================================
+  eta_max is read from the committed sweeps on the SAME stream (date[0,120)):
+    normalize_continuous.csv  ogd, normgd, scale_adaptive, sn_ogd   (grid to lr=8)
+    continuous_stream.csv     ogd + the clippers                    (grid to lr=0.03)
+
+  cross-check, OGD in both artifacts: normalize_continuous=0.01  continuous_stream=0.002  DISAGREE
+  CAUSE, traced rather than guessed: same date[0,120) window and the SAME
+  divergence criterion (r2 < -1 or peak > 50), but different stream lengths --
+  research_normalize.py loads max_rows=150000, research_continuous.py 300000.
+  Doubling the stream drops OGD's ceiling by a factor of 5. That is the
+  direction H_T4' predicts for tier 1, but it is NOT a clean test: standardize=
+  True fits on the loaded slice, so the two runs also see different features.
+  Step 3 does the clean version on a single fixed stream.
+
+  method           tier              eta_max          B      P=eta_max*B
+  normgd           tier 3               >= 8      1.000             >= 8   CENSORED
+  sn_ogd           tier 3              [3,5)      5.000          [15,25)
+  scale_adaptive   tier 2              [1,2)  unbounded              n/a
+  ogd              tier 1        [0.01,0.02)   sup||g||              n/a
+
+### falsification (a): is P constant across tier 3?
+  INCONCLUSIVE -- not falsified and not confirmed. normgd never
+  diverges anywhere on the committed grid (top lr=8), so its ceiling is
+  RIGHT-CENSORED and every P built from it is a lower bound, not a value.
+    normgd           P >= 8
+    sn_ogd           P [15,25)
+  Taking the censored value at face value would have given a spread of
+  1.88x and a verdict of FALSIFIED. That verdict would have been an
+  artifact of the grid ending, not a measurement, so it is not recorded.
+  Deciding it needs a wider grid for normalized-GD, which is new compute and
+  therefore a separate registration.
+  For reference only, NOT used as evidence: C10S's committed P* = 11.5,
+  and normalized-GD's own R2 is already declining past lr=3 (0.221 -> 0.201 ->
+  0.086) with peak rolling loss rising 5.1 -> 7.9 -> 20.0, so its ceiling is
+  plausibly just beyond the grid. That is an extrapolation and is labelled one.
+
+### falsification (b): is tier 2 strictly between tier 1 and tier 3?
+  tier 1 (ogd) 0.01  <  tier 2 (scale_adaptive) 1  <  tier 3 floor 3 ?   YES
+  This one is NOT affected by the censoring above: censoring can only push tier 3's
+  ceiling HIGHER, which widens the gap it has to clear, so the verdict is safe.
+  tier 2 sits 100x above tier 1 and at least 3x below
+  tier 3's floor. So scale-INVARIANCE alone buys part of the gap and
+  BOUNDEDNESS buys the rest -- they are separate properties with separate effects.
+  Section 3's two-way contrast (scale-free vs scale-dependent) does not capture
+  this; the paper's own Table 1 already reports the uncapped endpoint at 7/10
+  per-row divergences, which is neither tier's behaviour.
+==================================================================================================
+STEP 3 -- does tier 1's ceiling have to shrink with the horizon?
+==================================================================================================
+  H_T4': tier 1's ceiling is P*/sup_t B_t and B_t is degree-1, so the ceiling
+  inherits the growth of an EXTREME order statistic of ||g_t||. Tier 3's B is a
+  constant, so its ceiling is horizon-independent. Measured on prefixes of ONE
+  fixed stream, so nothing varies but the horizon.
+
+          T     sup||g||   ratio vs prev
+      12500      581.238                
+      25000      581.238           1.000
+      50000      646.505           1.112
+     100000      683.401           1.057
+     200000     1149.161           1.682
+
+  fitted growth exponent of sup||g|| in T: 0.220
+  predicted from the committed Hill index alpha=2.43: 1/alpha = 0.412
+  a doubling of T multiplies sup||g|| by 2^0.220 = 1.165  (predicted 1.330)
+
+  So tier 1's ceiling decays with the horizon while tier 3's does not. The effect
+  is REAL but SLOW -- a factor of ~1.3 per doubling, not the 5x seen between the two
+  artifacts in step 2, which therefore cannot be attributed to horizon alone.
+  Reported that way rather than claimed as a confirmation.
+==================================================================================================
+WHAT THIS DOES NOT ESTABLISH
+  Nothing about Prop 3.1, which is correct, unconditional and untouched.
+  Nothing about the ten-window divergence partition, which is measured at FROZEN
+    hyperparameters and is not a statement about tuned ceilings.
+  No theorem. Step 1 and step 2 are measurements that a theorem would have to
+    explain; the derivation is separate and is reported separately.
+==================================================================================================
+[saved results\research\t4_separation.csv]

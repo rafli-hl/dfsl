@@ -412,6 +412,53 @@ is the one remaining route to a non-vacuous theory contribution, and nothing mea
 obstructs it. The stability partition it would explain (0/10 vs 9/10 per-row, replicated on
 crypto with frozen hyperparameters) is still the sharpest unexplained empirical result here.
 
+## Session 15 — direction T4, the separation theorem (registered; FAILED, and it was pre-falsified)
+
+T4 was the last live theory direction. It is now closed, and the registration is the reason
+the closure is trustworthy: it was written to be adversarial to its own direction, with step 0
+placed first precisely because I suspected the direction was already dead.
+
+**Step 0 killed it.** D3/T4's own falsification condition — "if scale-dependent clipping can be
+made stable by a rate schedule alone, the partition is about tuning, not structure" — was
+already met by committed data. Every scale-dependent method has a positive stable rate in every
+artifact measuring it. The clippers do not diverge anywhere in the paper's own sweep. Ledger
+C-22.
+
+**What survives is a 2×2, not the paper's dichotomy.** Boundedness of the step map and degree-0
+homogeneity are *independent* properties: the first gives stability (Theorem A), the second
+gives tuning transfer (Theorem B). The successor H_T4' proposed three tiers by degree and was
+itself not quite right — the fixed-τ clip is homogeneous of no degree yet bounded, a cell the
+registration missed. Correcting it is an improvement, and it is recorded as a correction.
+
+**One real gain.** Corollary C explains AdaGrad-Norm's membership in the stable family, which
+the paper asserts without derivation: degree-1 `Φ` with a degree-(−1) rate is degree 0 overall
+and bounded, and it never clips. It also predicts the fixed-τ clip's anomaly.
+
+**Two GAPs, the second fatal.** No feedback case, and — decisively — **no lower bound**. Nothing
+proves a scale-dependent method must diverge. That is a derivation strategy with a located
+obstruction, which is not a result.
+
+**A defect found on the way.** `tab:jane`'s AdaptiveClip/RobustOMD row is measured on
+date`[0,30)`, not the continuous stream its caption names; on that stream the same methods reach
+`0.14`–`0.16` and never diverge. OGD's row is correct and on-stream. Ledger C-23. Neither row
+was guarded.
+
+**An error I made and caught.** My own step-2 code took the largest non-diverged grid point as
+`η_max` without checking whether the method diverged *anywhere*. normalized-GD does not, so its
+ceiling is right-censored, and the uncorrected code would have reported a `1.88×` spread and a
+FALSIFIED verdict that was an artifact of the grid ending. Fixed before the result was recorded;
+the invariant is INCONCLUSIVE, not falsified.
+
+### There is now no live theory direction
+
+D1/T1 failed. D1B closed the switching bound negatively. D1C emptied Prop F.1's analytical
+discharge. T4 is pre-falsified and yields a classification, not a separation. Every route to a
+non-vacuous *theorem* that this repository has registered is now closed or incomplete, and the
+honest reading is that the contribution here is measurement-first. That is precisely the
+condition Session 14 recorded as the gate on the **Structure C** reframe, and the gate is now
+open — it is the author's call whether to take it, not a decision this session should make
+unilaterally.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

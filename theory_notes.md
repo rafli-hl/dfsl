@@ -316,3 +316,149 @@ Nothing about Prop F.1's correctness. Nothing about Prop 3.1, which is unconditi
 drift model. Nothing about the divergence partition. And it does not reopen D1B, whose closure
 rests on its own measurement.
 
+---
+
+# T4 — the separation theorem: falsified as framed, and what survives (2026-08-27)
+
+Registered in `experiment_matrix.yaml` (fourteenth document) at `c84a766`, kind `THEORY`,
+before any of this was run. The registration was written to be adversarial to its own
+direction, and step 0 duly killed it.
+
+**Outcome: FAILURE against the registered success criteria.** Criterion (a) — a complete proof —
+is met only for the easy half. The half a *separation* needs, a lower bound forcing
+scale-dependent methods to fail, is a GAP. Reported as incomplete, as D1/T1 was.
+
+## Step 0 — the direction's own falsification condition was already met
+
+D3/T4 carried this from its original registration: *"if scale-dependent clipping can be made
+stable ... by a rate schedule alone, the partition is about tuning, not structure."*
+
+Every scale-dependent method has a strictly positive stable rate, in **every** committed
+artifact that measures it:
+
+| method | `lr_sensitivity` | `fair_tuning` | `continuous_stream` |
+|---|---|---|---|
+| OGD | 1e-3 | 2e-3 | 2e-3 |
+| AdaptiveClip | 1e-2 | 2e-3 | **3e-2, top of grid, never diverges** |
+| RobustOMD (catoni) | 5e-3 | 2e-3 | **3e-2, top of grid, never diverges** |
+| RobustOMD (mom / trimmed) | — | 2e-3 | **3e-2, top of grid, never diverges** |
+
+So the partition is **not** "one family diverges and the other does not, for all rate
+schedules". A scale-oblivious constant rate stabilises the scale-dependent methods. **T4 as
+framed is falsified.** No redefinition of "stable" is applied to rescue it.
+
+## What replaces the two-way contrast: two independent properties, not one
+
+The successor H_T4' (registered at the same time, so it could not be tuned to step 0's
+result) proposed three tiers by homogeneity degree. Working the algebra out, **that was not
+quite right either, and the correction is an improvement.** Write the update
+`w_{t+1} = w_t − η_t h_t`, `η_t = η/√t`, `h_t = Φ_t(g_1,…,g_t)`. Two *independent* properties
+matter, not one:
+
+- **bounded**: `‖Φ_t‖ ≤ B` for a constant `B` independent of the stream;
+- **degree-0 (scale-invariant)**: `Φ_t(λg) = Φ_t(g)` for every `λ>0`.
+
+|  | bounded | unbounded |
+|---|---|---|
+| **degree 0** | SN-OMD (`B=M`), normalized-GD (`B=1`), **AdaGrad-Norm** (`B=1`) | the uncapped `M→∞` endpoint |
+| **degree 1** | impossible unless `Φ≡0` | OGD, AdaptiveClip, RobustOMD |
+| **neither** | **the fixed-τ clip** (`B=τ`) | — |
+
+The fixed-τ clip is the cell H_T4' missed: `Φ_t(λg) = g_t·min{λ, τ/‖g_t‖}`, which is degree 1
+below the threshold and degree 0 above, so it is homogeneous of **no** degree — yet bounded.
+Verified numerically: the degree-1 methods return `B(2g)/B(g) = 2.0000` and
+`B(10g)/B(g) = 10.0000` exactly.
+
+## Theorem A (stability) — proved, and it is Prop 3.1 with the hypothesis widened
+
+*If `‖Φ_t‖ ≤ B` for every stream, then `‖w_t‖ ≤ ‖w_1‖ + 2ηB√t` on `ℝ^d`, and `‖w_t‖ ≤ D` on a
+bounded domain.*
+
+**Proof.** `‖w_{t+1}−w_t‖ = η_t‖Φ_t‖ ≤ ηB/√t`. Summing,
+`‖w_t−w_1‖ ≤ ηB Σ_{k<t} k^{−1/2} ≤ 2ηB√t`, since `Σ_{k=1}^{n} k^{−1/2} ≤ 2√n`. The projection
+step is a contraction, giving the bounded-domain case. No moment assumption is used. ∎
+
+This is exactly Prop 3.1's argument; the only gain is that the hypothesis is now *boundedness
+of the step map* rather than *the cap in SN-OMD's update*, so it visibly covers the fixed-τ
+clip and AdaGrad-Norm, which the paper asserts belong to the family without deriving it.
+
+## Theorem B (tuning transfer) — proved
+
+*Let `S_λ` be the stream with every gradient scaled by `λ>0`, in the adversarial setting where
+`g_{1:T}` is given. If `Φ` is degree 1, the trajectory under `(η, S_λ)` is identical to the
+trajectory under `(λη, S_1)`. If `Φ` is degree 0, the trajectory under `(η, S_λ)` is identical
+to that under `(η, S_1)`.*
+
+**Proof.** Degree 1: `h_t(λg_{1:t}) = λ h_t(g_{1:t})`, so
+`w_{t+1} = w_t − η_t·λ h_t(g_{1:t})`, which is the `λη` trajectory on `S_1`; induct on `t` from
+`w_1`, which is `λ`-independent. Degree 0: `h_t(λg) = h_t(g)` and the same induction. ∎
+
+**Corollary B.1.** The stable-rate set of a degree-1 method satisfies `H(S_λ) = H(S_1)/λ`, and
+of a degree-0 method `H(S_λ) = H(S_1)`. So no fixed rate is stable uniformly over
+`{S_λ : λ>0}` for a degree-1 method, while every degree-0 method's tuning transfers unchanged.
+
+## Corollary C — the `1/s_t` factor is *forced*, not chosen
+
+*If a degree-1 method is to have per-round displacement bounded by a constant `C` uniformly in
+`λ`, its rate must satisfy `η_t ≤ C/(c\,ŝ_t)` — that is, `η_t ∈ O(1/ŝ_t)`.*
+
+**Proof.** For the clippers, when the threshold binds (`‖g_t‖ ≥ c ŝ_t`) the step is exactly
+`‖Φ_t‖ = c ŝ_t`, so displacement is `η_t c ŝ_t`; requiring `≤ C` gives the bound. The
+non-binding branch has `‖Φ_t‖ = ‖g_t‖ < c ŝ_t` and is slack, so the binding branch is the
+active constraint. ∎
+
+Applying the forced rate `η/(√t\,ŝ_t)` to a degree-1 `Φ` *is* SN-OMD's update, up to the cap.
+The manuscript says the two families "differ by the factor `1/s_t`"; Corollary C says that
+factor is the **only** available repair, which is a stronger statement than the paper makes.
+
+**This is the one place T4 earns something.** It explains a membership the paper asserts
+without derivation: **AdaGrad-Norm**. Its step is `η g_t/√(Σ_{k≤t}‖g_k‖²)` — a degree-1 `Φ`
+combined with a degree-**(−1)** rate, hence degree 0 overall, and bounded by `η` because
+`‖g_t‖/√(Σ_{k≤t}‖g_k‖²) ≤ 1`. So AdaGrad-Norm is in the stable family *for the reason
+Corollary C names*, not because it clips — it never clips. Symmetrically the corollary
+predicts the fixed-τ clip's anomaly: bounded, so stable by Theorem A, but not degree 0, so its
+useful rate does **not** transfer across scales — which is `fig:mechanism`(b), "a fixed clip
+threshold cannot win", derived rather than observed.
+
+## GAP 1 — the feedback case is not covered
+
+Theorem B is stated for a **given** gradient sequence. In the experiments `g_t = 2(⟨w_t,x_t⟩ −
+y_t)x_t` depends on `w_t`, so "rescale the stream" is not independent of the trajectory, and
+the induction in Theorem B does not go through unchanged. Everything measured lives in the
+feedback case. I have not closed this and do not claim it.
+
+## GAP 2 — there is no lower bound, so there is no separation
+
+This is the one that matters. Theorem A upper-bounds the bounded family. Nothing here proves
+that an unbounded or degree-1 method **must** diverge — only that its upper bound is loose and
+its tuning does not transfer. A separation needs a construction on which the scale-dependent
+method provably fails while the bounded one provably succeeds, and I did not obtain one. The
+plausible mechanism is that `ŝ_t` is a statistic of past gradient norms, which for a linear
+model grow with `‖w_t‖`, so the threshold inflates as the iterate diverges and the
+multiplicative feedback is never broken — but that is a *derivation strategy with a located
+obstruction*, which the standing commitment says is **not a result**.
+
+## What was measured, since the theorem is incomplete
+
+- **Ceilings are ordered three ways** on one stream (`normalize_continuous.csv`, date[0,120),
+  150k): OGD `[0.01,0.02)`, uncapped endpoint `[1,2)`, SN-OMD `[3,5)`, normalized-GD `≥8`.
+  Tier 2 sits `100×` above tier 1 and at least `3×` below tier 3's floor. **Scale-invariance
+  buys part of the gap and boundedness buys the rest**; they are separable, and the paper's
+  two-way contrast does not express this.
+- **The `P = η_max·B` invariant is INCONCLUSIVE, not falsified.** normalized-GD never diverges
+  anywhere on the committed grid, so its ceiling is right-censored at `lr=8` and `P ≥ 8` is a
+  lower bound, not a value. Taking the censored number at face value would have printed a
+  `1.88×` spread and a verdict of FALSIFIED against the registered `1.68×` threshold — an
+  artifact of the grid ending, so it is not recorded. Deciding it needs a wider grid, which is
+  new compute and a separate registration.
+- **The horizon effect is real but too slow to carry the weight.** `sup‖g‖` over prefixes of
+  one fixed stream grows with fitted exponent `0.220`, against `1/α = 0.412` predicted from the
+  committed Hill index `α=2.43`; a doubling of `T` costs a factor `1.17`, not the `5×` seen
+  between two artifacts, so that `5×` cannot be attributed to horizon.
+
+## What this does not establish
+
+Nothing about Prop 3.1, which is correct and untouched. Nothing about the ten-window
+divergence partition, which is measured at **frozen** hyperparameters and is a different claim
+from a tuned ceiling. And no separation theorem — see GAP 2.
+

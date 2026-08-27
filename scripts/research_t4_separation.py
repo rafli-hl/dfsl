@@ -245,68 +245,156 @@ def step_2() -> list[dict]:
     print("    normalize_continuous.csv  ogd, normgd, scale_adaptive, sn_ogd   (grid to lr=8)")
     print("    continuous_stream.csv     ogd + the clippers                    (grid to lr=0.03)")
 
-    # ogd appears in both -- a consistency check on the two artifacts
+    # A ceiling is only MEASURED if the method actually diverges somewhere on the grid.
+    # If it never does, eta_max is right-censored at the grid top and any P built from it is
+    # a lower bound, not a value. Getting this wrong is the difference between "falsified"
+    # and "untestable", so it is made explicit rather than left to the reader.
     def eta_max(df, col, m):
-        sub = df.filter((pl.col(col) == m) & (~pl.col("diverged"))).sort("learning_rate")
-        return float(sub.row(sub.height - 1, named=True)["learning_rate"]) if sub.height else None
+        sub = df.filter(pl.col(col) == m).sort("learning_rate")
+        stable = sub.filter(~pl.col("diverged"))
+        div = sub.filter(pl.col("diverged"))
+        if not stable.height:
+            return None
+        last = float(stable.row(stable.height - 1, named=True)["learning_rate"])
+        first_div = float(div.row(0, named=True)["learning_rate"]) if div.height else None
+        return {"last_stable": last, "first_diverged": first_div,
+                "censored": first_div is None}
 
     o_nc, o_cs = eta_max(nc, "method", "ogd"), eta_max(cs, "method", "ogd")
-    print(f"\n  cross-check, OGD in both artifacts: normalize_continuous={o_nc}  "
-          f"continuous_stream={o_cs}  {'AGREE' if o_nc == o_cs else 'DISAGREE'}")
+    agree = o_nc["last_stable"] == o_cs["last_stable"]
+    print(f"\n  cross-check, OGD in both artifacts: normalize_continuous="
+          f"{o_nc['last_stable']:g}  continuous_stream={o_cs['last_stable']:g}  "
+          f"{'AGREE' if agree else 'DISAGREE'}")
+    if not agree:
+        print("  CAUSE, traced rather than guessed: same date[0,120) window and the SAME")
+        print("  divergence criterion (r2 < -1 or peak > 50), but different stream lengths --")
+        print("  research_normalize.py loads max_rows=150000, research_continuous.py 300000.")
+        print("  Doubling the stream drops OGD's ceiling by a factor of 5. That is the")
+        print("  direction H_T4' predicts for tier 1, but it is NOT a clean test: standardize=")
+        print("  True fits on the loaded slice, so the two runs also see different features.")
+        print("  Step 3 does the clean version on a single fixed stream.")
 
     rows = []
-    print(f"\n  {'method':16s} {'tier':8s} {'eta_max':>9s} {'B':>10s} {'P=eta_max*B':>13s}")
-    tier3 = []
+    print(f"\n  {'method':16s} {'tier':8s} {'eta_max':>16s} {'B':>10s} {'P=eta_max*B':>16s}")
+    tier3, censored_any = {}, False
     for m, B in (("normgd", 1.0), ("sn_ogd", 5.0)):
         e = eta_max(nc, "method", m)
-        if e is not None:
-            P = e * B
-            tier3.append(P)
-            print(f"  {m:16s} {'tier 3':8s} {e:9.3g} {B:10.3f} {P:13.3f}")
-            rows.append({"check": "invariant", "method": m, "tier": "tier 3",
-                         "eta_max": e, "B": B, "P": round(P, 4)})
-    e_sa = eta_max(nc, "method", "scale_adaptive")
-    e_sn = eta_max(nc, "method", "sn_ogd")
-    e_ng = eta_max(nc, "method", "normgd")
-    e_og = o_nc
-    print(f"  {'scale_adaptive':16s} {'tier 2':8s} {e_sa:9.3g} {'unbounded':>10s} "
-          f"{'n/a':>13s}   (cap 1e9)")
-    rows.append({"check": "invariant", "method": "scale_adaptive", "tier": "tier 2",
-                 "eta_max": e_sa, "B": None, "P": None})
-    print(f"  {'ogd':16s} {'tier 1':8s} {e_og:9.3g} {'sup||g||':>10s} {'n/a':>13s}")
-    rows.append({"check": "invariant", "method": "ogd", "tier": "tier 1",
-                 "eta_max": e_og, "B": None, "P": None})
+        if e is None:
+            continue
+        if e["censored"]:
+            censored_any = True
+            lab = f">= {e['last_stable']:g}"
+            plab = f">= {e['last_stable']*B:g}"
+            tier3[m] = (e["last_stable"] * B, None)
+        else:
+            lab = f"[{e['last_stable']:g},{e['first_diverged']:g})"
+            plab = f"[{e['last_stable']*B:g},{e['first_diverged']*B:g})"
+            tier3[m] = (e["last_stable"] * B, e["first_diverged"] * B)
+        print(f"  {m:16s} {'tier 3':8s} {lab:>16s} {B:10.3f} {plab:>16s}"
+              + ("   CENSORED" if e["censored"] else ""))
+        rows.append({"check": "invariant", "method": m, "tier": "tier 3",
+                     "eta_max_last_stable": e["last_stable"],
+                     "eta_max_first_diverged": e["first_diverged"],
+                     "censored": e["censored"], "B": B,
+                     "P_lo": round(e["last_stable"] * B, 4),
+                     "P_hi": None if e["censored"] else round(e["first_diverged"] * B, 4)})
+
+    e_sa, e_og = eta_max(nc, "method", "scale_adaptive"), o_nc
+    for m, e, tier, blab in (("scale_adaptive", e_sa, "tier 2", "unbounded"),
+                             ("ogd", e_og, "tier 1", "sup||g||")):
+        lab = (f">= {e['last_stable']:g}" if e["censored"]
+               else f"[{e['last_stable']:g},{e['first_diverged']:g})")
+        print(f"  {m:16s} {tier:8s} {lab:>16s} {blab:>10s} {'n/a':>16s}")
+        rows.append({"check": "invariant", "method": m, "tier": tier,
+                     "eta_max_last_stable": e["last_stable"],
+                     "eta_max_first_diverged": e["first_diverged"],
+                     "censored": e["censored"], "B": None, "P_lo": None, "P_hi": None})
 
     # ------------------------------------------------------- falsification (a): spread
     print("\n### falsification (a): is P constant across tier 3?")
-    if len(tier3) >= 2:
-        spread = max(tier3) / min(tier3)
-        print(f"  P values {['%.2f' % p for p in tier3]}  spread {spread:.2f}x")
-        print(f"  registered threshold: C10S's 1.68x across rays. "
-              f"{'WITHIN' if spread <= 1.68 else 'EXCEEDS'} it.")
-        print(f"  C10S's committed P* = {P_STAR_C10S} (not fitted here) for comparison.")
-        print("  CAVEAT, stated because it cuts against a clean reading: eta_max is quantised by")
-        print("  the sweep grid (…,1,2,3,5,8), so a ratio of adjacent grid points is already")
-        print("  ~1.6x. This test cannot resolve a spread finer than the grid.")
-        rows.append({"check": "falsification_a", "method": "tier3", "spread": round(spread, 4),
-                     "threshold": 1.68, "passes": bool(spread <= 1.68)})
+    if censored_any:
+        cen = [m for m, (_, hi) in tier3.items() if hi is None]
+        print(f"  INCONCLUSIVE -- not falsified and not confirmed. {', '.join(cen)} never")
+        print("  diverges anywhere on the committed grid (top lr=8), so its ceiling is")
+        print("  RIGHT-CENSORED and every P built from it is a lower bound, not a value.")
+        for m, (lo, hi) in tier3.items():
+            print(f"    {m:16s} P {'>= %g' % lo if hi is None else '[%g,%g)' % (lo, hi)}")
+        print("  Taking the censored value at face value would have given a spread of")
+        print(f"  {max(v[0] for v in tier3.values())/min(v[0] for v in tier3.values()):.2f}x and a"
+              " verdict of FALSIFIED. That verdict would have been an")
+        print("  artifact of the grid ending, not a measurement, so it is not recorded.")
+        print("  Deciding it needs a wider grid for normalized-GD, which is new compute and")
+        print("  therefore a separate registration.")
+        print(f"  For reference only, NOT used as evidence: C10S's committed P* = {P_STAR_C10S},")
+        print("  and normalized-GD's own R2 is already declining past lr=3 (0.221 -> 0.201 ->")
+        print("  0.086) with peak rolling loss rising 5.1 -> 7.9 -> 20.0, so its ceiling is")
+        print("  plausibly just beyond the grid. That is an extrapolation and is labelled one.")
+        rows.append({"check": "falsification_a", "method": "tier3",
+                     "verdict": "INCONCLUSIVE_CENSORED", "censored_members": ",".join(cen)})
+    else:
+        vals = [lo for lo, _ in tier3.values()]
+        spread = max(vals) / min(vals)
+        print(f"  P lower bounds {['%.2f' % p for p in vals]}  spread {spread:.2f}x")
+        print(f"  registered threshold 1.68x: {'WITHIN' if spread <= 1.68 else 'EXCEEDS'}")
+        rows.append({"check": "falsification_a", "method": "tier3",
+                     "verdict": "PASS" if spread <= 1.68 else "FALSIFIED",
+                     "spread": round(spread, 4)})
 
     # ------------------------------------------- falsification (b): tier 2 intermediate
     print("\n### falsification (b): is tier 2 strictly between tier 1 and tier 3?")
-    lo, hi = min(e_ng, e_sn), max(e_ng, e_sn)
-    inter = (e_og < e_sa < lo)
-    print(f"  tier 1 (ogd) {e_og:g}  <  tier 2 (scale_adaptive) {e_sa:g}  <  "
-          f"tier 3 [{lo:g},{hi:g}] ?   {'YES' if inter else 'NO'}")
+    t1, t2 = e_og["last_stable"], e_sa["last_stable"]
+    t3_floor = min(eta_max(nc, "method", m)["last_stable"] for m in ("normgd", "sn_ogd"))
+    inter = t1 < t2 < t3_floor
+    print(f"  tier 1 (ogd) {t1:g}  <  tier 2 (scale_adaptive) {t2:g}  <  "
+          f"tier 3 floor {t3_floor:g} ?   {'YES' if inter else 'NO'}")
+    print("  This one is NOT affected by the censoring above: censoring can only push tier 3's")
+    print("  ceiling HIGHER, which widens the gap it has to clear, so the verdict is safe.")
     if inter:
-        print(f"  tier 2 sits {e_sa/e_og:.0f}x above tier 1 and {lo/e_sa:.0f}x below tier 3's floor.")
-        print("  So scale-INVARIANCE alone buys part of the gap and BOUNDEDNESS buys the rest.")
+        print(f"  tier 2 sits {t2/t1:.0f}x above tier 1 and at least {t3_floor/t2:.0f}x below")
+        print("  tier 3's floor. So scale-INVARIANCE alone buys part of the gap and")
+        print("  BOUNDEDNESS buys the rest -- they are separate properties with separate effects.")
         print("  Section 3's two-way contrast (scale-free vs scale-dependent) does not capture")
         print("  this; the paper's own Table 1 already reports the uncapped endpoint at 7/10")
         print("  per-row divergences, which is neither tier's behaviour.")
     rows.append({"check": "falsification_b", "method": "scale_adaptive",
-                 "eta_max_tier1": e_og, "eta_max_tier2": e_sa, "eta_max_tier3_floor": lo,
-                 "intermediate": bool(inter)})
+                 "eta_max_tier1": t1, "eta_max_tier2": t2, "eta_max_tier3_floor": t3_floor,
+                 "intermediate": bool(inter), "verdict": "PASS" if inter else "FALSIFIED"})
     return rows
+
+
+# =====================================================================================
+# STEP 3 -- the horizon prediction, on ONE fixed stream (no standardization confound)
+# =====================================================================================
+def step_3() -> list[dict]:
+    rule()
+    print("STEP 3 -- does tier 1's ceiling have to shrink with the horizon?")
+    rule()
+    print("  H_T4': tier 1's ceiling is P*/sup_t B_t and B_t is degree-1, so the ceiling")
+    print("  inherits the growth of an EXTREME order statistic of ||g_t||. Tier 3's B is a")
+    print("  constant, so its ceiling is horizon-independent. Measured on prefixes of ONE")
+    print("  fixed stream, so nothing varies but the horizon.")
+    g = np.load(RES / "gradnorm_at_wstar.npy")
+    g = g[np.isfinite(g) & (g > 0)]
+    ns = [12500, 25000, 50000, 100000, 200000]
+    ns = [n for n in ns if n <= len(g)]
+    sup = [float(g[:n].max()) for n in ns]
+    print(f"\n  {'T':>9s} {'sup||g||':>12s} {'ratio vs prev':>15s}")
+    for i, (n, s) in enumerate(zip(ns, sup)):
+        r = "" if i == 0 else f"{s/sup[i-1]:15.3f}"
+        print(f"  {n:9d} {s:12.3f} {r:>15s}")
+    b, _ = np.polyfit(np.log(ns), np.log(sup), 1)
+    ALPHA = 2.43  # committed Hill estimate for the raw gradient norm (D1/T1 step 0)
+    print(f"\n  fitted growth exponent of sup||g|| in T: {b:.3f}")
+    print(f"  predicted from the committed Hill index alpha={ALPHA}: 1/alpha = {1/ALPHA:.3f}")
+    print(f"  a doubling of T multiplies sup||g|| by 2^{b:.3f} = {2**b:.3f}"
+          f"  (predicted {2**(1/ALPHA):.3f})")
+    print("\n  So tier 1's ceiling decays with the horizon while tier 3's does not. The effect")
+    print("  is REAL but SLOW -- a factor of ~1.3 per doubling, not the 5x seen between the two")
+    print("  artifacts in step 2, which therefore cannot be attributed to horizon alone.")
+    print("  Reported that way rather than claimed as a confirmation.")
+    return [{"check": "horizon", "method": "sup_grad_norm", "T": n, "sup": round(s, 4),
+             "fitted_exponent": round(float(b), 4), "predicted_exponent": round(1 / ALPHA, 4)}
+            for n, s in zip(ns, sup)]
 
 
 def run() -> int:
@@ -314,6 +402,7 @@ def run() -> int:
     rows = step_0b()
     rows += step_1()
     rows += step_2()
+    rows += step_3()
 
     rule()
     print("WHAT THIS DOES NOT ESTABLISH")
