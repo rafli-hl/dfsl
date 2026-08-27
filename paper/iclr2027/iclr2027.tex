@@ -1464,6 +1464,16 @@ predicts: a rate tuned on one window's scale need not survive a window whose sca
 Bounded \emph{in-window} at a small enough rate is not the same property as bounded by a
 constant, and only the latter transfers.
 
+\paragraph{What transfers is stability, not accuracy.} The scope is worth stating, because the
+two are easy to conflate and \cref{tab:replication} contains both. Degree-zero homogeneity makes
+the \emph{set of rates at which the iterate stays bounded} invariant to rescaling the stream; it
+says nothing about which rate inside that set is most accurate. Frozen per-step at
+$\mathrm{lr}{=}5$, normalized-GD diverges on $0/10$ windows while its $R^2$ runs from $0.37$ down
+to $-0.20$---so its stability transferred and its accuracy did not, which is the
+overfitting \cref{app:grid} attributes it to and not a failure of the invariance. The clippers
+fail the other way, diverging on $9/10$. Degree separates the two modes: degree one loses
+stability, degree zero keeps it and can still lose accuracy.
+
 \subsection{Reductions}
 \label{app:reductions}
 \emph{Unknown $p$:} $M=\Theta(T^{1/p})$ needs $p$; a doubling schedule over $M$, using

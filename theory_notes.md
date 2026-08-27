@@ -500,6 +500,30 @@ against `1149.2`, a factor `1.53`. `P = η_max·B` then gives OGD `[7.5, 15.1)` 
 committed `P* = 11.5` **outside** it. The earlier cross-tier agreement was an artifact of mixing
 two streams. Not confirmed.
 
+## Scope, sharpened by an objection that looked like a counterexample
+
+`app:grid` reports normalized-GD and Cutkosky--Mehta collapsing to `0.09 ± 0.21` per-step at
+their frozen window-1 rates, attributed to overfitting. Both are **degree-0**, so if Theorem B
+says degree-0 tuning transfers, this looks like the one place prediction and data disagree.
+
+Checked against `windows_replication.csv`. Per-step, frozen at `lr = 5`, normalized-GD is
+**0/10 diverged**, with `R²` running `0.371` down to `−0.202`. So **stability transferred
+perfectly and accuracy did not**, and those are different properties:
+
+| | divergences | accuracy |
+|---|---|---|
+| degree 1 (clippers, per-step) | **9/10** | n/a — diverged |
+| degree 0 (normalized-GD, per-step) | **0/10** | collapses, mean `0.094` |
+
+Theorem B claims only the first: degree-0 homogeneity makes the *set of rates at which the
+iterate stays bounded* invariant to rescaling the stream. It says nothing about which rate
+inside that set is most accurate. So there is no conflict, `app:grid`'s attribution is right,
+and **degree separates the two failure modes** — degree one loses stability, degree zero keeps
+it and can still lose accuracy. Stated in the appendix where the objection would be raised.
+
+This is a scope statement, not a new prediction, and it is recorded as such: it makes Theorem B
+narrower and therefore more falsifiable, not broader.
+
 ## Unchanged
 
 GAP 1 and GAP 2 both stand. No lower bound, no separation theorem, and nothing here bears on

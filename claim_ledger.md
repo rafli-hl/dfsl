@@ -725,4 +725,12 @@ out on the primary instrument, and it is the half of T4 worth keeping.
 **Ceilings located, closing C-23's open item.** Per-row `[10⁻², 2×10⁻²)`; per-step
 `[5×10⁻³, 10⁻²)`.
 
+**Scope, sharpened 2026-08-27.** `app:grid` reports normalized-GD and CM collapsing to
+`0.09 ± 0.21` per-step, and both are degree-0, which looks like a counterexample to Theorem B's
+transfer claim. It is not. Per-step frozen at `lr = 5`, normalized-GD is **0/10 diverged** with
+`R²` from `0.371` to `−0.202`: stability transferred, accuracy did not. Theorem B governs the
+*stable-rate set*, not the accuracy-optimal rate within it. Degree separates the two modes —
+degree one loses stability (`9/10`), degree zero keeps it and can still lose accuracy. The
+paper's overfitting attribution stands.
+
 **Does not touch** GAP 2 — still no lower bound and still no separation theorem.

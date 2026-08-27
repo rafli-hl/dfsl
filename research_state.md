@@ -516,6 +516,25 @@ on the primary instrument and it held.
 3. I claimed a cross-tier invariant agreement that was an artifact of mixing two streams, and
    withdrew it the same session once recomputed on one.
 
+### Theorem B's scope, sharpened by an objection that looked like a counterexample
+
+`app:grid` has normalized-GD and CM collapsing to `0.09 ± 0.21` per-step, and both are degree-0.
+If degree-0 tuning transfers, that reads as the one place theory and data disagree. It is not:
+frozen per-step at `lr = 5`, normalized-GD is **0/10 diverged** with `R²` from `0.371` to
+`−0.202`. Stability transferred; accuracy did not. Theorem B governs the stable-rate set, not
+the accuracy-optimal rate inside it — and degree separates the two failure modes cleanly, with
+degree one losing stability at `9/10` and degree zero keeping it while losing accuracy. The
+paper's overfitting attribution stands, and the scope is now stated in the appendix where the
+objection would be raised.
+
+### The boundary-artifact class is closed by a gate, not by vigilance
+
+Four occurrences, two of them inside this session. `research_grid_interior.py` and
+`tests/test_grid_interior.py` now check every registered grid claim for an edge optimum and an
+unbracketed ceiling, from committed bytes, in about a second. Building it surfaced two false
+positives of its own — a fixed-arm artifact that is not a sweep, and probes too short to locate
+anything — both fixed rather than tolerated. Tracker item 12 closed.
+
 ### Where the theory stands now
 
 Theorem A and Theorem B are correct and Theorem B now has a confirmed prediction. Corollary C
