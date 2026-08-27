@@ -1906,3 +1906,43 @@ stopping_rule: >
   summary, update ledger/theory_notes/state, commit on the registered branch. No re-tuning
   after seeing across-window results.
 
+# ---------------------------------------------------------------------------
+# AMENDMENT 1 to T4B -- the grid floor was wrong. Recorded BEFORE the re-run.
+# ---------------------------------------------------------------------------
+amendment_1:
+  status: AMENDED_BEFORE_RESULT
+  what_happened: >
+    The first registered run was launched with the lr grid set to LRS_SF, the ten points the
+    instrument gives the scale-free methods. On window 1 at 150k rows AdaptiveClip diverges at
+    lr = 0.02, which is the FLOOR of that grid. So the entire matched grid sits above the
+    clippers' operating range, every setting diverges, the frozen setting falls back to a
+    diverged one, and the run would have reported "diverges 10/10" as a result.
+  why_that_would_have_been_wrong: >
+    It is true but uninformative, and it is exactly the failure class recorded as tracker open
+    item 12: a statistic computed at the edge of a swept range and reported as if the range were
+    the domain. The same shape as section E.12's grid-adequacy finding, and the same shape as
+    T4's own right-censored normalized-GD ceiling. Third occurrence.
+  the_actual_error: >
+    I misread the instrument's convention. research_windows_replication does NOT give every
+    method the same grid: it gives OGD LRS_OGD = [1e-3 .. 2e-2] and AdaGrad LRS_ADAGRAD, each in
+    that method's own decade, and matches the BUDGET rather than the range. The clippers live in
+    OGD's decade -- fair_tuning and lr_sensitivity both put their optimum at 1e-3 to 1e-2 -- so
+    LRS_SF was the wrong decade, not merely a coarse one.
+  the_fix: >
+    LRS_CLIP = [1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 0.1, 0.2, 0.5, 1.0]. Ten points, the same
+    count as LRS_SF so the matched budget is unchanged, spanning from below LRS_OGD's floor to
+    above LRS_SF's floor. It can therefore bracket the ceiling from BOTH sides rather than only
+    from above.
+  why_this_is_not_result_chasing: >
+    The registration forbids widening the grid after seeing the result, and that clause is about
+    chasing a favourable outcome. This fix is outcome-NEUTRAL and is at least as likely to be
+    unfavourable to H_T4B: a grid containing the clippers' real operating range can just as
+    easily produce decision-rule outcome 2 -- bounded but well below the pack -- which says
+    stability and competitiveness ARE separable for them and weakens the taxonomy correction.
+    No across-window result has been seen; the first run was stopped during window-1 tuning and
+    its partial output discarded. The decision rule is unchanged and is not re-opened.
+  what_is_not_changed: >
+    The instrument, the windows, the divergence criterion, the tune-then-freeze protocol, the
+    budget count, the default threshold parameters, and the decision rule. Only the decade the
+    ten points sit in.
+

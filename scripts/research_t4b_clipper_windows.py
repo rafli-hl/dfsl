@@ -17,9 +17,12 @@ from ``research_windows_replication`` rather than re-implemented, so the instrum
 quietly differ. A SEPARATE artifact is written: ``windows_replication.csv`` is pinned by the
 paper and is not regenerated here.
 
-Budget is matched and stated: a 1-D grid over ``lr`` on exactly ``LRS_SF``, the same ten points
-the instrument gives normalized-GD, scale-adaptive OGD and SN-OMD, with the library's default
-threshold parameters. Not the fixed-tau clip's 70-config 2-D budget.
+Budget is matched and stated: a 1-D grid of ten ``lr`` points -- the same *count* the instrument
+gives normalized-GD, scale-adaptive OGD and SN-OMD -- with the library's default threshold
+parameters. Not the fixed-tau clip's 70-config 2-D budget. The ten points sit in the clippers'
+own decade rather than the scale-free one, matching the instrument's convention of giving OGD
+``LRS_OGD`` and AdaGrad its own range; see ``LRS_CLIP`` and registration amendment 1 for why the
+first attempt's grid floor was wrong.
 
 The threshold statistics are reproduced from ``dfsl.algorithms`` exactly, *including* that the
 current round's norm enters its own threshold -- that makes ``tau_t`` non-predictable, which is
@@ -49,11 +52,23 @@ from research_table1_errorbars import agg_r2  # noqa: E402
 
 from dfsl.estimators import get_estimator  # noqa: E402
 from research_windows_replication import (  # noqa: E402  (the instrument itself, not a copy)
-    LRS_SF,
     WINDOWS,
     _diverged,
     _load,
 )
+
+# Amendment 1 to the registration, made before any across-window result was seen. The first run
+# used LRS_SF -- but the instrument does not give every method the same grid. It gives OGD
+# LRS_OGD = [1e-3 .. 2e-2] and AdaGrad its own, each in that method's decade, matching the
+# BUDGET rather than the range. The clippers live in OGD's decade (fair_tuning and
+# lr_sensitivity both put their optimum at 1e-3 to 1e-2), and on window 1 at 150k rows
+# AdaptiveClip diverges at 0.02 -- the FLOOR of LRS_SF. The whole matched grid sat above their
+# operating range, so every setting diverged and "diverges 10/10" would have been an artifact of
+# where the sweep started: tracker open item 12's failure class, third occurrence.
+#
+# Ten points, same count as LRS_SF so the budget is unchanged, spanning from below LRS_OGD's
+# floor to above LRS_SF's floor so the ceiling can be bracketed from BOTH sides.
+LRS_CLIP = [1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 0.1, 0.2, 0.5, 1.0]
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results" / "research"
@@ -170,14 +185,15 @@ def main() -> int:
     ap.add_argument("--smoke", action="store_true")
     args = ap.parse_args()
 
-    rows, windows, lrs = args.rows, WINDOWS, list(LRS_SF)
+    rows, windows, lrs = args.rows, WINDOWS, list(LRS_CLIP)
     if args.smoke:
         rows, windows, lrs = 4000, WINDOWS[:3], [0.1, 0.5, 2.0]
         print(">>> SMOKE MODE <<<")
 
     print("=" * 96)
     print("T4B -- the clippers on the ten-window frozen instrument")
-    print(f"  windows={len(windows)}  rows<={rows}  lr grid={lrs} (matched 1-D, = LRS_SF)")
+    print(f"  windows={len(windows)}  rows<={rows}  lr grid={lrs}")
+    print("  matched 1-D budget (10 points, = LRS_SF's count) in the clippers' own decade")
     print("=" * 96)
 
     frozen: dict[tuple[str, str], float] = {}

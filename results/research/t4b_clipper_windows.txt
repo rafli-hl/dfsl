@@ -1,2 +1,21 @@
+================================================================================================
+T4B -- the clippers on the ten-window frozen instrument
+  windows=10  rows<=150000  lr grid=[0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0] (matched 1-D, = LRS_SF)
+================================================================================================
+
+########## PROTOCOL: per-row ##########
+
+[tune] window date[0,120)  n=150000
+    AdaptiveClip   lr=0.02   R2=-20.6085   DIVERGED
+    AdaptiveClip   lr=0.05   R2=-2107028.2636   DIVERGED
+    AdaptiveClip   lr=0.1    R2=-6116108354887.4395   DIVERGED
+    AdaptiveClip   lr=0.2    R2=-2320355173436059912503296.0000   DIVERGED
+    AdaptiveClip   lr=0.5    R2=-89240861049352457154643007284810009486924638584832.0000   DIVERGED
+    AdaptiveClip   lr=1      R2=-1055862576640865151684239704384908714483092260905517540235769460057970011466499781112031123115490404160151218028544.0000   DIVERGED
+    AdaptiveClip   lr=2      R2=-6790228276688286258816228595613137052194976540399324726542224991413097116929164848056203038213722219472211424005021729057279398630646894096361161266267275607892225878977551213927987672718744378874373904872594206002698697912618802714239630398188869862780695087092194305732318855168.0000   DIVERGED
 D:\dfsl\.venv\Lib\site-packages\numpy\linalg\_linalg.py:2767: RuntimeWarning: overflow encountered in dot
   sqnorm = x.dot(x)
+    AdaptiveClip   lr=3      R2=-inf   DIVERGED
+    AdaptiveClip   lr=5      R2=-inf   DIVERGED
+    AdaptiveClip   lr=8      R2=-inf   DIVERGED
+  AdaptiveClip   frozen lr=0.02   window1 R2=none stable   ceiling BELOW the grid: diverged at every lr tested, from 0.02
