@@ -90,15 +90,15 @@ underfit, competitive rates diverge on scale spikes---and clipping to a \emph{sc
 threshold still inherits the drift. We propose \emph{Scale-Normalized OMD} (SN-OMD): divide the
 gradient by a predictable robust scale, then cap it at a \emph{scale-free} constant $M$. The
 per-step move is bounded by $M$, so the iterates provably cannot blow up, growing as
-$O(\sqrt t)$ for any rate or realization---a stability, not a convergence, guarantee. The
-predictable scale further buys a high-probability dynamic-regret bound at the per-regime rate
-$T^{1/p}$ ($p\in(1,2]$), under a finite $p$-th moment and a predictable scale-tracking
-condition. Empirically a whole family of \emph{bounded scale-free} updates stays bounded and
+$O(\sqrt t)$ for any rate or realization---a stability, not a convergence, guarantee. Scale-\emph{invariance} further buys a \emph{transferable} tuning: a degree-zero step map's
+stable rates do not move with the gradient scale, predicting the $9/10$-vs-$0/10$ divergence
+split we measure. Empirically a whole family of \emph{bounded scale-free} updates stays bounded and
 accurate where OGD and scale-dependent clipping diverge: across ten disjoint windows with
 frozen hyperparameters every finite-cap member stays bounded ($0/10$ divergences) while the
 uncapped endpoint and OGD do not, and both the measurement and the stability partition
-replicate on a second, independent market. Two limits we state rather than bury. The regret
-rate is \emph{per regime}, the measured scale drift entering it as a genuine $\sqrt T$ factor.
+replicate on a second, independent market. Two limits we state rather than bury. The
+dynamic-regret bound we prove, at rate $T^{1/p}$ ($p\in(1,2]$), is \emph{permanently}
+per-regime: all three routes that would globalize it are measured shut.
 And per-row SN-OMD's block-median scale \emph{ties} the best bounded baseline
 (momentum-normalized SGD) rather than beating it: the contribution is the measurement and the
 stability, not an accuracy win.
@@ -648,9 +648,10 @@ family; what they lack, like \emph{AdaGrad-Norm} ($0.20\!\pm\!.07$ per-row;
 The difficulty on real streams is a nonstationary gradient scale, and what the learner faces
 is its \emph{predictable} part. That reframing is what the paper contributes: it makes a heavy
 gradient tail a property to be \emph{removed} rather than survived, it makes non-divergence
-something a scale-free cap can guarantee outright, and it makes the accuracy question a
-question about the whole bounded scale-free family rather than about one member---which is
-where our own method ties rather than wins.
+something a scale-free cap can guarantee outright, it makes a tuned rate \emph{transfer} across
+streams of differing scale (\cref{thm:transfer}), and it makes the accuracy question one about
+the whole bounded scale-free family rather than one member---where our own method ties rather
+than wins.
 
 \paragraph{Limitations.} SN-OMD is not fully tuning-free: the rate is setting-dependent, and
 \cref{tab:replication} tunes the cap $M$ alongside it, so the deployed method carries \emph{two}
