@@ -1655,3 +1655,150 @@ stopping_rule: >
   Compute (a) and (b), close S1-S4, report, update the ledger/theory_notes/state, commit on the
   registered branch, stop. No iteration toward a more favourable W or a more favourable regime
   definition.
+
+---
+# ===========================================================================
+# FOURTEENTH REGISTRATION -- T4 (separation theorem for the stability partition)
+# ===========================================================================
+direction: T4
+name: conditions under which bounded scale-free updates provably beat scale-dependent ones
+branch: research/t4-separation
+registered_at_commit: c84a766
+status: REGISTERED_BEFORE_EXECUTION
+kind: THEORY
+
+# ---------------------------------------------------------------------------
+why_this_direction: >
+  It is the last one left. D1/T1 failed and established that the variation-adaptive bound it
+  set out to derive already exists inside thm:regret. D1B closed Remark D.3's switching bound
+  negatively -- the regime count is at least linear, so the target rate is Theta(T) at every p.
+  D1C measured Prop F.1's analytical discharge of ass:track to be empty on this data. What
+  survives is Prop 3.1, which is one line and unconditional, and the empirical partition it is
+  supposed to explain: 0/10 divergences for every bounded scale-free method against 9/10 for
+  OGD per-step on Jane, replicated on crypto with frozen hyperparameters (10/10 OGD, 3/10 the
+  uncapped endpoint, 0/10 bounded scale-free). That partition is the sharpest unexplained
+  empirical result in the paper, and no measurement so far obstructs explaining it.
+
+# ---------------------------------------------------------------------------
+# STEP 0 IS ADVERSARIAL TO THIS DIRECTION AND IS RUN FIRST
+# ---------------------------------------------------------------------------
+step_0_premise_check: >
+  D3/T4 carries a falsification condition from its own original registration, quoted in the
+  tenth registration's why_this_direction: "if scale-dependent clipping can be made stable ...
+  by a rate schedule alone, the partition is about tuning, not structure".
+  I believe this condition is ALREADY MET by the paper's own Table 2, which reports the
+  scale-dependent methods (OGD, AdaptiveClip, RobustOMD) as stable at lr <= 10^-2 rather than
+  as unconditionally divergent. If that column means what it says, then a scale-oblivious
+  constant rate DOES stabilise them, and T4 as originally framed is FALSIFIED BEFORE IT STARTS.
+  Verify it from committed artifacts and the committed learner code, and report that outcome
+  plainly if it holds. It is the unfavourable outcome for this direction and it must not be
+  softened, deferred, or absorbed into a redefinition of "stable".
+  C10S is a second, independent pressure on the same premise: it found the divergence boundary
+  governed to within 1.68x across rays spanning 32x in M by P = lr*M, a rate-schedule quantity.
+
+what_step_0_does_NOT_license: >
+  If step 0 falsifies the original framing, the direction is recorded as FAILED under its
+  registered criteria. Any successor is a NEW registration with its own criteria, written after
+  the failure is recorded, and labelled a successor rather than a continuation. It is not a
+  rescue and must not be presented as one. In particular the successor may not redefine
+  "stability partition" to mean whatever the data still supports.
+
+# ---------------------------------------------------------------------------
+hypothesis_H_T4: >
+  If step 0 does NOT falsify the framing: there are stated conditions on the scale process
+  under which every bounded scale-free update is stable and every scale-dependent update is
+  not, for ALL rate schedules, and those conditions hold on the measured data.
+
+successor_hypothesis_H_T4prime: >
+  Registered NOW, before step 0 runs, so that it cannot be tuned to whatever step 0 returns.
+  Conditional on step 0 falsifying H_T4, the successor claim is about WHERE the stability
+  ceiling sits rather than WHETHER one exists:
+  Write the per-round iterate displacement as Delta_t = eta_t * ||h_t|| with eta_t = eta/sqrt(t).
+  Every method in Table 2 obeys ||h_t|| <= B_t for a method-specific B_t, and the methods split
+  by how B_t responds to rescaling the gradient stream by lambda > 0:
+    tier 1  scale-DEPENDENT, B_t positively homogeneous of degree 1: OGD (B_t = ||g_t||),
+            AdaptiveClip (B_t = q_0.9 of a trailing window of ||g||), RobustOMD (B_t = 3 *
+            Catoni of the same). B_t scales with lambda.
+    tier 2  scale-FREE but UNBOUNDED, degree 0: the uncapped M -> infinity endpoint
+            (B_t = ||g_t||/s_t). Invariant to lambda, but with no finite bound.
+    tier 3  scale-free and BOUNDED, B_t a constant independent of the stream: SN-OMD (M),
+            normalized-GD (M -> 0), the fixed-tau clip (tau), AdaGrad-Norm (B <= 1 on its own
+            schedule).
+  H_T4': the maximum stable learning rate satisfies eta_max ~ P*/sup_t B_t with P* a
+  method-independent constant. For tier 3 sup_t B_t is a TUNING CONSTANT, so eta_max is
+  horizon-independent. For tier 1 sup_t B_t is an EXTREME ORDER STATISTIC of the gradient
+  stream, so eta_max shrinks as the horizon grows. Tier 2 sits between: invariant to the scale
+  level but still governed by an extreme statistic of the normalized gradient.
+
+why_H_T4prime_is_not_a_restatement_of_prop_3_1: >
+  Prop 3.1 is an upper bound for tier 3 only, and it is one line. H_T4' makes three claims
+  Prop 3.1 does not: that tier 2 is genuinely intermediate rather than a variant of tier 3
+  (the paper's section 3 argument conflates them, contrasting "scale-free" with
+  "scale-dependent" as though it were a dichotomy, while its own Table 1 reports the uncapped
+  endpoint at 7/10 per-row divergences); that the SAME constant P* governs the ceiling across
+  methods, which is a quantitative prediction and not a bound; and that the tier-1 ceiling
+  DECAYS with the horizon at a rate set by the measured tail index, which ties the partition
+  to the paper's central heavy-tail measurement rather than leaving it a separate phenomenon.
+
+# ---------------------------------------------------------------------------
+what_to_compute: >
+  (0) Step 0, above, first and reported first.
+  (1) B_t for every Table 2 method on ONE common reference gradient stream, so the comparison
+      is not contaminated by each method's own divergence. Use the committed
+      gradnorm_at_wstar.npy, which is evaluated at w* and therefore carries no feedback from a
+      diverging iterate. Report sup, and report high quantiles too, since sup of a heavy-tailed
+      sample is itself unstable.
+  (2) The invariant: predicted eta_max = P*/sup_t B_t against Table 2's measured "Stable lr"
+      column, for every method. P* is NOT fitted per method; it is taken from C10S's already
+      committed P* ~ 11.5 and used as a fixed constant. A per-method fitted P* would make the
+      test unfalsifiable, which is the C10C2 mistake and is not repeated.
+  (3) The horizon dependence: the tail index of ||g_t|| is measured (D1/T1 step 0: Hill alpha
+      2.43 raw, ~3.7 normalized). If sup over T draws grows like T^(1/alpha), tier 1's ceiling
+      decays like T^(-1/alpha) while tier 3's does not. Compute both against the record.
+  (4) The negative control as a prediction, not an observation. Under a constant scale the
+      three tiers must collapse to within a constant. The paper already measures this
+      (sigma_t = 1 synthetic, the advantage vanishes), so it is an out-of-sample check on
+      H_T4' that was recorded before H_T4' existed.
+
+falsification_of_H_T4prime: >
+  Any of the following falsifies it, and each is reported as such:
+  (a) eta_max * sup_t B_t is NOT approximately constant across tier 3 -- if the bounded
+      scale-free members disagree by more than the 1.68x C10S already measured across rays,
+      the invariant is not one.
+  (b) tier 2 is not intermediate -- if the uncapped endpoint's ceiling matches tier 3, then
+      boundedness is not the operative condition and the claim collapses into Prop 3.1.
+  (c) tier 1's ceiling is NOT explained by an extreme statistic of ||g_t|| -- if OGD's 10^-2
+      is off by an order of magnitude from P*/sup||g||, the mechanism is wrong.
+  (d) the negative control disagrees.
+
+success_criteria: >
+  ALL of the following, or it is not a success:
+  (a) a stated theorem with a COMPLETE proof written out line by line, not a sketch. The
+      upper-bound half is expected to be easy; the half that has to be earned is a matching
+      statement for tiers 1 and 2 that is not merely "the upper bound is loose".
+  (b) it must not reduce to a tautology. "A bound that does not mention the scale does not
+      depend on the scale" is a restatement, not a theorem. If what I reach is that, I say so.
+      This criterion exists because D1C's S2 caught me presenting a near-tautological agreement
+      as corroboration, and the same failure mode is available here.
+  (c) every condition is measurable on the real scale process.
+  (d) it predicts the negative control, and the three-tier structure, without being fitted
+      to either.
+
+anti_fabrication_commitment: >
+  Inherited verbatim from D1, D1B and D1C, and binding. No theorem is asserted without a proof
+  I have actually written out and checked line by line. A derivation strategy with a located
+  obstruction is NOT a result. Any step I cannot justify is marked GAP and the result is
+  reported as incomplete. If T4 reaches only a sketch, it is labelled a sketch and counts as
+  FAILURE under (a), exactly as D1/T1 did.
+
+out_of_scope: >
+  Prop 3.1's proof, which is correct and is not touched. Reopening D1B or D1C. The Structure C
+  reframe, which stays a recorded candidate. Changing any measured number. Adding a method to
+  Table 1 or Table 2 -- T4 explains the partition already measured, it does not go looking for
+  a new one.
+
+stopping_rule: >
+  Run step 0 and report it whatever it says. If it falsifies, record the failure, then decide
+  explicitly whether to proceed to the successor. Do not iterate toward a definition of
+  stability under which the original framing survives. Commit on the registered branch.
+
