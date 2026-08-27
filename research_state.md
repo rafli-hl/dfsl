@@ -542,6 +542,56 @@ still derives AdaGrad-Norm's membership. What is dead: the separation (GAP 2), a
 correction (C-24). The manuscript's own framing came through this better than my revision of it,
 which is worth stating plainly given how much of Sessions 15-16 was spent trying to revise it.
 
+## Session 17 — Structure C, step 1: section 3's spine changes
+
+Greenlit with three constraints, all met and each checked rather than asserted.
+
+**Constraint 1, recoverability.** One deviation, flagged before acting: the instruction said
+branch off a tagged `master`, but `master` is still at `5e6c383` and contains none of D1C, T4 or
+T4B — the measured obstructions Structure C exists to foreground. The purpose clause was "so the
+current framing is recoverable as a build", so the tag went on the **current pre-restructure
+state** instead. `pre-structure-c`, annotated and pushed, records 8.942pp / 32pp / 125 tests and
+what it contains. `research/structure-c` branches from it.
+
+**Constraint 2, nothing empirical moves.** Verified mechanically, not by inspection: the diff
+against the tag touches **zero** lines containing `includegraphics`, `begin{tabular}`,
+`begin{figure}` or `begin{table}`, and removes **no** numeric value from the body. 52 insertions,
+40 deletions, all prose and cross-references.
+
+**Constraint 3, Theorem 3.2 demoted not deleted.** The body restatement `thm:regretbody` was a
+duplicate of `thm:regret`, which already carries the full statement with explicit constants in
+Appendix D. So the restatement is gone and its six body references re-point to `thm:regret`,
+which now renders as **Theorem D.2** throughout. The theorem is intact, in Appendix D, with the
+per-regime restriction conceded as permanent **in the body**: *"the obstructions, not modesty,
+license calling the per-regime restriction permanent."* All three measured routes — `W_s = Θ(T)`,
+`N` at least linear, `NW ≪ T^{1/p}` failing on both factors — are named in §3, not only in
+Limitations.
+
+**Section 3 now carries Theorem 3.2 = Tuning transfer**, with its proof in `app:family`, which
+stops restating it. Prop 3.1 is untouched and still 3.1.
+
+**The intro was updated too**, because leaving it wasn't neutral: the third contribution still
+promised the regret bound as what the predictable scale adds, which is no longer the spine. It
+now names the transfer result and the `9/10`-vs-`0/10` split it predicts.
+
+**Page budget.** The restructure overran twice — 9.089pp, then 9.007pp — and both times the
+fix came out of redundancy rather than fonts, margins or floats (§0/§30). One trim removed a
+sentence in §5 that §3 now states; one compressed the demotion paragraph without dropping a
+claim or a cross-reference, including the comparator caveat. Landed at **8.942pp**, the same
+three-line margin as before the restructure, 32pp total, 0 overfull, 0 undefined, 125 tests.
+
+A note on how brittle this was: at 8.94pp the layout is close enough to a page boundary that a
+two-word change tipped it. The measurement is the gate, and I re-measured after every edit
+rather than trusting a line count — rendered length is words, not source lines, which cost two
+iterations to remember.
+
+### What Structure C still has open
+
+The abstract and §7 have not been revisited. Neither has been checked against the new spine, and
+the abstract's existing register — the contribution is the measurement and the stability, not an
+accuracy win — is the one to keep, not to upgrade now that §3 has a theorem that predicted
+correctly. Venue stays tracker item 13 and should be reassessed against the built document.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

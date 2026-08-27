@@ -194,9 +194,9 @@ convergence) that needs no moment assumption.
   scale-free updates stays bounded and accurate where OGD and scale-dependent clipping
   diverge, and \emph{no single member dominates both protocols}: across ten frozen windows
   SN-OMD with a predictable block-median scale co-leads per-row, tied with a normalize-and-clip
-  baseline rather than beating it (\cref{tab:replication}). What the predictable scale does add
-  is a per-regime dynamic-regret bound (\cref{thm:regretbody}), stated with its $\sqrt T$ drift
-  factor rather than around it. The study is protocol-careful: the result is invariant to
+  baseline rather than beating it (\cref{tab:replication}). What scale-invariance adds is a
+  \emph{transferable} tuning (\cref{thm:transfer}), predicting the $9/10$-vs-$0/10$ split we
+  measure; the regret bound (\cref{thm:regret}) is demoted. The study is protocol-careful: the result is invariant to
   per-row vs.\ per-step updates (no contemporaneous leakage), and the advantage vanishes on
   a genuinely stationary control. A tested implementation is provided as anonymized
   supplementary material.
@@ -235,7 +235,7 @@ finite drifting $p$-th moment of \cref{ass:moment}.
 Two guarantees follow, at different knowledge costs. The unconditional \emph{stability}
 guarantee (\cref{thm:stability}) uses
 \emph{no} problem constant---not $\sigma_t$, $p_t$, $D$, or the comparator norm. The
-\emph{regret} guarantee (\cref{thm:regretbody}) is weaker in this respect: its tuned step is set
+\emph{regret} guarantee (\cref{thm:regret}) is weaker in this respect: its tuned step is set
 from scale/path aggregates, of which $p$, the comparator norm, and the regime length are
 discharged by standard doubling/parameter-free wrappers (\cref{app:proofs}), while the
 scale-path quantities $W_s,P_T^s,S_1$ enter as honest inputs rather than known constants. The
@@ -315,33 +315,36 @@ is taken up in \cref{sec:experiments}. Because the features are bounded, the los
 divergence reported there moves in lockstep with $\norm{w_t}$, which \cref{app:iternorm} logs
 directly and finds inside the bound on every run.
 
-\paragraph{What the predictable scale buys.} Beyond stability, predictability of $s_t$ buys a
-high-probability dynamic-regret guarantee.
-\begin{theorem}[Dynamic regret, simplified]
-\label{thm:regretbody}
-Assume \cref{ass:moment}, and that $s_t$ is predictable and brackets the local scale
-(\cref{ass:track}). Set the cap $M=\Theta(T^{1/p})$, or use a doubling schedule, which needs no
-knowledge of $p$. Fix a comparator sequence $u_{1:T}$ of path length $P_T$, and a horizon over
-which the tracker's upward variation is $O(1)$---a \emph{regime}, formalized in
-\cref{app:bracket}. Then with probability $\ge1-\delta$,
-\[
-  R_T(u_{1:T})\;=\;\tilde O\!\bigl((\textstyle\sup_t\sigma_t)\,(D+\sqrt{D\,P_T})\;T^{1/p}
-  \log(1/\delta)\bigr).
-\]
+\paragraph{What scale-invariance buys: a tuned rate that transfers.} \cref{thm:stability}
+concerns one stream; what governs behaviour \emph{across} streams of differing scale is how the
+step map responds to rescaling them. Write $w_{t+1}=w_t-\eta_t\Phi_t(g_1,\dots,g_t)$, and let
+$S_\lambda$ scale every $g_t$ by $\lambda>0$.
+\begin{theorem}[Tuning transfer]
+\label{thm:transfer}
+If $\Phi$ is positively homogeneous of degree $0$, the trajectory on $S_\lambda$ at rate $\eta$
+is that on $S_1$ at rate $\eta$: the stable-rate set does not move with $\lambda$. If $\Phi$ is
+degree $1$, it is that on $S_1$ at rate $\lambda\eta$: the stable-rate set contracts as
+$1/\lambda$, so no fixed rate is stable uniformly in $\lambda$.
 \end{theorem}
-\cref{thm:regret} in \cref{app:regret} gives the unsimplified constants, carrying $\sqrt{W_s}$
-and the peak-to-mean scale ratio explicitly, and \cref{app:proofs} gives the proof. Two of the
-bound's costs belong here rather than there.
+SN-OMD, normalized-GD and AdaGrad-Norm are degree $0$; OGD and clipping to $\tau_t=c\,s_t$ are
+degree $1$ (\cref{app:family}, with the proof). Frozen from window~1 across the ten windows, OGD
+diverges $9/10$ per-step (\cref{tab:replication}) as do both robust clippers
+(\cref{app:family}), while every degree-$0$ method diverges $0/10$. What transfers is
+\emph{stability}, not accuracy: a degree-$0$ method keeps its bound and can still lose accuracy,
+as normalized-GD does (\cref{app:grid}).
 
-\emph{(i) It holds per regime, not globally.} The bound is carried by the tracker's upward
-variation $W_s=s_1+\sum_t(s_t-s_{t-1})_+$, which we \emph{measure} to grow linearly in $T$ on
-real data (\cref{sec:tracker}). Over a horizon with a growing number of regimes the exponent
-therefore becomes $T^{1/p+1/2}$, which is \emph{vacuous} at $p{=}2$.
-
-\emph{(ii) It rests on an assumption, and on a restricted comparator.} \cref{ass:track} is
-one-sided in what matters and is dischargeable (\cref{prop:tracker}), but it remains an
-assumption; and the guarantee holds per \emph{fixed predictable} comparator, not against the
-per-round minimizer (\cref{rmk:scope}).
+\paragraph{Why the regret bound is not the headline.} Predictability of $s_t$ also buys a
+high-probability \emph{per-regime} dynamic-regret guarantee,
+$\tilde O((\sup_t\sigma_t)(D+\sqrt{D P_T})T^{1/p}\log(1/\delta))$, stated with explicit
+constants as \cref{thm:regret}. It sits there because all three routes that would make it a
+headline are measured shut. Its carrier $W_s=s_1+\sum_t(s_t-s_{t-1})_+$ grows linearly in $T$
+(\cref{sec:tracker}), so the exponent becomes $T^{1/p+1/2}$---vacuous at $p{=}2$, where the
+measured tail index puts us; the switching bound that would lift the per-regime restriction
+needs a \emph{sublinear} regime count, measured at least linear; and \cref{prop:tracker}, which
+discharges \cref{ass:track}, pays a term dominated only when $NW\ll T^{1/p}$, which fails on
+both factors (\cref{app:regimecount}). It is also per \emph{fixed predictable} comparator, not
+the per-round minimizer (\cref{rmk:scope}). The obstructions, not modesty, license calling the
+per-regime restriction permanent.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -447,8 +450,7 @@ gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust
 (AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---all carry
 such a bound, and all are fragile: stable only to $\mathrm{lr}\approx10^{-2}$ and reaching best
 $R^2\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
-(\cref{fig:mechanism}). Frozen across the ten windows the clippers diverge $9/10$ per-step, the
-same count as OGD (\cref{app:family}).
+(\cref{fig:mechanism}).
 
 The \emph{scale-free} family---normalized-GD, SN-OMD, uncapped scale-adaptive OGD, the
 fixed-$\tau$ clip, and AdaGrad-Norm, none of whose step bounds move with the regime---stays
@@ -472,13 +474,13 @@ useful learning-rate ranges span two orders of magnitude across its members
 depends on how the step behaves \emph{within} the bound.
 
 What singles out SN-OMD is therefore two things, not uniform accuracy. \emph{(i) Predictability:} its scale $s_t$ is a
-\emph{predictable} tracker, which makes the dynamic-regret bound (\cref{thm:regretbody}) go
+\emph{predictable} tracker, which makes the dynamic-regret bound (\cref{thm:regret}) go
 through---normalized-GD's instantaneous $1/\norm{\gt}$ is not predictable and discards
 magnitude every round. One \emph{predictable} instance, the block-median scale, also delivers
 \emph{co-leading} per-row accuracy: paired across the ten windows it beats every baseline it
 does not tie, and it \emph{ties} the normalize-and-clip baseline at the top---on this one
 protocol only (intervals and window counts in \cref{app:tracker}). The two claims are
-distinct: \cref{thm:regretbody} needs predictability, which says nothing about how accurate any
+distinct: \cref{thm:regret} needs predictability, which says nothing about how accurate any
 particular predictable tracker is, so the block median's co-lead is a property of \emph{that}
 tracker (\cref{sec:tracker}), not of predictability.
 
@@ -638,7 +640,7 @@ they do not diverge, and they \emph{tie} SN-OMD once the step schedule is matche
 gap a naive comparison shows is the schedule, not the preconditioner. They belong in the bounded
 family; what they lack, like \emph{AdaGrad-Norm} ($0.20\!\pm\!.07$ per-row;
 \cref{tab:replication}), is a \emph{predictable} scale and the dynamic-regret guarantee
-(\cref{thm:regretbody}).
+(\cref{thm:regret}).
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -659,7 +661,7 @@ tuned parameters (the tracker's decay and winsorization are left untuned). The $
 (\cref{app:secondmarket}), so the mechanism is domain-general in principle but validated on
 markets only. The normalized residual tail is dominated by
 \emph{causal-estimation cost} ($\hat\alpha\approx3.73$; \cref{tab:residual}), so with $p>2$ the
-cap is for stability alone---and the per-regime restriction on \cref{thm:regretbody} is not
+cap is for stability alone---and the per-regime restriction on \cref{thm:regret} is not
 a gap we expect to close: the switching bound that would remove it needs a sublinear regime
 count, and we measure that count to grow linearly (\cref{app:regimecount}). Finally, the
 anytime $\eta/\sqrt t$ schedule we deploy is not the
@@ -1090,7 +1092,7 @@ worst-tail rate $T^{1/p}$ rather than diverge.
 \section{Dynamic-regret analysis}
 \label{app:regret}
 
-This section gives the formal version of \cref{thm:regretbody}: the unsimplified
+This section states the dynamic-regret guarantee in full: the unsimplified
 high-probability bound, with the tracker variation $\sqrt{W_s}$, the scale-weighted path
 $P_T^s$, and the peak-to-mean scale ratio appearing as explicit constants rather than absorbed
 into $\tilde O$. The proof is in \cref{app:proofs}. We are equally explicit about the two soft
@@ -1433,11 +1435,21 @@ for every $\lambda>0$.
 
 Boundedness alone gives stability: $\norm{w_{t+1}-w_t}\le\eta B/\sqrt t$ and
 $\sum_{k<t}k^{-1/2}\le2\sqrt t$ reproduce \cref{thm:stability}'s envelope for any such method.
-Scale-invariance is a separate matter and governs whether a \emph{tuned rate transfers}: if
-$\Phi$ is positively homogeneous of degree one---as plain OGD is, and as the clippers are, since
-$\tau_t=c\,s_t$ scales with the stream---then running rate $\eta$ on a $\lambda$-scaled stream
-reproduces rate $\lambda\eta$ on the original, so the stable-rate set contracts as $1/\lambda$;
-if $\Phi$ is degree zero the stable-rate set does not move at all.
+Scale-invariance is a separate matter, and it is what \cref{thm:transfer} governs.
+
+\begin{proof}[Proof of \cref{thm:transfer}]
+Both cases are an induction on $t$ from $w_1$, which does not depend on $\lambda$. If $\Phi$ is
+degree zero then $\Phi_t(\lambda g_1,\dots,\lambda g_t)=\Phi_t(g_1,\dots,g_t)$, so the update
+$w_{t+1}=w_t-\eta_t\Phi_t$ is identical on $S_\lambda$ and on $S_1$ at the same $\eta$. If
+$\Phi$ is degree one then $\Phi_t(\lambda g)=\lambda\Phi_t(g)$ and the update is
+$w_{t+1}=w_t-\eta_t\lambda\Phi_t(g)$, which is the rate-$\lambda\eta$ update on $S_1$. Hence the
+stable-rate set satisfies $H(S_\lambda)=H(S_1)$ in the first case and $H(S_\lambda)=H(S_1)/\lambda$
+in the second, and in the second no fixed $\eta$ lies in $H(S_\lambda)$ for every $\lambda>0$.
+\end{proof}
+
+\noindent Plain OGD is degree one, and so are the clippers, since $\tau_t=c\,s_t$ scales with
+the stream. This is stated for a \emph{given} gradient sequence; under the feedback of a linear
+model $g_t$ depends on $w_t$, and we do not claim the induction unchanged there.
 
 Two consequences worth stating. First, a degree-one method can only have its displacement
 bounded uniformly in $\lambda$ by a rate carrying a $1/s_t$ factor---so normalization is not one

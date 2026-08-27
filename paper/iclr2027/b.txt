@@ -1,0 +1,198 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex.fmt)
+ restricted \write18 enabled.
+entering extended mode
+(iclr2027.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/base\size10.clo))
+(iclr2027_conference.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/eso-pic\eso-pic.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg)
+
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+)) (fancyhdr.sty) (natbib.sty))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\times.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype-pdf
+tex.def)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.cfg
+))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg)))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty)))
+ (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty)
+ (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
+)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefine
+keys.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.s
+ty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
+.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
+ty)))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettit
+lestring.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
+)))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.s
+ty) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc
+.sty)))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfil
+echeck.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquec
+ounter.sty)))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+For additional information on amsmath, use the `?' option.
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty))
+
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mathtools.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mhsetup.sty))
+ (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amscls\amsthm.sty)
+(algorithm.sty
+Document Style `algorithm' - floating environment
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty))
+(algorithmic.sty
+Document Style `algorithmic' - environment
+) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/cleveref\cleveref.sty
+)
+==> First Aid for cleveref.sty applied!
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thmtools.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-patch.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\parseargs.sty)
+) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-kv.sty)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-autoref.st
+y (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\aliasctr.sty
+))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-listof.sty
+)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-restate.st
+y)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/thmtools\thm-amsthm.sty
+)) (C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ptm.fd)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def) (iclr2027.aux)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
+fg))
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-ptm.cfg)
+(iclr2027.out) (iclr2027.out)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-cmr.cfg)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd)
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msb.cfg)
+[1{C:/Users/rafli/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/ra
+fli/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}]
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd)
+[2] [3] [4]
+(C:\Users\rafli\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd)
+[5]
+Underfull \vbox (badness 6252) has occurred while \output is active [6 <../figu
+res/fig1_problem.png> <../figures/fig7_nullcontrol.png>] [7] [8] [9]
+(iclr2027.bbl [10] [11]) [12] [13]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 948.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 948.
+
+[14] [15 <../figures/fig3_main.png>] [16 <../figures/fig2_mechanism.png>]
+[17 <../figures/fig4_tracker.png>]
+pdfTeX warning (ext4): destination with the same identifier (name{assumption.1}
+) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.1111 \begin{assumption}[Scale tracking]
+                                         
+pdfTeX warning (ext4): destination with the same identifier (name{theorem.2}) h
+as been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.1127 \begin{theorem}[Dynamic regret]
+                                       [18]
+Underfull \vbox (badness 4621) has occurred while \output is active [19]
+[20 <../figures/fig8_iterate_norm.png>]
+Underfull \hbox (badness 1342) in paragraph at lines 1383--1389
+\OT1/ptm/m/n/10 (+20) After the $\OML/cmm/m/it/10 ^^Q$\OT1/ptm/m/n/10 (+20) -ba
+lance be-low, these de-vi-a-tions \OT1/ptm/m/it/10 (+20) mul-ti-ply \OT1/ptm/m/
+n/10 (+20) the lead-ing term $\OML/cmm/m/it/10 L \OT1/cmr/m/n/10 = (\OML/cmm/m/
+it/10 D[] \OT1/cmr/m/n/10 +
+[21] [22] [23] [24 <../figures/fig5_synthetic.png>]
+pdfTeX warning (ext4): destination with the same identifier (name{proposition.1
+}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.1651 ...roposition}[Bracket guarantee, informal]
+                                                   [25 <../figures/fig6_msweep.
+png>] [26 <../figures/fig7_crypto.png>] [27] [28] [29] [30]
+Underfull \vbox (badness 10000) has occurred while \output is active [31]
+[32] [33] (iclr2027.aux) )
+(see the transcript file for additional information)<C:/Users/rafli/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/rafli/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/
+rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmm
+i5.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
+s/cm/cmmi6.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmmi7.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type
+1/public/amsfonts/cm/cmmi9.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fo
+nts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/rafli/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/rafli/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/rafli/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/rafli/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/ra
+fli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:
+/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy5
+.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+cm/cmsy6.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmsy7.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/fonts/type1/
+public/amsfonts/cm/cmsy9.pfb><C:/Users/rafli/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/symbols/msam10.pfb><C:/Users/rafli/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb><C:/Users/rafli/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/rafli/AppD
+ata/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/rafli/A
+ppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/rafli/A
+ppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/rafli/
+AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/rafli/
+AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on iclr2027.pdf (33 pages, 1563638 bytes).
+Transcript written on iclr2027.log.
