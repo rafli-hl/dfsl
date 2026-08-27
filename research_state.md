@@ -363,6 +363,55 @@ us keep working.
 appendix subsection. Limitations concedes that the per-regime restriction is not a gap we expect
 to close. Main text 8.907 → 8.942pp.
 
+## Session 14 — direction D1C, propagating D1B into Prop F.1 (registered; H_D1C survives)
+
+D1B closed a route the paper listed as open. D1C asked whether the same measurement voids
+something the paper presents as *discharged*, which is the more consequential question, and it
+does.
+
+**Prop F.1's domination condition fails.** `NW ≪ T^{1/p}` needs both factors small; neither is.
+`N` is at least linear, and `W ≳ 2×10⁴` because the blocking argument needs blocks longer than
+the mixing time — the rank autocorrelation is still `0.069` at lag 2000. Asymptotically the ratio
+diverges at every `p ∈ (1,2]` **evaluated at `β = 1` exactly**, so it does not lean on the fitted
+exponent. At `T = 200 000` and `p = 2` it is 12–46 at the tracker's own window and up to
+1.4×10⁴ at the required one. Ledger C-21.
+
+**Falsified in 2 of 18 cells**, both requiring `p=1.3` and `W=64` simultaneously — a heavier tail
+than measured and a shorter window than the proof allows. Reported, as registered.
+
+**S1 closed and it strengthens the result.** A tracker-free segmentation (non-causal block
+medians) gives a constant boundary rate across block lengths 50→1000, so linear `N` is a property
+of the process rather than of our adaptive filters.
+
+**Two corrections to my own D1B write-up.** S2: the `W_s`/`N` agreement was claimed as
+independent corroboration and is close to tautological — one measurement twice; withdrawn as
+corroboration everywhere, kept as an internal consistency check, and the `N` claim is unaffected.
+S3: "a coarse tracker fails the bracket" was overstated as a binary; Table 6 shows the `B=10⁴`
+tracker holds it at 0.93, and the honest argument runs through the exceptional-set accounting —
+7% of rounds at `O(D sup σ)` is `Θ(T)`, the same wall.
+
+**Manuscript.** Three claim sites revised, none longer than what it replaced (main text
+unchanged at 8.942pp), plus the measurement appended to the appendix subsection D1B created.
+
+### Candidate framing, recorded and NOT acted on
+
+Two independent measured obstructions now stand: `W_s = Θ(T)` and `N ≥ Θ(T)`. Together they say
+this class of stream has **no macroscopic regime structure at any resolution that preserves the
+bracket**. With the central measurement that the tails are removable, the finding would be: *the
+difficulty is a scale process with no exploitable structure at any timescale — neither heavy
+tails nor regimes.* That is sharper and more falsifiable than Theorem 3.2, and it is reached by
+evidence rather than retreat. **Do not rewrite the paper around this yet**; T4 and any further
+propagation resolve first. If it is adopted, the page it needs should come from Theorem 3.2's
+body presentation, whose per-regime restriction is now conceded as permanent rather than pending.
+
+### T4 is now the last live theory direction
+
+The switching route is closed and Prop F.1's analytical discharge is empty. T4 — conditions on
+the scale process under which bounded scale-free methods provably beat scale-dependent ones —
+is the one remaining route to a non-vacuous theory contribution, and nothing measured so far
+obstructs it. The stability partition it would explain (0/10 vs 9/10 per-row, replicated on
+crypto with frozen hyperparameters) is still the sharpest unexplained empirical result here.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

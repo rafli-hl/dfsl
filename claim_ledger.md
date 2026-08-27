@@ -506,7 +506,7 @@ rate's precondition before attacking its three GAP sub-problems, and the precond
 The rate is non-vacuous only if `N` is **sublinear in `T`**; at `N = Θ(T)` it is `Θ(T)` for every
 `p`. Measured on the committed scale process by the paper's own definition of a regime, `N` grows
 with exponent **1.155–1.240** across two trackers and five per-regime budgets — at least linear,
-and coherent with Table 6's independently measured `β ≈ 1.0–1.25` for `W_s`.
+with Table 6's `β ≈ 1.0–1.25` for `W_s` agreeing as an internal consistency check (see the correction in point 2).
 
 Three things make this a claim rather than an impression:
 
@@ -514,8 +514,11 @@ Three things make this a claim rather than an impression:
    analogous `W_s` fit. Applying it here discards 7 of 15 combinations — and every one it
    discards is a *sublinear* one, i.e. it removes the only evidence that would have licensed
    proceeding to the derivation. The filter cuts against the conclusion it supports.
-2. **The coherence check passes.** `N` and `W_s` grow at the same measured rate, which is what
-   two views of one drift process should do.
+2. ~~**The coherence check passes.**~~ **Withdrawn as corroboration (D1C, S2).** `N` and `W_s`
+   do grow at the same measured rate, but that is close to tautological rather than
+   confirmatory: `W_s` sums upward moves and `N` counts boundaries declared when those same
+   upward moves accumulate past `c`. It is one measurement viewed twice. Kept as an internal
+   consistency check; the claim rests on the `N` measurement alone, which is unaffected.
 3. **The escape is blocked.** A tracker coarse enough to report few regimes (block median,
    `B=10⁴`, 1–3 segments) fails Assumption D.1's lower bracket, so coarsening the tracker to
    recover sublinearity is not available.
@@ -527,4 +530,34 @@ reframe could have been redeemed theoretically, which Limitations now says.
 
 **Not closed:** a bound in a different nonstationarity functional, or a stream with rarer
 regimes. D1's three GAP sub-problems remain unproven and are now unmotivated on this data.
+
+## C-21 — Prop F.1's discharge of `ass:track` is empty on this data
+
+**Status: SUPPORTED (D1C, `results/research/d1c_propf1.csv`, 2026-08-26). Extends the
+C-13/C-20 cluster from "a route is closed" to "a claimed discharge is unavailable".**
+
+Prop F.1 pays for the lower bracket with `O(D·N·W·sup σ_t)`, dominated only when `NW ≪ T^{1/p}`.
+Both factors measured for the first time:
+
+- `N` at least linear (C-20), and now also **tracker-free**: non-causal block medians give a
+  constant boundary rate (`0.12–0.21` per block, stable as block length runs 50→1000), so the
+  linearity is a property of the process, not of our adaptive filters.
+- `W ≳ 2×10⁴`, because the blocking step needs blocks longer than the mixing time and the rank
+  autocorrelation is still `0.069` at lag 2000.
+
+Asymptotically `NW/T^{1/p} ~ T^{1−1/p}` diverges at every `p ∈ (1,2]` **taking `N = Θ(T)`
+exactly**, so the result does not depend on the fitted exponent exceeding 1. At the paper's own
+horizon and at `p = 2` — the only value `ass:moment` admits given the measured index (C-14) —
+the ratio is 12–46 at the tracker's own `W`, and 3.8×10³–1.4×10⁴ at the `W` the proof requires.
+
+**Falsified in 2 of 18 measurable cells**, both needing `p=1.3` *and* `W=64` together: a tail
+heavier than measured and a window shorter than the proof permits. Recorded rather than buried;
+they do not rescue the proposition.
+
+**Consequence.** Prop F.1 is correct and empty here. The paper leans on §B.2's *empirical*
+discharge, and three claim sites now say so — §3's "discharge under a mild drift model", §F.2's
+"the picture the measured gradient scale fits", and §B.2's "is discharged".
+
+**Bears on emptiness, not correctness**, and not on Prop 3.1 (unconditional) or the divergence
+partition. Does not reopen C-20.
 

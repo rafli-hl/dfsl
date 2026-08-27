@@ -4,7 +4,7 @@ Progress tracker for the SN-OMD paper targeting **ICLR 2027**. Detail on individ
 fixes lives in [`ICLR2027_REMEDIATION_LOG.md`](ICLR2027_REMEDIATION_LOG.md); this file
 is the top-level view: where the paper stands, what is settled, what is still open.
 
-Last verified: **2026-08-25**, commit `cea62ef`, merged to `master` via PRs [#8](https://github.com/rafli-hl/dfsl/pull/8)–[#11](https://github.com/rafli-hl/dfsl/pull/11).
+Last verified: **2026-08-26**, commit `a637d38` on `research/d1c-propf1-propagation` — three commits ahead of `master` and **not pushed**, by instruction. Phase-2 reached `master` via PRs [#8](https://github.com/rafli-hl/dfsl/pull/8)–[#11](https://github.com/rafli-hl/dfsl/pull/11).
 
 ---
 
@@ -12,16 +12,17 @@ Last verified: **2026-08-25**, commit `cea62ef`, merged to `master` via PRs [#8]
 
 | | |
 |---|---|
-| Branches | **One: `master`.** `research/c10-q6` landed via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (106 files, +15,981/−526) plus three tracker follow-ups ([#9](https://github.com/rafli-hl/dfsl/pull/9)–[#11](https://github.com/rafli-hl/dfsl/pull/11)), then was deleted local and remote once every commit was contained in `master`. `paper-submission` deleted too (stale, remote gone, 0 unique commits). Merged rather than squashed: the preregistration trail is the point. |
+| Branches | **Two: `master` and `research/d1c-propf1-propagation`** (local only, 3 commits, unpushed — D1C's registration ended "commit, then stop", so merging is the author's call; open item 8). `research/c10-q6` landed via [PR #8](https://github.com/rafli-hl/dfsl/pull/8) (106 files, +15,981/−526) plus three tracker follow-ups ([#9](https://github.com/rafli-hl/dfsl/pull/9)–[#11](https://github.com/rafli-hl/dfsl/pull/11)), then was deleted local and remote once every commit was contained in `master`. `paper-submission` deleted too (stale, remote gone, 0 unique commits). Merged rather than squashed: the preregistration trail is the point. |
 | Pass V commits | `202d983`..`c32db71` — paper-claim guard, `references.bib` deletion, OMD/OGD naming, supplement exclusions, `out/` untrack |
 | Phase-2 research | `142a075`..`a506251` — eight preregistered directions, C10/Q6 through C10C3. See **Phase 2** below |
-| `master` | Carries Pass V **and all Phase-2 research**, the publication pass, the appendix QA, and the closed open items — landed by [PR #8](https://github.com/rafli-hl/dfsl/pull/8) on 2026-08-25 |
+| Phase-3 research | `72efa43`..`a637d38` — the revision-assessment actions (C13) and two propagations (D1B, D1C). See **Phase 3** below. C13 and D1B are in `master`; D1C is not |
+| `master` | Carries Pass V, **all Phase-2 research**, the publication pass, the appendix QA, the closed open items — landed by [PR #8](https://github.com/rafli-hl/dfsl/pull/8) on 2026-08-25 — and since then C13 (`72efa43`) and D1B (`e59a2fa`..`5e6c383`), pushed directly. `master` head is `5e6c383` |
 | Tags | Two, both annotated and pushed. `iclr2027-submission` → `c32db71` marks the **submitted** state (84 tests, 28pp, 246-file supplement) and is deliberately **not** moved — moving it would destroy the record of what was actually submitted. `iclr2027-phase2` → `a0f1516` marks the state after Phase-2, the publication pass and the closed open items |
-| Canonical source | `paper/iclr2027/iclr2027.tex` (1952 lines) |
-| Main text | **8.907pp** of a 9pp limit, ~0.09pp (5 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → 8.871 (§8–10) → **8.907** (the Limitations schedule sentence, open item 3 — the only open-items text that lands inside the counted region) |
-| Total | 29pp (statements, references, appendix do not count) |
-| Build | 29pp, exit 0. **0 undefined refs, 0 overfull**, 0 float-specifier warnings, 0 stray tabs. 5 underfull boxes — four are float slack, one is a badness-1342 line in the dynamic-regret proof where a long unbreakable math atom ends the line. The two badness-10000 pages the old appendix structure produced are gone |
-| Tests | **113 passed** (106 + 5 data-free Jane-path guards + 2 SE-prose guards) |
+| Canonical source | `paper/iclr2027/iclr2027.tex` (2068 lines) |
+| Main text | **8.942pp** of a 9pp limit, ~0.06pp (3 lines) of margin. Trajectory: 8.885 pre-adoption → 9.007 (matched-budget table adopted) → 8.615 (appendix relocation) → 9.007 (`fig:problem` promoted) → 8.502 (`fig:main` demoted) → 8.720 (publication pass §4–19, §21–23) → 8.871 (§8–10) → 8.907 (the Limitations schedule sentence, open item 3) → 8.907 (C13 — the inverted tracker sentence is no longer than what it replaced) → **8.942** (D1B's five "left open" → "closed" sites and the Limitations concession). D1C moved it **not at all**: all three of its claim-site revisions were written to be no longer than the text they replaced |
+| Total | **31pp** (statements, references, appendix do not count against the 9pp limit). 29 → 30pp at D1B's new appendix subsection, 30 → 31pp at D1C's paragraph inside it |
+| Build | 31pp, exit 0. **0 undefined refs, 0 overfull**, 0 float-specifier warnings, 0 stray tabs. 5 underfull boxes: four vbox (badness 4036, 6893, **10000**, 1895) and the badness-1342 line in the dynamic-regret proof where a long unbreakable math atom ends the line. **One badness-10000 page is back, on p18** — appendix-only, and new since D1C; see open item 10. Also 3 pre-existing `pdfTeX warning (ext4): destination with the same identifier` — measured, not assumed, by building `master`'s tex in a scratch tree and diffing the logs |
+| Tests | **115 passed** (106 + 5 data-free Jane-path guards + 2 SE-prose guards + 2 of C13's 3 new matched-bootstrap `PAPER_CLAIMS` guards; the third re-pointed an existing guard rather than adding a case) |
 | Anon supplement | Builds clean with **0 identity tokens**; 336 files at the 2026-08-25 rebuild. Prior-venue material excluded, pinned by `tests/test_anon_exclusions.py` |
 
 `paper/icml2026/` is a **frozen ICML snapshot** (moved there from flat `paper/*` on
@@ -39,15 +40,16 @@ What the paper argues, and where each piece is measured:
 | Normalize by a predictable scale, then cap → bounded iterates | `thm:stability` (Prop. 3.1), measured √t envelope | `app:iternorm` |
 | Dynamic regret under a drifting scale, high probability | `thm:regret` (Thm. D.2), restated as `thm:regretbody` | proofs, App. D |
 | The cap `M` interpolates normalized-GD ↔ scale-adaptive OGD | M-sweep, optimum at `M=5` | `jane_msweep.csv` — the single-`lr` sweep still stands as a *frontier* claim; `tab:replication` now tunes `(lr, M)` jointly and selects `M=2` (per-row EMA), `M=10` (per-row block), `M=0.5`/`M=2` per-step |
-| Stability is not unique to SN-OMD, but the *predictable* scale is | ten frozen windows, divergence partition | `tab:replication` — **⚠ confounded by unequal tuning budget; the ordering reverses when equalized (Phase 2)** |
-| The tracker is a documented choice, not a free win | block-median co-leads per-row; ties Cutkosky–Mehta | `app:tracker` |
+| Stability is not unique to SN-OMD, but the *predictable* scale is | ten frozen windows, divergence partition | `tab:replication` — **corrected and adopted** at `de33ee0`. The Phase-2 confound is fixed, not outstanding: the printed table *is* the matched-budget one, and every statement it invalidated was repaired |
+| The tracker is a documented choice, not a free win | block-median co-leads per-row ($0.28\pm.09$), statistically tied with Cutkosky–Mehta ($0.29\pm.04$) — **and, since C13, not shown to beat the deployed EMA per-row** once the subsection's own Bonferroni correction is applied ($+0.046$, CI $[-0.006,+0.098]$). The "not a free win" reading is *strengthened* by Phase 3, not weakened | `app:tracker` |
 | RMSProp/Adam do **not** diverge — they are bounded-step | run head-to-head, not argued | `app:adaptive` |
 
-**Headline numbers.** ⚠ The ten-window SN-OMD figure below is the **under-tuned** one; see Phase 2.
+**Headline numbers**, re-verified against `tab:replication` on 2026-08-26 — the ten-window row had been carrying the pre-adoption figures since `de33ee0` and survived two later sweeps.
 Per-row weighted R² on window 1: SN-OMD `0.285±.080`, per-step
-`0.307±.059`. Ten-window frozen: SN-OMD `0.14±.11` (0/10 divergences), block-median
-tracker `0.29±.07`, Cutkosky–Mehta `0.29±.04`. Stability partition on crypto: OGD
-diverges `10/10`, uncapped endpoint `3/10`, every bounded scale-free method `0/10`.
+`0.307±.059`. Ten-window frozen, **matched budget**: SN-OMD (`M` tuned) `0.24±.05` (0/10
+divergences), its block-median variant `0.28±.09`, Cutkosky–Mehta `0.29±.04`. Stability
+partition on crypto: OGD diverges `10/10`, uncapped endpoint `3/10`, every bounded
+scale-free method `0/10`.
 
 ---
 
@@ -66,6 +68,7 @@ found something the previous one had not.
 | Verification sweep | 2026-08-22 | Divergence-count propagation, "intentional" site audit, negative-control grep, 2 pre-existing errors fixed |
 | Pass V | 2026-08-22 | Frozen ICML-round audit re-checked against the current tree; 3 of its 4 open findings closed |
 | **Phase 2** | 2026-08-23/24 | Eight preregistered research directions. Found the ten-window comparison confounded, the divergence criteria non-transferable, and "divergence" mis-named. See below |
+| **Phase 3** | 2026-08-25/26 | An external revision assessment, then two propagations. Its three consistency regressions were real; the per-row tracker claim **inverted** under a re-run bootstrap (C13); the switching bound closed **negatively** (D1B); Prop F.1's analytical discharge measured **empty on this data** (D1C). See below |
 
 ### Two results worth carrying forward
 
@@ -148,8 +151,10 @@ checkout, and it is verified by mutation — reverting the prose `7/10` to `6/10
 
 Eight preregistered directions on `research/c10-q6`. Every one registered in
 `experiment_matrix.yaml` and committed **before** execution; ledger in `claim_ledger.md`,
-state in `research_state.md`. **None of this is merged, and no manuscript text was touched
-— that was out of scope for the phase.**
+state in `research_state.md`. **At the time, none of it was merged and no manuscript text was touched — that was out
+of scope for the phase.** Both have since changed: Phase 2 landed on `master` via PR #8
+on 2026-08-25, and the manuscript consequences were worked through in the adoption and
+publication passes below.
 
 | Dir. | Question | Outcome |
 |---|---|---|
@@ -398,6 +403,162 @@ summarised what it should have pointed at, and the Conclusion restated the abstr
 **Where the paper stands.** The manuscript is submission-shaped: within budget, clean
 build, reproducible tables, anonymized supplement. What remains open is not writing.
 
+## Phase 3 — the revision assessment, and the two propagations (2026-08-25/26)
+
+An external manuscript-revision assessment (v2 vs v1) opened this phase. It named three
+consistency regressions and ranked four research directions. **The regressions were real.**
+The top-ranked direction turned out to be already resolved in our own record — and following
+that thread properly closed two things the paper had been presenting as open, or as
+available.
+
+Same discipline as Phase 2: registered in `experiment_matrix.yaml` and committed **before**
+execution, ledger in `claim_ledger.md`, state in `research_state.md`, theory in
+`theory_notes.md`. Unlike Phase 2, manuscript text **was** in scope here, because two of the
+three results contradict sentences the paper prints.
+
+| Dir. | Question | Outcome |
+|---|---|---|
+| C13 | Does `app:tracker`'s paired bootstrap survive the adopted matched-budget table? | **Partly not.** The Cutkosky–Mehta tie holds; the per-row block-over-EMA gap falls `+0.152 → +0.046` and **no longer survives** the subsection's own Bonferroni correction |
+| D1B | Can Remark D.3's switching bound be derived? | **Closed negatively.** `N` grows at least linearly, so the target rate is `Θ(T)` at every `p` — the bound is *unavailable*, not underived |
+| D1C | Does that same count also void Prop F.1's discharge? | **H_D1C survives in the operative regime.** `NW ≪ T^{1/p}` fails on *both* factors; Prop F.1 is correct and **empty here** |
+
+### C13 — the assessment's three regressions were real, and the fix does not all go one way
+
+`tab:replication` took the C12/C12B matched-budget rows two sessions earlier, but the paired
+across-window bootstrap behind `app:tracker` was never re-run. So the appendix claimed a
+`+0.15` block-over-EMA gap against a table whose own cells differ by `+0.05`.
+
+No new compute was needed — `c12_matched.csv`, `c12b_blockmed.csv` and `windows_cm.csv`
+already hold per-window values on identical windows, so `research_c13_matched_bootstrap.py`
+recomputes the same statistic with the same floor, pairing and intervals, and only the input
+changes.
+
+- **The CM tie holds.** `+0.004 → −0.005`, CI `[−0.036, +0.025]`, 6/10. The nominal lead flips
+  to CM and the interval still straddles zero, so the abstract's tie language stands as
+  written. This was the open question and it came back favourable.
+- **The per-row tracker claim inverts.** `+0.152 → +0.046`, CI `[−0.006, +0.098]` — under the
+  subsection's own Bonferroni correction the block median is *not shown* to beat the deployed
+  EMA per-row. That is the claim the old text called load-bearing while dismissing two
+  per-step failures as not. The sentence is **inverted, not softened**.
+- **Per-step strengthens**, block now clearing zero against both the EMA and the clip where
+  the pinned-cap run tied both — with the caveat that the per-step SN-OMD row sits at two grid
+  edges, so it is a truncated comparator.
+
+Two things found while checking, which the assessment had not raised. CM is tuned over **216**
+configurations against 70 for the capped methods — a deliberate call in the research record
+but undisclosed in a caption that enumerates every other method's budget; now **disclosed, not
+reversed**. And `research_predictability_check.py`'s measurability arm is a direct measurement
+of what predictability costs in accuracy (`+0.0001` to `+0.0009`), which is the paper's own
+framing claim, until now asserted rather than shown.
+
+**Why the drift went unnoticed for two sessions:** no `PAPER_CLAIMS` entry covered the per-row
+figures. Three guards now point at `c13_matched_bootstrap.csv` (two new cases, one existing
+guard re-pointed — it failed correctly when the sentence was reworded).
+
+### D1B — the switching bound is unavailable, not underived
+
+The assessment ranked "D1 — variation-adaptive bound" highest. **The naming was wrong and our
+own record said so:** ledger C-13 had established that this bound already exists inside
+`thm:regret`, which carries `W_s` and `P_T^s` explicitly. The object actually left open was
+Remark D.3's *switching* bound in the regime count `N`.
+
+D1B registered that, with a **premise check ahead of the derivation** — and the check settled
+the direction on its own. The target rate `Õ(N^{1−1/p} T^{1/p})` is non-vacuous only if `N` is
+sublinear in `T`; at `N = Θ(T)` it is `Θ(T)` for every `p`, which is the vacuous bound the
+direction exists to escape. Measured on the committed 200k-round scale process using the
+paper's own definition of a regime — a horizon over which the tracker's upward variation is
+`O(1)` — `N` grows with an exponent of **at least 1** (fitted `1.155`–`1.240` across the eight
+tracker×budget combinations with enough segments to fit one). So no proof of that form can
+help here, and D1's three GAP sub-problems are now unmotivated on this data.
+
+**Two things make this a claim rather than an impression.** The ≥50-segment reliability rule
+is `tab:beta`'s own, already applied there to the analogous `W_s` fit — and it discards exactly
+the seven combinations that looked sublinear, so it removes the only evidence that would have
+licensed proceeding. *A filter that costs me the outcome letting me keep working is not one
+chosen to reach the conclusion.* And `N ≤ T` by construction, so the fitted value above 1 is a
+finite-horizon artifact; the claim made is the **lower bound**, which is all the argument needs.
+
+Five manuscript sites said "left open". They now say closed, with the measurement in a new
+appendix subsection, and Limitations concedes that the per-regime restriction is **not a gap we
+expect to close** — stronger and less flattering than "left open". That also closes the route
+by which the introduction's reframe could have been redeemed theoretically.
+
+### D1C — a discharge that is correct and empty
+
+D1B closed a route the paper listed as *open*. D1C asked the more consequential question:
+does the same measurement void something the paper presents as **discharged**?
+
+Prop F.1 buys the lower bracket at one added term `O(D·N·W·sup_t σ_t)`, "dominated whenever
+`NW ≪ T^{1/p}`". Both factors were measured for the first time, and neither is small.
+
+- **`N`** is at least linear (D1B) — and now also **tracker-free**. A non-causal block-median
+  segmentation with no adaptive filter in the loop gives boundaries per block of
+  `0.193 → 0.210` (`c=0.5`) and `0.121 → 0.135` (`c=1`) as the block length runs `50 → 1000`:
+  a roughly constant *rate*, so the linearity is a property of the process, not of our filters.
+- **`W`** is not free either, which the paper's own proof sketch says: the blocking step needs
+  `≍W/ℓ` near-independent blocks of length `ℓ ≳` the mixing time. The scale process's rank
+  autocorrelation is `0.180` at lag 1 and still `0.069` at lag 2000 — it never reaches `0.05`
+  in the range tested — so `ℓ ≳ 2000` and `W ≳ 2×10⁴`.
+
+**(a) Asymptotically**, `NW/T^{1/p} ~ T^{1−1/p}`, evaluated at `β = 1` **exactly** rather than
+at the fitted exponent, so the conclusion cannot be attacked through the finite-horizon
+artifact. `1 − 1/p > 0` for every `p > 1`: there is no admissible `p` at which the term is
+dominated.
+
+**(b) At the paper's own horizon** (`T = 200 000`, envelope tracker, measurable `c` only):
+
+| `W` | `p=1.3` | `p=1.5` | `p=2.0` |
+|---|---|---|---|
+| `64` — the tracker's own window, which *ignores* the blocking requirement and is therefore the most favourable value available | 0.46 – 1.7 | 1.6 – 6.0 | **12 – 46** |
+| `2×10⁴` — what the proof actually needs | 144 – 537 | 503 – 1877 | **3846 – 14356** |
+
+The script's registered verdict line reads **"falsified in part — dominated in 2 of 18
+measurable combinations"**, and those two cells are reported rather than buried: `c=1, W=64,
+p=1.3` (`0.894`) and `c=2, W=64, p=1.3` (`0.460`). They do not rescue the proposition. Each
+needs `p = 1.3` — a heavier tail than the measured normalized index admits, since `ass:moment`
+caps `p ≤ 2` and ledger C-14 records the measurement pinning it *at* 2 — **and simultaneously**
+`W = 64`, shorter than the proposition's own blocking argument permits. Domination requires
+both a tail we do not have and a window the proof does not allow, which is why the operative
+reading is that **H_D1C survives**.
+
+So Prop F.1 is not wrong. It is **empty here**: its guarantee is real for a process with
+macroscopic regimes, and this process does not have them. What the paper actually leans on is
+§B.2's *empirical* discharge — 100% lower-bracket coverage, measured — and three claim sites
+(§3, §F.2, §B.2) now say that rather than implying the analytical route is available.
+
+### Two corrections to my own D1B write-up, forced by D1C's review seams
+
+Recorded because the tracker is where this kind of thing has to be visible.
+
+1. **S2 — a corroboration claim that was near-tautological.** D1B reported the agreement
+   between `N`'s exponent and `tab:beta`'s `β` for `W_s` as *independent* corroboration, "two
+   views of one drift process". It is not independent: `W_s` sums upward moves and `N` counts
+   the boundaries those same upward moves induce when they accumulate past `c`. It is one
+   measurement viewed twice. **Withdrawn as corroboration** in the manuscript, `theory_notes.md`
+   and ledger C-20 (point 2 struck through); kept as an internal consistency check. The `N`
+   claim is unaffected — it never rested on this.
+2. **S3 — a defence overstated as a binary.** D1B asserted that a tracker coarse enough to see
+   few regimes *fails* the lower bracket. `tab:beta` shows the `B=10⁴` tracker holds it at
+   **0.93**, not 0. The accounting reaches the same place and is checkable rather than
+   asserted: 7% of rounds violating, charged trivially at `O(D sup σ)` per round, is
+   `0.07·T = Θ(T)`. Coarsening trades an `O(NW)` lapse set for an `O(T)` violation set — the
+   same wall by a different route.
+
+### What Phase 3 costs the paper, and what it buys
+
+**Costs.** One appendix tracker claim inverted (C13). Two theory routes closed rather than
+open (D1B, D1C). Limitations now concedes the per-regime restriction is permanent. None of
+this is a retreat under pressure — every item is a measurement, and the two that could have
+gone the other way (the CM tie, D1C's 2-of-18 cells) were registered as such in advance.
+
+**Buys.** Two independent measured obstructions now stand — `W_s = Θ(T)` and `N ≥ Θ(T)` —
+which together say this class of stream has **no macroscopic regime structure at any
+resolution that preserves the bracket**. `research_state.md` Session 14 records the candidate
+reframe this suggests and **explicitly does not act on it**: T4 resolves first. See open
+item 9.
+
+---
+
 ## Open items
 
 | # | Item | Status |
@@ -409,6 +570,9 @@ build, reproducible tables, anonymized supplement. What remains open is not writ
 | 5 | ~~Audit finding 10 — bootstrap block-length sensitivity.~~ | **Closed, and the answer is not the one the objection expected.** See below. |
 | 6 | ~~Audit finding 6 — Jane numbers not reviewer-reproducible.~~ | **Closed** — `research_jane_mini.py` closes it from both ends: a seeded mini-slice in the Jane schema drives the same loader, harness and evaluation with no market data, and the same script pins the sha256 of the real canonical slice so a reviewer with their own download can confirm it matches before spending the compute. Covered by `tests/test_jane_mini.py`. |
 | 7 | ~~Audit finding 3 residual — the SE claim names no comparator.~~ | **Closed** — and it was two defects. The prose said `±.079` where the table prints `±.080`, the same prose-versus-table disagreement finding 3 was about, recurring; and "about twice normalized-GD's" picked the flattering comparator when SN-OMD's is the *widest* bar in that column. Both fixed, and both halves now pinned to the source CSV by new `PAPER_CLAIMS` guards. |
+| 8 | D1C is committed but unmerged | **Open by instruction, not by oversight.** `research/d1c-propf1-propagation` is 3 commits ahead of `master` (`82af136`, `e3faead`, `a637d38`) and **not pushed**. The registration brief ended "commit on the branch, then stop", so pushing and merging is the author's call. Build clean, 115 tests green on the branch. |
+| 9 | T4 — a separation theorem for the stability partition | **Open, and now the last live theory direction.** D1B closed the switching route; D1C emptied Prop F.1's analytical discharge. T4 — conditions on the scale process under which bounded scale-free methods provably beat scale-dependent ones — is the one remaining route to a non-vacuous theory contribution, and nothing measured so far obstructs it. The partition it would explain (0/10 vs 9/10 per-row, replicated on crypto with frozen hyperparameters) is still the sharpest unexplained empirical result in the paper. The candidate reframe in `research_state.md` Session 14 is gated on this and is **not** to be acted on first. |
+| 10 | One badness-10000 appendix page (p18) | **Open, low severity, and mine.** New since D1C — established by building `master`'s tex in a scratch tree, where the worst underfull vbox is 6893. It is a page-breaking consequence of D1C's appendix paragraph, **appendix-only**: main text is unchanged at 8.942pp and the build has 0 overfull, 0 undefined. The obvious one-line fix does not work — relaxing `fig:iternorm` from `[t]` to `[htbp]` produces a **byte-identical** PDF, so that float is not the cause. Left rather than chased, because a page-breaking hunt is a typesetting project D1C's scope did not cover. |
 
 
 ### The two GitHub identities, and the misleading error they produce
@@ -525,7 +689,7 @@ Prepared and checked, waiting on the auth fix above:
 |---|---|
 | Tag | `iclr2027-phase2` → `a0f1516`, annotated, pushed |
 | Notes | Markdown release notes written (`--notes-from-tag` is the fallback, so the notes file is not load-bearing) |
-| PDF asset | `paper/iclr2027/iclr2027.pdf` — **0 identity tokens** in the extracted text, `/Author` and `/Title` metadata **empty**, only MiKTeX's producer string. The three "ICML" hits are bibliography venue names (Cutkosky 2020, Daniely 2015, Zinkevich 2003), not prior-venue self-disclosure. 29pp, newer than the `.tex`, working tree clean at `a0f1516` — so the asset corresponds exactly to the tagged tree |
+| PDF asset | `paper/iclr2027/iclr2027.pdf` — **0 identity tokens** in the extracted text, `/Author` and `/Title` metadata **empty**, only MiKTeX's producer string. The three "ICML" hits are bibliography venue names (Cutkosky 2020, Daniely 2015, Zinkevich 2003), not prior-venue self-disclosure. 29pp, newer than the `.tex`, working tree clean at `a0f1516` — so the asset corresponded exactly to the tagged tree **when this was written**. ⚠ **No longer true as of 2026-08-26**: see the staleness note below the command |
 
 The command, once `gh` is authenticated as `rafli-hl`:
 
@@ -535,6 +699,11 @@ gh release create iclr2027-phase2 --repo rafli-hl/dfsl \
   --notes-from-tag --verify-tag \
   "paper/iclr2027/iclr2027.pdf#SN-OMD paper (29pp, main text 8.907pp)"
 ```
+
+⚠ **This command has gone stale and must not be run as written.** It attaches the PDF from the *working tree*, not from the tag. C13, D1B and D1C have since landed, so the working-tree PDF is **31pp, main text 8.942pp** — it would be uploaded under a label saying 29pp/8.907, against a tag at `a0f1516` that contains neither. Two coherent ways out, and the choice is the author's:
+
+1. **Release the tagged state.** Build the PDF from `a0f1516` into a scratch tree and attach *that*, leaving the label as written. Keeps the tag's meaning intact.
+2. **Cut a new tag.** Tag the current head, write fresh notes covering Phase 3, and update the label to `31pp, main text 8.942pp`. This is the better option if the release is meant to represent where the work now stands rather than where it stood on 2026-08-25 — but it should wait until open item 8 is decided, since D1C is not yet in `master`.
 
 **Why the manuscript being public is not a new exposure.** `paper/iclr2027/iclr2027.tex`
 was already on the public `origin/master` before any of this, as were `paper/icml2026.tex`
@@ -549,7 +718,7 @@ python scripts/research_predictability_check.py   # the 2x2 decomposition
 python scripts/research_batched_check.py          # tab:jane, tab:replication
 python scripts/research_tracker_bootstrap.py      # app:tracker + Bonferroni
 python scripts/research_rmsprop_adam.py           # app:adaptive
-python -m pytest -q                               # 113 tests
+python -m pytest -q                               # 115 tests (needs .venv; a bare python fails on `dfsl`)
 python scripts/make_anon_release.py               # double-blind supplement (336 files)
 python scripts/research_iterate_norm.py --lr 8   # fig:iternorm -- the flag is NOT the default
 python scripts/research_runtime_suite.py          # wall-clock for the whole suite
@@ -569,7 +738,15 @@ python scripts/research_c10t_synthetic.py         # C10T    same, synthetic
 python scripts/research_c10c3_validate.py         # C10C3   divergence-criterion acceptance
 ```
 
-43 scripts, 50 result CSVs, 10 figures.
+Phase-3 research (same registration discipline; C13 and D1B are on `master`, D1C is on `research/d1c-propf1-propagation`):
+
+```
+python scripts/research_c13_matched_bootstrap.py  # C13  app:tracker at matched budget
+python scripts/research_d1b_regime_count.py       # D1B  the regime count N(T)
+python scripts/research_d1c_propf1.py             # D1C  Prop F.1's domination condition
+```
+
+60 scripts, 111 result CSVs, 10 figures.
 `tests/test_preprocessing.py::test_step_is_predictable` pins the library tracker's
 measurability — it is what kept `dfsl.preprocessing` correct while the research scripts
 drifted away from it.
@@ -578,9 +755,9 @@ drifted away from it.
 
 ## Submission checklist
 
-- [x] Main text within 9pp (**8.907**, ~0.09pp margin)
-- [x] 0 undefined refs, 0 overfull, clean build
-- [x] Tests pass (113)
+- [x] Main text within 9pp (**8.942**, ~0.06pp margin — 3 lines)
+- [x] 0 undefined refs, 0 overfull, clean build (one appendix-only badness-10000 page, open item 10)
+- [x] Tests pass (115)
 - [x] Tables regenerated from corrected code
 - [x] Anonymized supplement builds, 0 identity tokens (336 files, 2026-08-25)
 - [x] ICLR PDF gitignored, so metadata cannot leak into the supplement
@@ -598,5 +775,10 @@ drifted away from it.
 - [x] Audit finding 3 residual — the SE claim names both comparators and is pinned to its CSV by two new guards
 - [x] Phase-2 research merged to `master` (PRs #8–#11); branches cleaned up, one branch remains
 - [x] `iclr2027-phase2` tag pushed at `a0f1516`; `iclr2027-submission` deliberately left where it is
-- [ ] GitHub release published — staged, blocked on the `gh` identity (see above)
+- [x] Phase-3 revision-assessment actions — the three consistency regressions the assessment named are fixed, and the paired bootstrap re-run at matched budget (C13)
+- [x] D1B — Remark D.3's switching bound closed *negatively*, five "left open" sites corrected, Limitations concession added
+- [x] D1C — Prop F.1's discharge measured empty on this data; three claim sites revised without spending a line of the page budget
+- [ ] D1C branch pushed and merged — deliberately not done; the registration ended "commit, then stop" (open item 8)
+- [ ] T4 — the last live theory direction, not yet registered (open item 9)
+- [ ] GitHub release published — staged, blocked on the `gh` identity, **and the staged command is now stale** (see above)
 - [ ] `gh` CLI authenticated as `rafli-hl` rather than `rafli07p`

@@ -217,9 +217,10 @@ reach it.
 
 Over the 8 surviving combinations the exponent is **1.155 – 1.240**, never below 1.15. An
 exponent above 1 cannot persist asymptotically (`N ≤ T`), so the honest reading is *at least
-linear*. It agrees with Table 6's independently measured `β ≈ 1.0–1.25` for `W_s`, which is the
-coherence check one wants: regimes and upward variation accumulate at the same rate, because
-they are two views of the same drift.
+linear*. Table 6's `β ≈ 1.0–1.25` for `W_s` agrees — recorded as an internal consistency check,
+**not** as corroboration. Corrected in D1C: `W_s` counts upward moves and `N` counts the
+boundaries those same moves induce, so they are close to one measurement twice, not two views of
+one process. The claim rests on the `N` measurement alone.
 
 ## Verdict
 
@@ -240,4 +241,78 @@ measurement is one process, and `N` is defined against a tracker; a tracker coar
 one regime also fails Assumption D.1's lower bracket, so "make the tracker coarser" is not an
 escape. Three GAP sub-problems from D1 remain unproven and are now also unmotivated on this
 data.
+
+---
+
+# D1C — the same count empties Prop F.1's discharge (2026-08-26)
+
+D1B closed the switching route. D1C asks whether the same measurement voids something the paper
+still presents as *discharged* rather than open. It does.
+
+## The condition, and both of its factors
+
+Prop F.1 buys the lower bracket at one added term `O(D·N·W·sup_t σ_t)`, "dominated whenever
+`NW ≪ T^{1/p}`". Both factors are measurable and neither had been measured.
+
+**`N`** is at least linear (D1B), and — closing seam S1 — that is not an artifact of our
+adaptive filters. A tracker-free segmentation over non-causal block medians gives boundaries per
+block of `0.193 → 0.210` (`c=0.5`) and `0.121 → 0.135` (`c=1`) as the block length runs
+`50 → 1000`: a roughly constant *rate*, i.e. `N ∝ T` with nothing adaptive in the loop.
+
+**`W`** is not free either, which the paper's own proof sketch says: the blocking step needs
+`≍W/ℓ` near-independent blocks of length `ℓ ≳` the mixing time. The scale process's rank
+autocorrelation is `0.180` at lag 1 and still `0.069` at lag 2000 — it never reaches 0.05 in the
+range tested — so `ℓ ≳ 2000` and `W ≳ 2×10⁴`.
+
+## (a) asymptotic — unfavourable at every admissible p
+
+`NW/T^{1/p}` grows like `T^{β−1/p}`. Evaluated at **`β = 1` exactly**, not the fitted 1.16–1.24,
+so the conclusion cannot be attacked through the finite-horizon artifact:
+
+| p | 1/p | β − 1/p | |
+|---|---|---|---|
+| 1.3 | 0.769 | +0.231 | diverges |
+| 1.5 | 0.667 | +0.333 | diverges |
+| 2.0 | 0.500 | +0.500 | diverges |
+
+`β − 1/p = 1 − 1/p > 0` for every `p > 1`. There is no admissible `p` at which the term is
+asymptotically dominated.
+
+## (b) at the measured horizon — unfavourable where it counts
+
+`T = 200 000`, envelope tracker, measurable `c` only:
+
+| W | p=1.3 | p=1.5 | p=2.0 |
+|---|---|---|---|
+| 64 (tracker's own; ignores the blocking requirement) | 0.46 – 1.7 | 1.6 – 6.0 | **12 – 46** |
+| 2×10⁴ (what the proof needs) | 144 – 537 | 503 – 1877 | **3846 – 14356** |
+
+**H_D1C is falsified in exactly two of eighteen measurable cells** — `c=1, W=64, p=1.3` (0.89)
+and `c=2, W=64, p=1.3` (0.46). Reported because the registration required reporting them, and
+they do not rescue the proposition: each needs `p = 1.3`, a heavier tail than the measured
+normalized index admits (`ass:moment` caps `p ≤ 2` and C-14 records that the measurement pins it
+*at* 2), **and simultaneously** `W = 64`, shorter than the proposition's own blocking argument
+permits. Domination requires both a tail we do not have and a window the proof does not allow.
+
+## S3 — the coarsening defence, costed
+
+D1B asserted that a tracker coarse enough to see few regimes fails the lower bracket. Overstated
+as a binary: Table 6's `B=10⁴` tracker holds the bracket at **0.93**, not 0. The accounting
+reaches the same place — 7% of rounds violating, charged trivially at `O(D sup σ)` per round, is
+`0.07·T = Θ(T)`. Coarsening trades an `O(NW)` lapse set for an `O(T)` violation set. Same wall,
+different route, and now checkable rather than asserted.
+
+## Verdict
+
+**H_D1C survives in the operative regime.** Prop F.1 is not wrong — D1C says nothing about its
+correctness — it is *empty here*. Its guarantee is real for a process with macroscopic regimes;
+this process does not have them. What the paper actually leans on is §B.2's empirical discharge
+(100% lower-bracket coverage, measured), and the manuscript now says that rather than implying
+the analytical route is available.
+
+## What this does not establish
+
+Nothing about Prop F.1's correctness. Nothing about Prop 3.1, which is unconditional and uses no
+drift model. Nothing about the divergence partition. And it does not reopen D1B, whose closure
+rests on its own measurement.
 

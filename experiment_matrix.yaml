@@ -1562,3 +1562,96 @@ out_of_scope: >
 stopping_rule: >
   Step 0 is one measurement with its sweep. If it says linear, stop and report -- do not search
   for a definition of regime under which the exponent becomes favourable.
+
+---
+# ===========================================================================
+# THIRTEENTH REGISTRATION -- D1C (does D1B's measurement also void Prop F.1?)
+# ===========================================================================
+direction: D1C
+parent_direction: D1B (regime count measured at least linear; ledger C-20)
+branch: research/d1c-propf1-propagation
+kind: THEORY_PROPAGATION
+status: REGISTERED_BEFORE_EXECUTION
+
+does_not_reopen: >
+  D1B's closure stands on its own measurement and is not revisited. In particular the
+  >=50-segment reliability filter and the record that it discards precisely the sublinear
+  combinations stay as written. D1C asks only whether the SAME measurement voids something else
+  the paper still relies on.
+
+hypothesis_H_D1C: >
+  Prop F.1 discharges ass:track for the two-timescale envelope at the cost of one added term
+  O(D N W sup_t sigma_t), "dominated whenever NW << T^(1/p) (macroscopic regimes)". D1B measured
+  N to be at least linear in T for that same envelope. For p in (1,2] the exponent of T^(1/p) is
+  1/p in [0.5,1), so with W fixed the ratio NW/T^(1/p) grows like T^(beta - 1/p) with beta >= 1,
+  hence diverges at every admissible p. H_D1C: the exceptional-set term dominates, so Prop F.1's
+  discharge is empirically vacuous on this data.
+
+note_the_conclusion_does_not_rest_on_the_superlinear_fit: >
+  N <= T by construction, so a fitted exponent above 1 is a finite-horizon artifact and the
+  honest claim is "at least linear". The asymptotic argument is evaluated at beta = 1 EXACTLY,
+  not at the fitted 1.16-1.21, so that it cannot be attacked through the artifact. At beta = 1
+  the exponent is 1 - 1/p > 0 for every p > 1 and the ratio still diverges.
+
+what_to_compute: >
+  (a) ASYMPTOTIC. NW/T^(1/p) as T grows, at p = 1.3, 1.5, 2.0, using beta = 1 (conservative) and
+      the fitted envelope range as a secondary reading. State whether the term is dominated at
+      any p.
+  (b) AT THE MEASURED HORIZON. The numeric ratio at T = 200,000 with the measured N and the
+      actual W. It is possible for the term to be numerically small at this T while the scaling
+      is unfavourable; report the number, not the sign.
+  W is not free: the proposition's blocking argument needs W split into ~W/l near-independent
+  blocks of length l >= the mixing time. Estimate the mixing time from the scale process itself
+  and report the ratio at both the tracker's own window (W=64, which IGNORES that requirement
+  and is therefore the most favourable value available) and at the blocking-required W.
+
+falsification: >
+  If (b) shows the term numerically dominated at the paper's horizon, the proposition is fine as
+  applied and only its asymptotic reading needs qualifying. That is the favourable outcome and
+  must be reported plainly if it occurs; it must not be reached by preference. Any p at which
+  the ratio is below 1 is reported as such even if others are not.
+
+decision_rule: >
+  both (a) and (b) unfavourable -> the discharge is vacuous here; revise the F.2 drift-model
+    claim, B.2's "the stability-critical half of ass:track is discharged", and section 3's "we do
+    not treat as free but discharge under a mild drift model".
+  (a) unfavourable, (b) favourable -> holds at this horizon, fails asymptotically; say exactly
+    that and do not let it stand unqualified.
+  both favourable -> H_D1C falsified; record and stop.
+
+seams_to_close_regardless_of_outcome:
+  S1: >
+    N is currently tracker-derived; Theorem D.2's N is a property of sigma_t. Add a
+    tracker-free segmentation (non-causal block medians, no adaptive filter in the loop) so the
+    claim is about the process rather than about our estimator. It remains an estimator and is
+    labelled one.
+  S2: >
+    Withdraw the "two views of one drift process" corroboration between W_s and N. W_s counts
+    upward moves and N counts boundaries induced by those same upward moves, so the agreement is
+    close to tautological. Demote to an internal consistency check in theory_notes and remove the
+    phrasing from the ledger.
+  S3: >
+    The coarsening defence is currently binary and overstated: tab:beta shows the B=10^4 block
+    tracker holds the lower bracket at 0.93, not 0. Replace with the exceptional-set accounting
+    -- a 7 percent violation rate charged trivially at O(D sup sigma) per round is Theta(T),
+    the same wall by a different route. Same conclusion, now checkable.
+  S4_reporting: >
+    Wherever the exponent is reported, write it as >= 1 with the fitted range in parentheses and
+    the N <= T bound noted, so a reviewer does not spend a paragraph concluding the estimator is
+    broken.
+
+anti_fabrication_commitment: >
+  Inherited from D1/D1B. No claim without the computation written out. This direction bears on
+  the EMPTINESS of Prop F.1's guarantee on this data, never on its correctness, and not on
+  Prop 3.1 or the divergence partition, which are untouched. If the arithmetic does not support
+  H_D1C it is reported as falsified.
+
+out_of_scope: >
+  Theorem 3.2's proof. Reopening D1B. Weakening any "closed" statement back to "left open"
+  unless D1C's own measurement requires it. Rewriting the paper around the Structure C framing,
+  which is recorded as a candidate in research_state and not acted on.
+
+stopping_rule: >
+  Compute (a) and (b), close S1-S4, report, update the ledger/theory_notes/state, commit on the
+  registered branch, stop. No iteration toward a more favourable W or a more favourable regime
+  definition.
