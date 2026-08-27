@@ -201,6 +201,17 @@ PAPER_CLAIMS = [
          (3, "per-step", "r2", 3), (4, "per-step", "se", 3)],
     ),
     (
+        # Added after T4 step 0 found tab:jane's scale-dependent half unguarded -- the same
+        # gap that let the app:tracker figures drift for two sessions (C-18). The leading
+        # newline anchors this to tab:jane's own row: tab:replication also has a line
+        # starting "OGD", but it prints no bootstrap SE and so cannot match.
+        "tab:jane OGD (both protocols)",
+        r"\nOGD\s+&\s*\$([\d.]+)" + _SE + r"\$\s*&\s*\$([\d.]+)" + _SE + r"\$",
+        "table1_errorbars.csv", {"method": "OGD"},
+        [(1, "per-row", "r2", 3), (2, "per-row", "se", 3),
+         (3, "per-step", "r2", 3), (4, "per-step", "se", 3)],
+    ),
+    (
         "tab:replication uncapped-endpoint divergence count",
         r"Scale-adaptive OGD \(\$M\\!\\to\\!\\infty\$\)\s*&\s*---\s*&\s*\$(\d+)/10\$",
         "windows_replication_summary.csv", {"method": "Scale-adaptive OGD"},

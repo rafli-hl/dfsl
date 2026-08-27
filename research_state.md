@@ -412,6 +412,136 @@ is the one remaining route to a non-vacuous theory contribution, and nothing mea
 obstructs it. The stability partition it would explain (0/10 vs 9/10 per-row, replicated on
 crypto with frozen hyperparameters) is still the sharpest unexplained empirical result here.
 
+## Session 15 — direction T4, the separation theorem (registered; FAILED, and it was pre-falsified)
+
+T4 was the last live theory direction. It is now closed, and the registration is the reason
+the closure is trustworthy: it was written to be adversarial to its own direction, with step 0
+placed first precisely because I suspected the direction was already dead.
+
+**Step 0 killed it.** D3/T4's own falsification condition — "if scale-dependent clipping can be
+made stable by a rate schedule alone, the partition is about tuning, not structure" — was
+already met by committed data. Every scale-dependent method has a positive stable rate in every
+artifact measuring it. The clippers do not diverge anywhere in the paper's own sweep. Ledger
+C-22.
+
+**What survives is a 2×2, not the paper's dichotomy.** Boundedness of the step map and degree-0
+homogeneity are *independent* properties: the first gives stability (Theorem A), the second
+gives tuning transfer (Theorem B). The successor H_T4' proposed three tiers by degree and was
+itself not quite right — the fixed-τ clip is homogeneous of no degree yet bounded, a cell the
+registration missed. Correcting it is an improvement, and it is recorded as a correction.
+
+**One real gain.** Corollary C explains AdaGrad-Norm's membership in the stable family, which
+the paper asserts without derivation: degree-1 `Φ` with a degree-(−1) rate is degree 0 overall
+and bounded, and it never clips. It also predicts the fixed-τ clip's anomaly.
+
+**Two GAPs, the second fatal.** No feedback case, and — decisively — **no lower bound**. Nothing
+proves a scale-dependent method must diverge. That is a derivation strategy with a located
+obstruction, which is not a result.
+
+**A defect found on the way.** `tab:jane`'s AdaptiveClip/RobustOMD row is measured on
+date`[0,30)`, not the continuous stream its caption names; on that stream the same methods reach
+`0.14`–`0.16` and never diverge. OGD's row is correct and on-stream. Ledger C-23. Neither row
+was guarded.
+
+**An error I made and caught.** My own step-2 code took the largest non-diverged grid point as
+`η_max` without checking whether the method diverged *anywhere*. normalized-GD does not, so its
+ceiling is right-censored, and the uncorrected code would have reported a `1.88×` spread and a
+FALSIFIED verdict that was an artifact of the grid ending. Fixed before the result was recorded;
+the invariant is INCONCLUSIVE, not falsified.
+
+### ~~There is now no live theory direction~~ — overstated; corrected on review
+
+D1/T1 failed. D1B closed the switching bound negatively. D1C emptied Prop F.1's analytical
+discharge. T4 produced a classification rather than a separation. I wrote that up as "no live
+theory direction", and that is **wrong in a way worth recording**: what T4 produced is a small,
+*correct* theory replacing a vacuous one. Theorem A gives stability for any bounded step map,
+Theorem B separates that from tuning transfer, and Corollary C **derives** AdaGrad-Norm's
+membership in the stable family where the paper currently asserts it. Deriving a membership the
+manuscript asserts is not filler.
+
+What is dead is the *separation* — GAP 2, no lower bound — and that stays dead. What is alive is
+a taxonomy correction, and T4B tests it on the instrument that carries every other stability
+claim.
+
+**The mapped boundary is itself the result.** Four theory directions attempted, four closed,
+three with *measured* obstructions: `W_s = Θ(T)`, `N ≥ Θ(T)`, and `ℓ ≳ 2000` making
+`NW/T^{1/p}` diverge at every admissible `p`. That is not four failures; it is a boundary, and
+it says something specific — **this class of stream has no exploitable structure at any
+timescale, neither heavy tails nor regimes.** Combined with Theorem A/B, the paper's claim
+becomes falsifiable and unusual: here is a family of proof strategies, here is why none can be
+non-vacuous on real market streams, and here is the correct axis for the empirical partition.
+
+The **Structure C** gate Session 14 recorded is now open. The honest cost, recorded so the
+decision is made with it in view rather than around it: a reviewer wanting a deep theorem still
+rejects, and "a phenomenon plus four closed routes" needs the taxonomy correction to be the
+answer rather than the measurement alone. Structure C is a real paper; it is not a
+strong-accept paper.
+
+### An open decision nobody has raised in fifteen sessions: the venue
+
+Four negative theory results with measured obstructions, a taxonomy correction, and a rigorous
+measurement study is good work that is **poorly shaped for a main-track slot optimising for
+novelty**, and well shaped for a venue where the measurement or the negative result is the
+contribution. `audit/ICLR2027_SUMMARY.md` has tracked "ICLR 2027" as settled since the venue
+moved there, and it has never been re-examined against what the work actually became. Recorded
+as an open decision for the author, not a recommendation from this session.
+
+## Session 16 — direction T4B, the clippers on the frozen instrument (registered; H_T4B FALSIFIED)
+
+Session 15 ended with a taxonomy correction resting on one single-window run. T4B put it on the
+instrument that carries every other stability claim, and **the correction did not survive**. The
+paper's axis is right; my revision of it was wrong.
+
+**Result.** AdaptiveClip and RobustOMD diverge **9/10 per-step** at their frozen window-1 rate,
+identical to OGD, and per-row are bounded but at mean `R²` `−0.010`/`−0.007`, below OGD and far
+below the bounded pack. They belong with OGD. Ledger C-24.
+
+**And `tab:jane` was right.** The clippers' ceiling on the instrument's own slice is
+`[10⁻², 2×10⁻²)` and their best per-row `R²` is `0.013`/`0.014` — the table's `∼0.01` and
+`≤10⁻²`, both confirmed. C-23's provenance defect was real; the number it flagged was not wrong.
+My T4 edits had removed a correct claim on incomplete evidence and are restored.
+
+**What survives is Theorem B, and it is the better half.** Degree-1 homogeneity predicts a tuned
+rate does not transfer across streams of differing scale; the clippers' per-step 9/10 is exactly
+that, against 0/10 for every degree-0 method. A proved statement made a falsifiable prediction
+on the primary instrument and it held.
+
+**Three process failures this session, all caught, one of them twice-flagged.**
+1. The instrumentation gate failed on first run — I had hand-rolled median-of-means with 8
+   unpermuted blocks against the library's permuted 24. The registered run was in flight and was
+   stopped and discarded. Now a data-free test.
+2. I filed the boundary-artifact failure class as tracker item 12, then immediately committed
+   it: launched on `LRS_SF`, whose *floor* is above the clippers' entire operating range, which
+   would have reported "diverges 10/10" as a result. Amendment 1, recorded before the re-run.
+3. I claimed a cross-tier invariant agreement that was an artifact of mixing two streams, and
+   withdrew it the same session once recomputed on one.
+
+### Theorem B's scope, sharpened by an objection that looked like a counterexample
+
+`app:grid` has normalized-GD and CM collapsing to `0.09 ± 0.21` per-step, and both are degree-0.
+If degree-0 tuning transfers, that reads as the one place theory and data disagree. It is not:
+frozen per-step at `lr = 5`, normalized-GD is **0/10 diverged** with `R²` from `0.371` to
+`−0.202`. Stability transferred; accuracy did not. Theorem B governs the stable-rate set, not
+the accuracy-optimal rate inside it — and degree separates the two failure modes cleanly, with
+degree one losing stability at `9/10` and degree zero keeping it while losing accuracy. The
+paper's overfitting attribution stands, and the scope is now stated in the appendix where the
+objection would be raised.
+
+### The boundary-artifact class is closed by a gate, not by vigilance
+
+Four occurrences, two of them inside this session. `research_grid_interior.py` and
+`tests/test_grid_interior.py` now check every registered grid claim for an edge optimum and an
+unbracketed ceiling, from committed bytes, in about a second. Building it surfaced two false
+positives of its own — a fixed-arm artifact that is not a sweep, and probes too short to locate
+anything — both fixed rather than tolerated. Tracker item 12 closed.
+
+### Where the theory stands now
+
+Theorem A and Theorem B are correct and Theorem B now has a confirmed prediction. Corollary C
+still derives AdaGrad-Norm's membership. What is dead: the separation (GAP 2), and the taxonomy
+correction (C-24). The manuscript's own framing came through this better than my revision of it,
+which is worth stating plainly given how much of Sessions 15-16 was spent trying to revise it.
+
 ## What is now open
 
 1. **Simplify the criterion to its one working clause**, or find a stream where the peak

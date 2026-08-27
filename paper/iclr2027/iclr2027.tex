@@ -442,12 +442,13 @@ exploits---and vanishes under shuffling.}
 
 \paragraph{Scale-free updates dominate scale-dependent ones.} Streaming one learner
 through the multi-regime window and sweeping the learning rate
-(\cref{tab:jane,fig:main}), the methods split cleanly by whether their step responds to the
+(\cref{tab:jane,fig:main}), the methods split by whether their step \emph{bound} moves with the
 gradient \emph{scale}. \emph{Scale-dependent} methods---plain OGD and the robust clippers
-(AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---are
-fragile: they stay bounded only to $\mathrm{lr}\approx10^{-2}$ and reach best
+(AdaptiveClip, RobustOMD), whose threshold $\tau_t=c\,s_t$ rescales with the regime---all carry
+such a bound, and all are fragile: stable only to $\mathrm{lr}\approx10^{-2}$ and reaching best
 $R^2\approx0.01$--$0.14$, because any larger rate diverges when the scale spikes
-(\cref{fig:mechanism}).
+(\cref{fig:mechanism}). Frozen across the ten windows the clippers diverge $9/10$ per-step, the
+same count as OGD (\cref{app:family}).
 
 The \emph{scale-free} family---normalized-GD, SN-OMD, uncapped scale-adaptive OGD, the
 fixed-$\tau$ clip, and AdaGrad-Norm, none of whose step bounds move with the regime---stays
@@ -868,13 +869,14 @@ Frozen $w_T$, forward window              & $-1.7$      & tracking, not transfer
 Street stream, \emph{causal} standardization, both granularities). Best weighted $R^2$ with
 each method at its own tuned rate, and its largest stable rate; each $R^2$ carries $\pm$one
 circular block-bootstrap standard error (block $\approx$ one trading day, $4000$ resamples).
-Scale-\emph{dependent} methods (top) are fragile, stable only to
+Scale-\emph{dependent} methods (top) are fragile---OGD is stable only to
 $\mathrm{lr}\!\approx\!10^{-2}$; the \emph{bounded scale-free} family (bottom)---SN-OMD,
 normalized-GD, a fixed-$\tau$ clip ($\tau{=}20$) and AdaGrad-Norm, all satisfying
 \cref{thm:stability}---stays bounded far higher and is far more accurate, with \emph{none}
 dominating. These are one window's numbers, and the per-protocol leaders here (fixed-$\tau$
 clip per-step, AdaGrad-Norm per-row) do \emph{not} carry over as unique leaders across windows
-(\cref{tab:replication}). $R^2$ is not comparable to competition scores.}
+(\cref{tab:replication}). $^\dagger$Per-row only; ceiling measured at $[10^{-2},2\!\times\!10^{-2})$
+on this stream (\cref{app:family}). $R^2$ is not comparable to competition scores.}
 \label{tab:jane}
 \centering
 \begin{small}
@@ -885,7 +887,7 @@ Method & $R^2$ per-row & $R^2$ per-step & Stable lr \\
 \midrule
 \multicolumn{4}{l}{\emph{Scale-dependent (fragile):}}\\
 OGD                                  & $0.018{\scriptscriptstyle\pm.006}$ & $0.139{\scriptscriptstyle\pm.012}$ & $\le 10^{-2}$ \\
-AdaptiveClip / RobustOMD             & $\sim0.01$ & --- & $\le 10^{-2}$ \\
+AdaptiveClip / RobustOMD$^\dagger$   & $\sim0.01$ & --- & $\le 10^{-2}$ \\
 \midrule
 \multicolumn{4}{l}{\emph{Scale-invariant (bounded; stable lr per row):}}\\
 Normalized-GD ($M\!\to\!0$)          & $0.220{\scriptscriptstyle\pm.037}$ & $0.371{\scriptscriptstyle\pm.077}$ & $\le 5$ \\
@@ -1419,6 +1421,58 @@ factor is a genuine $\sqrt T$ rate and this $T^{1/p}$ simplification holds only 
 regime}; globally the bound is $T^{1/p+1/2}$ (at $p=2$, the vacuous $T$). The stationary
 case ($\sigma_t\equiv\sigma$, $p=2$, no drift so $W_s=\sigma$) recovers
 $\sigma(D+\sqrt{DP_T})\sqrt T$, the classical dynamic-OGD rate. \qed
+
+\subsection{What puts a method in the bounded scale-free family}
+\label{app:family}
+\cref{thm:stability} is stated for SN-OMD's cap, and \cref{sec:experiments} then places
+normalized-GD, a fixed-$\tau$ clip and AdaGrad-Norm in the same family. Two \emph{independent}
+properties of the step map $\Phi_t$ in $w_{t+1}=w_t-\eta_t\Phi_t$ are at work, and separating
+them explains all three memberships. Write $\Phi_t$ \emph{bounded} if $\norm{\Phi_t}\le B$ for a
+constant independent of the stream, and \emph{scale-invariant} if $\Phi_t(\lambda g)=\Phi_t(g)$
+for every $\lambda>0$.
+
+Boundedness alone gives stability: $\norm{w_{t+1}-w_t}\le\eta B/\sqrt t$ and
+$\sum_{k<t}k^{-1/2}\le2\sqrt t$ reproduce \cref{thm:stability}'s envelope for any such method.
+Scale-invariance is a separate matter and governs whether a \emph{tuned rate transfers}: if
+$\Phi$ is positively homogeneous of degree one---as plain OGD is, and as the clippers are, since
+$\tau_t=c\,s_t$ scales with the stream---then running rate $\eta$ on a $\lambda$-scaled stream
+reproduces rate $\lambda\eta$ on the original, so the stable-rate set contracts as $1/\lambda$;
+if $\Phi$ is degree zero the stable-rate set does not move at all.
+
+Two consequences worth stating. First, a degree-one method can only have its displacement
+bounded uniformly in $\lambda$ by a rate carrying a $1/s_t$ factor---so normalization is not one
+repair among several. That is why \textbf{AdaGrad-Norm} belongs here despite never clipping: its
+step $\eta\gt/\sqrt{\sum_{k\le t}\norm{g_k}^2}$ pairs a degree-one $\Phi$ with a
+degree-\emph{minus}-one rate, hence is degree zero overall and bounded by $\eta$. Second, the
+fixed-$\tau$ clip is bounded but \emph{not} degree zero, being degree one below the threshold
+and degree zero above; it is therefore stable at every scale yet its useful rate does not
+transfer---which is exactly \cref{fig:mechanism}(b).
+
+What this does \emph{not} give is a separation: nothing here forces a scale-dependent method to
+diverge, only its upper bound to be loose and its tuning not to transfer.
+
+\paragraph{The clippers on the frozen instrument.} A scale-dependent threshold is bounded only
+by $c\,s_t$, which is not a stream-independent constant, so the argument above does not cover
+the robust clippers---and measurement agrees. Run through the ten-window frozen protocol at the
+budget the instrument gives the other one-dimensional methods, AdaptiveClip and RobustOMD tune
+on window~1 to $\mathrm{lr}{=}10^{-3}$ with $R^2=0.013$ and $0.014$, and their stability ceiling
+sits at $[10^{-2},2\!\times\!10^{-2})$---so \cref{tab:jane}'s $\le\!10^{-2}$ holds on this
+stream. Frozen and carried to the other nine windows they diverge $9/10$ per-step, exactly OGD's
+count, and per-row stay bounded ($0/10$) but at mean $R^2$ of $-0.007$ and $-0.010$, below OGD
+and far below the bounded scale-free pack's $0.14$--$0.21$. This is what degree-one homogeneity
+predicts: a rate tuned on one window's scale need not survive a window whose scale differs.
+Bounded \emph{in-window} at a small enough rate is not the same property as bounded by a
+constant, and only the latter transfers.
+
+\paragraph{What transfers is stability, not accuracy.} The scope is worth stating, because the
+two are easy to conflate and \cref{tab:replication} contains both. Degree-zero homogeneity makes
+the \emph{set of rates at which the iterate stays bounded} invariant to rescaling the stream; it
+says nothing about which rate inside that set is most accurate. Frozen per-step at
+$\mathrm{lr}{=}5$, normalized-GD diverges on $0/10$ windows while its $R^2$ runs from $0.37$ down
+to $-0.20$---so its stability transferred and its accuracy did not, which is the
+overfitting \cref{app:grid} attributes it to and not a failure of the invariance. The clippers
+fail the other way, diverging on $9/10$. Degree separates the two modes: degree one loses
+stability, degree zero keeps it and can still lose accuracy.
 
 \subsection{Reductions}
 \label{app:reductions}

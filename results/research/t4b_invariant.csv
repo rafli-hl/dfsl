@@ -1,0 +1,5 @@
+method,tier,eta_max_last_stable,eta_max_first_diverged,censored,B,P_lo,P_hi,stream
+normgd,tier 3,8.0,,true,1.0,8.0,,"date[0,120) 150000"
+sn_ogd,tier 3,3.0,5.0,false,5.0,15.0,25.0,"date[0,120) 150000"
+scale_adaptive,tier 2,1.0,2.0,false,,,,"date[0,120) 150000"
+ogd,tier 1,0.01,0.02,false,752.5981520434033,7.525981520434033,15.051963040868065,"date[0,120) 150000"

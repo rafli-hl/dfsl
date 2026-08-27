@@ -1,0 +1,60 @@
+====================================================================================================
+GRID-INTERIOR AUDIT -- no claim may be read off the edge of the range that made it
+====================================================================================================
+
+### tab:jane / fig:main lr sweep, scale-free methods
+    normalize_continuous.csv
+  ok           normgd                         argmax=3.0 in [0.002,8.0]  interior
+  DECLARED     ogd                            argmax=0.002 in [0.002,0.01]  low-edge
+               low-edge  -- OGD's optimum is at the grid floor; the instrument gives it LRS_OGD, a lower decade, and tab:jane sources its number from there
+  ok           scale_adaptive                 argmax=0.5 in [0.002,1.0]  interior
+  ok           sn_ogd                         argmax=2.0 in [0.002,3.0]  interior
+
+### tab:jane / fig:main stability ceiling, scale-free methods
+    normalize_continuous.csv
+  DECLARED     normgd                         censored-high  stable<=8.0 diverged@None
+               censored-high -- normalized-GD does not diverge anywhere on this grid. T4 recorded this; it is why the P invariant is inconclusive, and the paper makes no ceiling claim for it beyond 'stays bounded far higher'
+  ok           ogd                            located        stable<=0.01 diverged@0.02
+  ok           scale_adaptive                 located        stable<=1.0 diverged@2.0
+  ok           sn_ogd                         located        stable<=3.0 diverged@5.0
+
+### the clippers' single-window sweep (C-23's source)
+    continuous_stream.csv
+  DECLARED     adaptive_clip                  censored-high  stable<=0.03 diverged@None
+               censored-high -- sweep stops at 3e-2 with the method still improving; this is precisely what made C-23 look like a taxonomy correction, and T4B located the real ceiling at [1e-2,2e-2) on the instrument
+  ok           ogd                            located        stable<=0.002 diverged@0.005
+  DECLARED     robust_omd[catoni]             censored-high  stable<=0.03 diverged@None
+               censored-high -- same sweep, same reason
+  DECLARED     robust_omd[median_of_means]    censored-high  stable<=0.03 diverged@None
+               censored-high -- same sweep, same reason
+  DECLARED     robust_omd[trimmed_mean]       censored-high  stable<=0.03 diverged@None
+               censored-high -- same sweep, same reason
+
+### the data-free Jane mini-slice (audit finding 6's reviewer path)
+    jane_mini.csv
+  DECLARED     Normalized-GD (M->0) / per-row censored-high  stable<=5.0 diverged@None
+               censored-high -- a bounded scale-free method on a seeded mini-slice at small rates. No ceiling is claimed for this artifact; it exists to show the PATH runs without market data, not to locate a stability boundary
+  DECLARED     Normalized-GD (M->0) / per-step censored-high  stable<=5.0 diverged@None
+               censored-high -- a bounded scale-free method on a seeded mini-slice at small rates. No ceiling is claimed for this artifact; it exists to show the PATH runs without market data, not to locate a stability boundary
+  ok           OGD (scale-dependent) / per-row located        stable<=0.5 diverged@1.0
+  ok           OGD (scale-dependent) / per-step located        stable<=0.1 diverged@0.5
+  DECLARED     SN-OMD (M=5) / per-row         censored-high  stable<=5.0 diverged@None
+               censored-high -- same artifact, same reason
+  DECLARED     SN-OMD (M=5) / per-step        censored-high  stable<=5.0 diverged@None
+               censored-high -- same artifact, same reason
+  ok           Scale-adaptive OGD (M->inf) / per-row located        stable<=2.0 diverged@5.0
+               censored-high per-step only -- same artifact; the per-row arm does locate a ceiling
+  DECLARED     Scale-adaptive OGD (M->inf) / per-step censored-high  stable<=5.0 diverged@None
+               censored-high per-step only -- same artifact; the per-row arm does locate a ceiling
+
+### T4B clipper ceiling on the frozen instrument
+    t4b_clipper_ceiling.csv
+  ok           per-row / AdaptiveClip         ceiling_located=True
+  ok           per-row / RobustOMD            ceiling_located=True
+  ok           per-step / AdaptiveClip        ceiling_located=True
+  ok           per-step / RobustOMD           ceiling_located=True
+
+====================================================================================================
+No undeclared edge or censoring findings. Every grid-based claim in the registry
+either has an interior optimum and a bracketed ceiling, or declares why not.
+====================================================================================================

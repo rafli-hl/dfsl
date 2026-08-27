@@ -1,0 +1,5 @@
+protocol,method,last_stable_lr,first_diverged_lr,ceiling_located,frozen_lr,window1_r2
+per-row,AdaptiveClip,0.01,0.02,true,0.001,0.01289
+per-row,RobustOMD,0.01,0.02,true,0.001,0.01432
+per-step,AdaptiveClip,0.005,0.01,true,0.005,0.11739
+per-step,RobustOMD,0.005,0.01,true,0.005,0.13126
