@@ -214,20 +214,20 @@ PAPER_CLAIMS = [
     (
         "tab:replication uncapped-endpoint divergence count",
         r"Scale-adaptive OGD \(\$M\\!\\to\\!\\infty\$\)\s*&\s*---\s*&\s*\$(\d+)/10\$",
-        "windows_replication_summary.csv", {"method": "Scale-adaptive OGD"},
-        [(1, "per-row", "n_diverged", 0)],
+        "c12/c12_matched_summary.csv", {"method": "Scale-adaptive OGD"},
+        [(1, "per-row", "n_diverged_rel", 0)],
     ),
     (
-        "sec:experiments prose: uncapped endpoint diverges N/10 per-row",
-        r"diverges on \$(\d+)/10\$ \(per-row\)",
-        "windows_replication_summary.csv", {"method": "Scale-adaptive OGD"},
-        [(1, "per-row", "n_diverged", 0)],
+        "sec:experiments prose: uncapped endpoint meets criterion N/10 per-row",
+        r"endpoint meets it on \$(\d+)/10\$ \(per-row\)",
+        "c12/c12_matched_summary.csv", {"method": "Scale-adaptive OGD"},
+        [(1, "per-row", "n_diverged_rel", 0)],
     ),
     (
-        "sec:experiments prose: plain OGD diverges N/10 per-step",
-        r"plain OGD's frozen rate diverges on \$(\d+)/10\$ \(per-step\)",
-        "windows_replication_summary.csv", {"method": "OGD"},
-        [(1, "per-step", "n_diverged", 0)],
+        "sec:experiments prose: plain OGD meets criterion N/10 per-step",
+        r"plain OGD's frozen rate\s+on \$(\d+)/10\$\s+\(per-step\)",
+        "c12/c12_matched_summary.csv", {"method": "OGD"},
+        [(1, "per-step", "n_diverged_rel", 0)],
     ),
     # tab:replication's two SN-OMD rows, adopted at matched tuning budget (C12, C12B).
     # These pin the MEANS; the divergence counts above pin the stability partition. Both
@@ -343,6 +343,56 @@ def test_paper_number_matches_its_csv(
         f"regenerated without updating the manuscript, or the manuscript was edited away "
         f"from its measurement:\n" + "\n".join(mismatches)
     )
+
+
+def test_cross_domain_failure_counts_use_the_common_criterion() -> None:
+    """The paper's Jane and crypto counts must match the unified relative-loss artifacts."""
+    tex = PAPER_TEX.read_text(encoding="utf-8")
+
+    jane = pl.read_csv(PROJECT_ROOT / "results" / "research" / "c12" / "c12_matched_summary.csv")
+    for method, protocol, pattern in (
+        ("Scale-adaptive OGD", "per-row", r"endpoint meets it on \$(\d+)/10\$ \(per-row\)"),
+        ("OGD", "per-step", r"plain OGD's frozen rate on \$(\d+)/10\$\s*\(per-step\)"),
+    ):
+        row = jane.filter((pl.col("method") == method) & (pl.col("protocol") == protocol))
+        found = re.findall(pattern, tex)
+        assert row.height == 1 and len(found) == 1
+        assert int(found[0]) == int(row["n_diverged_rel"][0])
+
+    crypto = pl.read_csv(PROJECT_ROOT / "results" / "research" / "crypto_algorithms.csv")
+    for method, expected in (("OGD", "10/10"), ("Scale-adaptive OGD", "8/10"),
+                             ("fixed-tau clip", "10/10"), ("SN-OMD (M=5)", "0/10")):
+        row = crypto.filter(pl.col("method") == method)
+        assert row.height == 1 and row["diverged"][0] == expected
+
+
+def test_heldout_replication_prose_matches_artifacts() -> None:
+    """Guard representative windows 2-10 values newly promoted to the main text."""
+    tex = PAPER_TEX.read_text(encoding="utf-8")
+    c12 = pl.read_csv(PROJECT_ROOT / "results" / "research" / "c12" / "c12_matched_summary.csv")
+    c12b = pl.read_csv(PROJECT_ROOT / "results" / "research" / "c12b" / "c12b_blockmed.csv")
+
+    def printed_pair(pattern: str) -> tuple[float, float]:
+        found = re.findall(pattern, tex)
+        assert len(found) == 1, f"held-out claim pattern matched {len(found)} times: {pattern}"
+        return float(found[0][0]), float(found[0][1])
+
+    sn_mean, sn_std = printed_pair(
+        r"SN-OMD \(\$0\.([0-9]+)\\!\\pm\\!\.([0-9]+)\$\), fixed-\$\\tau\$"
+    )
+    sn_mean, sn_std = sn_mean / 100.0, sn_std / 100.0
+    sn = c12.filter((pl.col("method") == "SN-OMD (M tuned)") & (pl.col("protocol") == "per-row"))
+    assert abs(sn_mean - float(sn["heldout_mean"][0])) <= 0.005
+    assert abs(sn_std - float(sn["heldout_std"][0])) <= 0.005
+
+    block_mean, block_std = printed_pair(
+        r"and block SN-OMD\s*\(\$0\.([0-9]+)\\!\\pm\\!\.([0-9]+)\$\)"
+    )
+    block_mean, block_std = block_mean / 100.0, block_std / 100.0
+    block = c12b.filter((pl.col("arm") == "matched") & (pl.col("protocol") == "per-row")
+                        & (pl.col("window_idx") >= 2))["weighted_r2"].to_numpy()
+    assert abs(block_mean - float(np.mean(block))) <= 0.005
+    assert abs(block_std - float(np.std(block, ddof=1))) <= 0.005
 
 
 if __name__ == "__main__":

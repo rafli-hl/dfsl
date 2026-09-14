@@ -191,7 +191,7 @@ def fig4_tracker():
 
 def fig5_null():
     """Estimator null: causal scale-normalization leaves a GENUINE iid heavy tail
-    unchanged, but removes a DRIFT-manufactured one -- more, the more trackable the
+    unchanged, but lightens a drift-driven one -- more, the more trackable the
     drift. Source: results/research/normalization_null.csv (research_review5_checks.py).
     """
     df = pl.read_csv(RES / "normalization_null.csv").filter(pl.col("k_frac") == 0.01)
@@ -233,7 +233,7 @@ def fig5_null():
     egap = np.sqrt(ecraw**2 + ecema**2)
     a1.axhline(0, color="k", lw=0.5)
     a1.errorbar(Ls, dgap[1:], yerr=egap[1:], color="#1f77b4", marker="^", ms=4,
-                capsize=2, label="drift-manufactured tail")
+                capsize=2, label="drift-driven tail")
     a1.errorbar([Ls[0] * 0.5], [dgap[0]], yerr=[egap[0]], color="#2ca02c", marker="o",
                 ms=5, capsize=2, label="iid heavy (no drift)")
     a1.set_xscale("log")
@@ -245,10 +245,10 @@ def fig5_null():
 
 
 def fig_crypto():
-    """Second market (BTC/USDT 1h): the mechanism and stability dichotomy replicate.
-    (a) gradient-norm survival: pooled heavy tail, lightened by the causal scale tracker, and the
-    lightening ABOLISHED by a marginal-preserving order shuffle. (b) peak rolling loss vs lr: the
-    scale-dependent methods explode while the bounded scale-free ones stay flat.
+    """Second market (BTC/USDT 1h): causal normalization and a peak-loss diagnostic.
+    (a) gradient-norm survival: the causal tracker raises the pooled Hill diagnostic, and the
+    change is ABOLISHED by a marginal-preserving order shuffle. (b) peak rolling loss vs lr: the
+    unbounded updates explode while the stream-uniformly bounded ones stay flat.
     Sources: gradnorm_crypto_btc.npy, crypto_lr_sweep.csv (research_crypto_*.py)."""
     g = np.load(RES / "gradnorm_crypto_btc.npy")
 
@@ -276,7 +276,7 @@ def fig_crypto():
         a0.plot(v, s, color=c, label=f"{lbl}: $\\hat\\alpha$={_hill(arr):.2f}")
     a0.set_xscale("log"); a0.set_yscale("log")
     a0.set_xlabel("value / mean"); a0.set_ylabel(r"survival $P(X\!\geq\!x)$")
-    a0.set_title("(a) Removable tail (serial dependence)")
+    a0.set_title("(a) Tail lightening (serial dependence)")
     a0.legend(loc="lower left", fontsize=6)
 
     a1 = ax[1]
@@ -321,15 +321,15 @@ All PNG, 300 dpi, uniform ICML styling.
   $W_s/V_\\sigma^+$ (b), on the real gradient-scale process.
 - **fig5_null.png** — the estimator null (rules out the "normalization mechanically lightens
   any tail" artifact). (a) causal $\\div s_t$ leaves a genuinely heavy iid tail
-  ($\\hat\\alpha\\approx2.4$) unchanged ($\\Delta\\approx0$) while removing a drift-manufactured
+  ($\\hat\\alpha\\approx2.4$) unchanged ($\\Delta\\approx0$) while lightening a drift-driven
   one; (b) the induced lightening is $\\approx0$ for the iid null and grows with how trackable
   the drift is (regime length). 12 seeds; source `research_review5_checks.py`.
 
-- **fig7_crypto.png** — second market (BTC/USDT 1h). (a) gradient-norm survival: pooled heavy
-  tail ($\\hat\\alpha\\approx1.81$), lightened by the causal scale tracker ($2.26$), lightening
-  abolished by an order shuffle ($1.80$) — removability is serial dependence. (b) peak rolling
+- **fig7_crypto.png** — second market (BTC/USDT 1h). (a) gradient-norm survival: causal scale
+  normalization raises the pooled Hill diagnostic from $\\hat\\alpha\\approx1.81$ to $2.26$;
+  the change is abolished by an order shuffle ($1.80$), so it depends on serial dependence. (b) peak rolling
   loss vs learning rate on the turbulent 2022 window: OGD and the uncapped $M\\to\\infty$ endpoint
-  explode while bounded scale-free methods stay $<10^3$. Source `research_crypto_*.py`.
+  explode while stream-uniformly bounded methods stay $<10^3$. Source `research_crypto_*.py`.
 
 These figures are the definitive set used by `paper/icml2026.tex`. The old-story
 first-pass paper (`main.tex`, `appendix.tex`) and its figures (`fig_heavytails.pdf`,
