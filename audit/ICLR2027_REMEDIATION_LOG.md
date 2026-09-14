@@ -1,3 +1,4 @@
+
 # ICLR 2027 — remediation log (Pass III fix pass)
 
 Running record of what each audit pass changed in `paper/iclr2027/iclr2027.tex` and the
@@ -413,3 +414,130 @@ them — the Pass-IV lesson that matching a stored artifact proves consistency, 
 * 84 tests pass in the project venv.
 * Supplement rebuilds at 246 files, self-check clean; `paper/icml2026.*`, `out/`, `audit/` and
   the deleted `references.bib` all confirmed absent from the export tree.
+
+---
+
+## Pass VI — taxonomy and tuning-transfer repair (2026-09-14)
+
+Input: a thesis-alignment review focused on whether the manuscript conflated update boundedness,
+scale invariance, iterate stability, empirical loss failure, and cross-window transfer.
+
+### FIXED — two-axis method taxonomy
+
+The main text, tables, captions, conclusion, appendix family discussion, figure generator, and
+generated figure manifest now distinguish two independent properties:
+
+1. **stream-uniform boundedness** of the update map, which yields the unconditional iterate
+   envelope; and
+2. **degree-zero scale invariance**, which yields an exact trajectory identity under global
+   rescaling of an exogenous gradient sequence.
+
+Neither property implies the other. The manuscript now classifies SN-OMD, normalized-GD, and
+AdaGrad-Norm as both bounded and degree zero; fixed-threshold clipping as bounded but not degree
+zero; the uncapped scale-adaptive endpoint as degree zero but unbounded; and OGD plus tracked-scale
+clipping as degree one and not stream-uniformly bounded. The uncapped endpoint's `7/10` loss-
+criterion count is used as the explicit counterexample to “scale invariance implies stability,”
+while normalized-GD's accuracy shows that boundedness does not transfer prediction quality.
+
+### FIXED — transfer theorem scope
+
+For a fixed trajectory-defined criterion, the theorem retains the exact identities
+`H(S_lambda)=H(S_1)` for degree-zero maps and `H(S_lambda)=H(S_1)/lambda` for degree-one maps.
+The previous unconditional conclusion has been repaired: failure of any fixed positive rate over
+all scales now requires `H(S_1)` to have a finite upper endpoint. The statement and proof also
+make explicit that market windows are not global rescalings and that learner feedback breaks the
+fixed exogenous-sequence setup. The result motivates a diagnostic; it does not prove the observed
+ten-window partition.
+
+### FIXED — page-budget regression caught during rendered QA
+
+The first repaired draft pushed three lines of Limitations onto page 10. Redundant taxonomy and
+schedule prose was tightened without dropping hypotheses or counterexamples. In the final render,
+the complete Limitations paragraph ends on page 9 and page 10 begins with the Ethics Statement.
+Pages 1–10 were visually inspected: figures, tables, equations, and text are legible, with no
+clipping, overlap, or rendering artifacts.
+
+### Reviewer audit
+
+Added `audit/ICLR2027_REVIEWER_AUDIT_2026-09-14.md`, a post-fix simulated ICLR review. Its current
+recommendation is 6/10 (weak accept, confidence 4/5), with a plausible 5/10 from a theory-first
+reviewer. The fatal taxonomy/theorem objection is closed. The main residual risks are the fixed-
+reference rather than online-trajectory tail diagnostic, the constant-step/proved-tracker versus
+deployed-schedule/default-tracker mismatch, inclusion of the tuning window in the ten-window mean,
+criterion consistency across domains, positive evidence concentrated in finance, and gated access
+to the full Jane data.
+
+### Build and verification note
+
+MiKTeX's `latexmk` wrapper could not run because Perl is unavailable in the current environment.
+The manuscript was instead rebuilt successfully with repeated direct `pdflatex` passes after
+regenerating figures from `scripts/make_paper_figures.py`. The final PDF is 33 pages; the main text
+fits within nine pages. The log has no undefined references or overfull boxes. Residual non-
+blocking warnings are underfull title/page boxes, duplicate PDF destinations for restated theorem
+environments, and one hyperref PDF-string math warning. The project test suite passes with
+127 tests passed, one skipped, and five warnings.
+
+---
+
+## Pass VII — held-out reporting, diagnostic terminology, and common criterion (2026-09-14)
+
+### FIXED — windows 2–10 are now the primary transfer summary
+
+The matched-budget artifacts already stored `heldout_mean` and `heldout_std`, so no new Jane run
+or post-hoc tuning was needed. The main text now reports windows 2–10 separately from tuning
+window 1. Per-row Cutkosky–Mehta (`0.28 +/- 0.03`) and matched-budget block-median SN-OMD
+(`0.27 +/- 0.07`) remain co-leaders. Per-step block SN-OMD (`0.22 +/- 0.10`), SN-OMD
+(`0.19 +/- 0.11`), AdaGrad-Norm (`0.18 +/- 0.03`), and fixed-threshold clipping
+(`0.18 +/- 0.12`) remain overlapping. The all-ten table is retained for completeness.
+
+### FIXED — the empirical tail object is no longer called conditionally lighter
+
+The abstract, contribution list, experiment heading, appendix, and crypto caption now use
+`causally normalized pooled-tail diagnostic` or describe a change in its Hill estimate. The paper
+explicitly says this is measured at the fixed reference point, not along each learner's endogenous
+trajectory, and that the marginal Hill statistic neither estimates a conditional-tail law nor
+verifies the conditional moment assumption.
+
+### FIXED — one dimensionless loss-failure criterion across Jane and crypto
+
+Both domains now use `scripts/research_divergence.py`: relative to the best constant predictor on
+the same window, failure means overall weighted MSE at least `2x` or peak rolling weighted squared
+error at least `10x`, with rolling length `max(100, floor(T/10))`. The registered acceptance suite
+found exact invariance to target-unit changes and recovered all 20 independently identified
+uncapped blow-ups. It also found that the peak clause changed none of 109 failure decisions; this
+qualification is now explicit in the appendix.
+
+Applying the common criterion changes two headline counts and one interpretation. On Jane, the
+uncapped endpoint is `6/10` per-row rather than the inherited absolute-threshold count of `7/10`;
+OGD remains `9/10` per-step. On crypto, OGD is `10/10`, the uncapped endpoint `8/10`, and
+fixed-threshold clipping `10/10`, while SN-OMD, block SN-OMD, normalized-GD, AdaGrad-Norm, and
+Cutkosky–Mehta are `0/10`. Therefore the old “exactly the Jane partition” claim is withdrawn:
+crypto preserves the contrast between bounded normalized and unbounded methods, but bounded fixed-threshold clipping is a
+counterexample to any claim that an iterate envelope guarantees acceptable loss.
+
+### Verification additions
+
+`tests/test_artifacts_fresh.py` now pins the common-criterion counts to the matched Jane and
+regenerated crypto artifacts and pins representative windows 2–10 values to the matched-budget
+sources. The crypto script, figure generator, figure manifest, reviewer audit, and manuscript were
+updated together. The first render exceeded the nine-page limit by three lines; redundant prose
+was tightened. The final render ends Limitations on page 9 and begins Ethics on page 10.
+The final full suite passes with 127 tests passed, one skipped, and five non-blocking warnings;
+`git diff --check` reports no whitespace errors.
+
+---
+
+## Pass VIII — final reviewer read and rebuttal package (2026-09-14)
+
+The page-by-page pre-commit review found and repaired one criterion-language ambiguity in the
+abstract: “meets” had been used in opposite senses. The final text consistently says that bounded
+normalized rows *avoid* the common loss-failure criterion while failing rows *trigger* it. The
+cross-market shorthand was also narrowed from “capped-versus-unbounded” to the exact contrast
+between bounded normalized and unbounded methods, preserving the fixed-threshold crypto
+counterexample.
+
+Added `audit/ICLR2027_REBUTTAL_DEFENSES_2026-09-14.md` with ten concise reviewer responses and an
+explicit list of claims not to make. The defense preserves the fixed-reference measurement scope,
+global-rescaling theorem scope, iterate-versus-loss distinction, held-out summary, criterion
+development history, non-dominance result, theorem/deployment mismatch, domain limitation, and
+multiple-comparison qualification.

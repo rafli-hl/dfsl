@@ -8,7 +8,7 @@ over, the tracker's predictable scale, the cap, and the weighted-R^2 evaluation.
 The test builds a deliberately tiny slice, so it checks *mechanics* rather than magnitudes.
 The tail-lightening assertion the script itself makes needs the default size to be stable
 and is left to the script; what is pinned here is that the pieces fit together and that the
-stability dichotomy -- bounded scale-free rows stay bounded where a scale-dependent rate
+stability dichotomy -- stream-uniformly bounded rows stay bounded where a scale-dependent rate
 does not -- is reproduced by this code path at all.
 """
 
@@ -65,7 +65,7 @@ def test_stability_dichotomy_reproduces(mini):
     )
     for label, n in (("SN-OMD", sn_norm), ("normalized-GD", ngd_norm)):
         assert np.isfinite(n) and n <= jm.DIVERGED, (
-            f"{label} is in the bounded scale-free family and must not diverge at "
+            f"{label} is stream-uniformly bounded and must not diverge at "
             f"lr={lr}; got ||w||={n:.3g}"
         )
 

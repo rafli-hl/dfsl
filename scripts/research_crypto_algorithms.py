@@ -6,7 +6,8 @@ nearly unpredictable (best-fixed-linear R^2 ~ 0.002), so the ACCURACY ranking is
 and we report it honestly as such. The load-bearing claim a second market can test is the
 STABILITY dichotomy: on a stream whose gradient scale drifts ~22x, do the scale-DEPENDENT methods
 (plain OGD, uncapped scale-adaptive OGD) diverge at competitive learning rates while every
-bounded scale-free method (SN-OMD, normalized-GD, fixed-tau clip, AdaGrad-Norm, Cutkosky-Mehta)
+stream-uniformly bounded method (SN-OMD, normalized-GD, fixed-tau clip, AdaGrad-Norm,
+Cutkosky-Mehta)
 stays bounded -- as they do on Jane?
 
 (A) learning-rate sweep on window 1: best R^2 and the highest lr that stays bounded (the fig:main
@@ -36,6 +37,7 @@ from research_baselines import (  # noqa: E402  (dataset-agnostic; take X,y,wts,
     fixedclip_perrow,
 )
 from research_crypto_mechanism import load_features  # noqa: E402
+from research_divergence import diverged as criterion_failed  # noqa: E402
 from research_table1_errorbars import agg_r2  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,18 +74,6 @@ def peak_rolling_loss(y, preds, w, window=2000):
     x = np.where(np.isfinite(x), np.minimum(x, 1e300), 1e300)
     win = max(1, min(window, x.size))
     return float(np.max(np.convolve(x, np.ones(win) / win, mode="valid")))
-
-
-# True-explosion threshold: crypto returns are unpredictable, so at a large lr every method (even
-# bounded ones) accumulates noise and overshoots the O(1) target -- its peak loss grows O(sqrt t)
-# to ~10-100 without the iterate exploding. Scale-DEPENDENT methods instead blow up super-linearly
-# to 1e4..1e300. A 1e3 cutoff sits in that 2-orders-of-magnitude gap and flags only true divergence.
-DIVERGE_PEAK = 1e3
-
-
-def diverged(y, preds, w):
-    r2 = agg_r2(y, preds, w)
-    return (not np.isfinite(r2)) or peak_rolling_loss(y, preds, w) > DIVERGE_PEAK
 
 
 GRIDS = {"OGD": LRS_OGD, "Scale-adaptive OGD": LRS, "AdaGrad-Norm": LRS_ADA}
@@ -128,7 +118,7 @@ def main() -> None:
             p = run(name, Xw, yw, ww, lr)
             peak = peak_rolling_loss(yw, p, ww)
             pk[lr] = peak
-            if np.isfinite(peak) and peak <= DIVERGE_PEAK:
+            if not criterion_failed(yw, p, ww):
                 max_stable = max(max_stable, lr)
             sweep_rows.append({"method": name, "lr": lr, "peak_loss": float(peak),
                                "r2": round(float(agg_r2(yw, p, ww)), 5)})
@@ -140,15 +130,16 @@ def main() -> None:
     # ---- (B) ten windows at a fixed COMPETITIVE rate lr=2 (not the tiny R^2-optimal rate) ----
     # On unpredictable crypto every method's accuracy-optimal lr is tiny (all stable there), so the
     # dichotomy only shows at a competitive rate: does the scale-dependent step blow up across
-    # regimes while the bounded scale-free step does not? (Jane's "frozen competitive rate diverges".)
+    # regimes while a stream-uniformly bounded normalized step does not?
     LR_FIX = 2.0
-    print(f"\n(B) TEN WINDOWS at a fixed competitive lr={LR_FIX} (divergence = true blow-up, peak>{DIVERGE_PEAK:g})")
+    print(f"\n(B) TEN WINDOWS at a fixed competitive lr={LR_FIX} "
+          "(same dimensionless relative-loss criterion as Jane)")
     out = []
     for name in METHODS:
         ndiv, peaks, r2s = 0, [], []
         for (a, b) in windows:
             p = run(name, X[a:b], y[a:b], w[a:b], LR_FIX)
-            dv = diverged(y[a:b], p, w[a:b])
+            dv = criterion_failed(y[a:b], p, w[a:b])
             ndiv += int(dv); peaks.append(peak_rolling_loss(y[a:b], p, w[a:b]))
             if not dv:
                 r2s.append(float(agg_r2(y[a:b], p, w[a:b])))
@@ -164,7 +155,7 @@ def main() -> None:
     div_free = [r["method"] for r in out if r["diverged"] == "0/10"]
     diverging = [f"{r['method']}({r['diverged']})" for r in out if r["diverged"] != "0/10"]
     print("\nVERDICT (stability dichotomy at a competitive rate):")
-    print(f"  0/10 divergences (bounded scale-free): {div_free}")
+    print(f"  0/10 relative-loss failures:            {div_free}")
     print(f"  diverges on >=1 window:               {diverging}")
     print("  accuracy: all R^2 ~ 0 (hourly returns are unpredictable) -- the second market's value")
     print("  is the mechanism (tail) + the stability dichotomy, not an accuracy ranking.")
